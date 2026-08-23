@@ -889,12 +889,44 @@ button {
 .message__badge.is-image { background: var(--success-soft); color: var(--success); }
 .message__badge.is-research { background: var(--accent-3-soft); color: var(--accent-3); }
 
-.message__image {
-  display: block;
+.message__image-wrap {
+  position: relative;
+  display: inline-block;
   max-width: min(420px, 100%);
   margin-top: 10px;
+}
+.message__image {
+  display: block;
+  width: 100%;
   border-radius: 12px;
   border: 1px solid var(--border);
+}
+.message__image-download {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: rgba(13, 16, 23, 0.65);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity 0.15s ease, background 0.15s ease;
+}
+.message__image-wrap:hover .message__image-download,
+.message__image-download:focus-visible {
+  opacity: 1;
+}
+.message__image-download:hover { background: rgba(13, 16, 23, 0.85); }
+@media (max-width: 767px) {
+  /* Sensorli ekranda hover bo'lmaydi — tugma doim ko'rinadi */
+  .message__image-download { opacity: 1; }
 }
 
 /* --- Kiritish formasi --- */

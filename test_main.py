@@ -77,6 +77,15 @@ def test_chat_image_intent(monkeypatch):
     assert data["intent"] == "image"
     assert data["image_url"] == "https://example.com/rasm.png"
 
+    # Sessiyaga qaytilganda rasm URL'i /history orqali ham qaytishi kerak
+    # (avval bu saqlanmay, sessiyaga qaytganda rasm yo'qolib qolardi).
+    history_response = client.get(f"/history/{data['session_id']}")
+    assert history_response.status_code == 200
+    assistant_messages = [
+        m for m in history_response.json()["messages"] if m["role"] == "assistant"
+    ]
+    assert assistant_messages[-1]["image_url"] == "https://example.com/rasm.png"
+
 
 def test_chat_research_intent(monkeypatch):
     captured = {}

@@ -60,6 +60,7 @@ class ChatMessage(Base):
     session_id = Column(String, ForeignKey("sessions.id"), nullable=False)
     role = Column(String, nullable=False)  # "user" yoki "assistant"
     content = Column(Text, nullable=False)
+    image_url = Column(String, nullable=True)  # Leonardo AI rasm javoblari uchun
     vaqt = Column(DateTime, default=datetime.datetime.utcnow)
 
     session = relationship("ChatSession", back_populates="messages")
@@ -91,9 +92,9 @@ def get_session_owner(session_id: str) -> str | None:
         return session.user_id if session else None
 
 
-def save_message(session_id: str, role: str, content: str) -> None:
+def save_message(session_id: str, role: str, content: str, image_url: str | None = None) -> None:
     with SessionLocal() as db:
-        db.add(ChatMessage(session_id=session_id, role=role, content=content))
+        db.add(ChatMessage(session_id=session_id, role=role, content=content, image_url=image_url))
         db.commit()
 
 
@@ -105,7 +106,7 @@ def list_messages(session_id: str) -> list[dict]:
             .order_by(ChatMessage.vaqt)
             .all()
         )
-        return [{"role": r.role, "content": r.content} for r in rows]
+        return [{"role": r.role, "content": r.content, "image_url": r.image_url} for r in rows]
 
 
 def list_sessions(user_id: str | None = None) -> list[dict]:

@@ -55,7 +55,7 @@ async function loadHistory() {
     if (!res.ok) throw new Error();
     const data = await res.json();
     for (const m of data.messages || []) {
-      addMessage(m.role, m.content);
+      addMessage(m.role, m.content, undefined, m.image_url);
     }
   } catch {
     /* sessiya topilmasa yoki server bilan bog'lanib bo'lmasa, bo'sh chat bilan davom etamiz */
@@ -567,6 +567,24 @@ function runJsSandboxed(code, outputEl) {
   }, 3000);
 }
 
+async function downloadImage(url) {
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = blobUrl;
+    a.download = "rasm.jpg";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(blobUrl);
+  } catch {
+    // CORS yoki tarmoq muammosi bo'lsa, kamida yangi tabda ochib beramiz
+    window.open(url, "_blank");
+  }
+}
+
 const INTENT_BADGE_LABELS = {
   code: "● claude — kod",
   idea: "● gemini — g'oya",
@@ -593,11 +611,26 @@ function addMessage(role, text, intent, imageUrl) {
   bubble.appendChild(contentEl);
 
   if (imageUrl) {
+    const imageWrap = document.createElement("div");
+    imageWrap.className = "message__image-wrap";
+
     const img = document.createElement("img");
     img.src = imageUrl;
     img.alt = "Leonardo AI tomonidan generatsiya qilingan rasm";
     img.className = "message__image";
-    bubble.appendChild(img);
+    imageWrap.appendChild(img);
+
+    const downloadBtn = document.createElement("button");
+    downloadBtn.type = "button";
+    downloadBtn.className = "message__image-download";
+    downloadBtn.title = "Rasmni yuklab olish";
+    downloadBtn.setAttribute("aria-label", "Rasmni yuklab olish");
+    downloadBtn.innerHTML =
+      '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+    downloadBtn.addEventListener("click", () => downloadImage(imageUrl));
+    imageWrap.appendChild(downloadBtn);
+
+    bubble.appendChild(imageWrap);
   }
 
   messagesEl.appendChild(bubble);

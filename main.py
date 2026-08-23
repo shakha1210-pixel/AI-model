@@ -138,8 +138,10 @@ else:
             _memory_session_order.append(sid)
         return sid
 
-    def save_message(session_id: str, role: str, content: str) -> None:
-        _memory_sessions.setdefault(session_id, []).append({"role": role, "content": content})
+    def save_message(session_id: str, role: str, content: str, image_url: str | None = None) -> None:
+        _memory_sessions.setdefault(session_id, []).append(
+            {"role": role, "content": content, "image_url": image_url}
+        )
 
     def list_messages(session_id: str) -> list[dict]:
         return _memory_sessions.get(session_id, [])
@@ -215,10 +217,16 @@ def classify_intent(message: str) -> Literal["code", "idea", "image", "research"
 # keyword-based klassifikatsiyadagi xatolarni ham yumshatadi (masalan
 # "auto" rejimida noto'g'ri agentga tushib qolgan so'rov).
 OFF_TOPIC_SUFFIX = (
-    " Agar foydalanuvchi so'rovi sizning ixtisoslik sohangizga umuman "
-    "aloqador bo'lmasa, uni bajarishga urinmang — buning o'rniga qisqa "
-    "qilib qaysi bo'lim (masalan 'Kod yozish', 'Rasm chizish', 'Qidiruv/ "
-    "hujjat tahlili' yoki 'G'oya/erkin suhbat') mos kelishini taklif qiling."
+    " Agar foydalanuvchining birinchi xabari shunchaki salomlashish yoki "
+    "suhbatni umumiy tarzda boshlash bo'lsa (masalan 'salom'), uzun "
+    "tushuntirish bermang — iliq javob bering va BIR QISQA JUMLA bilan "
+    "nima ish qila olishingizni ayting (masalan: 'Salom! Men hujjatlar va "
+    "matnlarni chuqur tahlil qilishda yordam beraman.'). Faqat foydalanuvchi "
+    "keyingi xabarida ANIQ ravishda boshqa sohaga oid topshiriq bersa "
+    "(sizning ixtisosligingizga umuman aloqador bo'lmasa), uni bajarishga "
+    "urinmang — o'shanda qisqa qilib qaysi bo'lim (masalan 'Kod yozish', "
+    "'Rasm chizish', 'Qidiruv/hujjat tahlili' yoki 'G'oya/erkin suhbat') "
+    "mos kelishini taklif qiling."
 )
 
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
@@ -554,7 +562,7 @@ async def chat(
         reply = REFUSAL_MESSAGE
         image_url = None
 
-    save_message(session_id, "assistant", reply)
+    save_message(session_id, "assistant", reply, image_url=image_url)
 
     return ChatResponse(reply=reply, session_id=session_id, intent=intent, image_url=image_url)
 
