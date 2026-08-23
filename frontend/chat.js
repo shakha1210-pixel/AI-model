@@ -206,9 +206,16 @@ async function refreshRateLimit() {
 const ALLOWED_EXT = [
   ".py", ".js", ".ts", ".jsx", ".tsx", ".html", ".css", ".json", ".md",
   ".txt", ".csv", ".yml", ".yaml", ".sql", ".sh", ".java", ".c", ".cpp",
-  ".go", ".rs", ".rb", ".php", ".xml",
+  ".go", ".rs", ".rb", ".php", ".xml", ".docx", ".xlsx",
 ];
-const MAX_FILE_SIZE = 256 * 1024;
+// .docx/.xlsx matn emas — backend (/files/extract) orqali o'qiladi
+const SERVER_EXTRACT_EXT = [".docx", ".xlsx"];
+const UNSUPPORTED_HINTS = {
+  ".doc": "Eskirgan .doc formati qo'llab-quvvatlanmaydi — Word'da \".docx\" sifatida qayta saqlab yuklang.",
+  ".xls": "Eskirgan .xls formati qo'llab-quvvatlanmaydi — Excel'da \".xlsx\" sifatida qayta saqlab yuklang.",
+};
+const MAX_FILE_SIZE = 256 * 1024; // matnli fayllar uchun
+const MAX_BINARY_FILE_SIZE = 5 * 1024 * 1024; // .docx/.xlsx uchun
 
 async function probeFilesEnabled() {
   if (!attachButton) return;
@@ -242,15 +249,47 @@ function renderAttachedFiles() {
   });
 }
 
+async function extractServerSide(file) {
+  const form = new FormData();
+  form.append("file", file, file.name);
+  const res = await fetch("/files/extract", { method: "POST", body: form });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Faylni o'qib bo'lmadi.");
+  }
+  const data = await res.json();
+  return data.content;
+}
+
 if (attachButton && fileInput) {
   attachButton.addEventListener("click", () => fileInput.click());
   fileInput.addEventListener("change", async () => {
     for (const file of Array.from(fileInput.files || [])) {
       const ext = "." + file.name.split(".").pop().toLowerCase();
-      if (!ALLOWED_EXT.includes(ext)) {
-        addMessage("system", `"${file.name}" turi qo'llab-quvvatlanmaydi (faqat matn/kod fayllari).`);
+
+      if (UNSUPPORTED_HINTS[ext]) {
+        addMessage("system", `"${file.name}": ${UNSUPPORTED_HINTS[ext]}`);
         continue;
       }
+      if (!ALLOWED_EXT.includes(ext)) {
+        addMessage("system", `"${file.name}" turi qo'llab-quvvatlanmaydi.`);
+        continue;
+      }
+
+      if (SERVER_EXTRACT_EXT.includes(ext)) {
+        if (file.size > MAX_BINARY_FILE_SIZE) {
+          addMessage("system", `"${file.name}" juda katta (maksimal 5 MB).`);
+          continue;
+        }
+        try {
+          const content = await extractServerSide(file);
+          pendingFiles.push({ name: file.name, content });
+        } catch (err) {
+          addMessage("system", `"${file.name}": ${err.message}`);
+        }
+        continue;
+      }
+
       if (file.size > MAX_FILE_SIZE) {
         addMessage("system", `"${file.name}" juda katta (maksimal 256 KB).`);
         continue;

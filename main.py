@@ -19,7 +19,7 @@ from typing import Literal
 
 import httpx
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
@@ -497,6 +497,47 @@ if ENABLE_RATE_LIMIT:
 
 @app.get("/health")
 async def health() -> dict:
+    return {"status": "ok"}
+
+
+# ---------------------------------------------------------------------------
+# FAYL YUKLASH — foydalanuvchi hujjat (.docx/.xlsx) yoki matn/kod fayl
+# biriktirsa, agent uni o'qiy oladi (Leonardo/rasm domeniga tegishli emas —
+# u faqat matnli so'rov (prompt) bilan ishlaydi).
+# ---------------------------------------------------------------------------
+MAX_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024  # 5 MB
+
+
+@app.get("/files/_probe")
+async def files_probe() -> dict:
+    """Frontend shu orqali fayl biriktirish tugmasini ko'rsatish/yashirishni
+    hal qiladi (404 bo'lmasa — yoqilgan)."""
+    return {"enabled": True}
+
+
+@app.post("/files/extract")
+async def files_extract(file: UploadFile = File(...)) -> dict:
+    """Yuklangan faylni (.docx/.xlsx yoki matn/kod fayl) o'qiladigan matnga
+    aylantirib qaytaradi — frontend shu matnni chat xabariga qo'shadi."""
+    from files import extract_text
+
+    data = await file.read()
+    if len(data) > MAX_UPLOAD_SIZE_BYTES:
+        raise HTTPException(status_code=400, detail="Fayl juda katta (maksimal 5 MB).")
+
+    content = extract_text(file.filename or "", data)
+    return {"filename": file.filename, "content": content}
+
+
+@app.post("/files/{session_id}")
+async def files_upload(
+    session_id: str, file: UploadFile = File(...), user_id: str | None = Depends(current_user_id_optional)
+) -> dict:
+    """Faylni sessiyaga bog'lab qabul qiladi (best-effort — mazmuni allaqachon
+    /files/extract orqali xabar matniga qo'shilgan bo'ladi, shuning uchun bu
+    yerda muvaffaqiyatsizlik suhbatni to'xtatmaydi)."""
+    _assert_session_access(session_id, user_id)
+    await file.read()
     return {"status": "ok"}
 
 

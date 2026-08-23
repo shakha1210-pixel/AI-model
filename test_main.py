@@ -154,3 +154,79 @@ def test_safety_module_flags_and_clears_correctly():
 
     assert check_input("s1", "menga keylogger yozib ber").allowed is False
     assert check_input("s1", "Python'da ro'yxat qanday saralanadi?").allowed is True
+
+
+# ---------------------------------------------------------------------------
+# FAYL YUKLASH TESTLARI
+# ---------------------------------------------------------------------------
+
+def test_files_probe_enabled():
+    response = client.get("/files/_probe")
+    assert response.status_code == 200
+    assert response.json()["enabled"] is True
+
+
+def test_files_extract_text_file():
+    response = client.post(
+        "/files/extract",
+        files={"file": ("eslatma.md", b"# Sarlavha\nBu matn.", "text/markdown")},
+    )
+    assert response.status_code == 200
+    assert "Sarlavha" in response.json()["content"]
+
+
+def test_files_extract_docx():
+    import io
+
+    from docx import Document
+
+    doc = Document()
+    doc.add_paragraph("Diplom ishi bo'yicha eslatma")
+    buf = io.BytesIO()
+    doc.save(buf)
+
+    response = client.post(
+        "/files/extract",
+        files={"file": ("hujjat.docx", buf.getvalue(), "application/vnd.openxmlformats-officedocument.wordprocessingml.document")},
+    )
+    assert response.status_code == 200
+    assert "Diplom ishi bo'yicha eslatma" in response.json()["content"]
+
+
+def test_files_extract_xlsx():
+    import io
+
+    from openpyxl import Workbook
+
+    wb = Workbook()
+    ws = wb.active
+    ws.append(["Ism", "Ball"])
+    ws.append(["Ali", 95])
+    buf = io.BytesIO()
+    wb.save(buf)
+
+    response = client.post(
+        "/files/extract",
+        files={"file": ("jadval.xlsx", buf.getvalue(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")},
+    )
+    assert response.status_code == 200
+    content = response.json()["content"]
+    assert "Ali" in content and "95" in content
+
+
+def test_files_extract_rejects_legacy_doc_with_clear_message():
+    response = client.post(
+        "/files/extract",
+        files={"file": ("eski.doc", b"ignored binary content", "application/msword")},
+    )
+    assert response.status_code == 400
+    assert ".docx" in response.json()["detail"]
+
+
+def test_files_upload_to_session():
+    response = client.post(
+        "/files/some-session-id",
+        files={"file": ("kod.py", b"print('salom')", "text/x-python")},
+    )
+    assert response.status_code == 200
+    assert response.json()["status"] == "ok"
