@@ -12,6 +12,7 @@ Ishga tushirish:
 Talab qilinadigan Python versiyasi: 3.10+
 """
 
+import asyncio
 import logging
 import os
 from typing import Literal
@@ -169,29 +170,64 @@ CODE_KEYWORDS = [
     "optimallashtir", "test yoz", "repository", "git", "regex", "docker",
 ]
 
+# Rasm generatsiya so'rovlari (Leonardo AI'ga yo'naltiriladi)
+IMAGE_KEYWORDS = [
+    "rasm chiz", "rasm yarat", "rasm generatsiya", "surat chiz", "surat yarat",
+    "logotip", "banner yarat", "illyustratsiya", "chizib ber", "poster yarat",
+    "ai rasm", "image generate", "draw a picture", "generate an image",
+]
 
-def classify_intent(message: str) -> Literal["code", "idea"]:
+# Qidiruv/hujjat tahlili so'rovlari (kuchliroq Gemini modeliga yo'naltiriladi)
+RESEARCH_KEYWORDS = [
+    "hujjatni tahlil", "hujjat tahlili", "maqolani tahlil", "referatni tahlil",
+    "qisqacha bayon qil", "xulosa chiqar", "tahlil qilib ber", "izlab top",
+    "qidirib ber", "manba top", "adabiyotlar sharhi", "tadqiqot qil",
+    "chuqur tahlil",
+]
+
+
+def classify_intent(message: str) -> Literal["code", "idea", "image", "research"]:
     """
-    Xabar matnida dasturlash bilan bog'liq kalit so'zlar bo'lsa "code",
-    aks holda "idea" (erkin suhbat/g'oya) deb hisoblaydi.
+    Xabar matnida qaysi domenga oid kalit so'zlar bo'lsa, shunga mos
+    natija qaytaradi: "image" (Leonardo), "research" (Gemini Pro),
+    "code" (Claude), aks holda "idea" (Gemini, standart suhbat).
 
     TODO (kelajakda yaxshilash mumkin): oddiy kalit-so'z qidirish o'rniga
     kichik LLM chaqiruvi yoki embedding-based klassifikatsiya ishlatish
     mumkin — hozirgi yechim tezkor va bepul.
     """
     text = message.lower()
-    return "code" if any(keyword in text for keyword in CODE_KEYWORDS) else "idea"
+    if any(keyword in text for keyword in IMAGE_KEYWORDS):
+        return "image"
+    if any(keyword in text for keyword in RESEARCH_KEYWORDS):
+        return "research"
+    if any(keyword in text for keyword in CODE_KEYWORDS):
+        return "code"
+    return "idea"
 
 
 # ---------------------------------------------------------------------------
 # AI MODELLARI BILAN ISHLASH
 # ---------------------------------------------------------------------------
+# Domenlar bir nechta ixtisoslashgan agentga bo'lingan (kod/rasm/qidiruv).
+# Har biri o'z sohasidan tashqari so'rov kelsa, uni bajarishga urinmay,
+# foydalanuvchiga qaysi bo'limga o'tish kerakligini taklif qiladi — bu
+# keyword-based klassifikatsiyadagi xatolarni ham yumshatadi (masalan
+# "auto" rejimida noto'g'ri agentga tushib qolgan so'rov).
+OFF_TOPIC_SUFFIX = (
+    " Agar foydalanuvchi so'rovi sizning ixtisoslik sohangizga umuman "
+    "aloqador bo'lmasa, uni bajarishga urinmang — buning o'rniga qisqa "
+    "qilib qaysi bo'lim (masalan 'Kod yozish', 'Rasm chizish', 'Qidiruv/ "
+    "hujjat tahlili' yoki 'G'oya/erkin suhbat') mos kelishini taklif qiling."
+)
+
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 CLAUDE_MODEL = os.getenv("CLAUDE_MODEL", "claude-sonnet-4-5-20250929")
 CLAUDE_SYSTEM_PROMPT = (
     "Siz tajribali dasturchi yordamchisisiz. Foydalanuvchiga aniq, ishlaydigan "
     "kod va tushunarli tushuntirish bilan javob bering. Javobingizni o'zbek "
     "tilida yozing, kod bloklarini uchta qiyshiq chiziq (```) bilan belgilang."
+    + OFF_TOPIC_SUFFIX
 )
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
@@ -201,6 +237,22 @@ GEMINI_SYSTEM_PROMPT = (
     "rejalar va umumiy savollar haqida erkin va tushunarli o'zbek tilida "
     "suhbatlashing."
 )
+
+# "Qidiruv/hujjat tahlili" domeni — kuchliroq Gemini modelidan foydalanadi
+# (yangi API kalit talab qilinmaydi, xuddi shu GEMINI_API_KEY ishlatiladi).
+GEMINI_RESEARCH_MODEL = os.getenv("GEMINI_RESEARCH_MODEL", "gemini-2.5-pro")
+GEMINI_RESEARCH_SYSTEM_PROMPT = (
+    "Siz chuqur tahlil va qidiruv bo'yicha ixtisoslashgan yordamchisiz. "
+    "Foydalanuvchi biriktirgan hujjat/matn yoki mavzuni sinchiklab tahlil "
+    "qiling, asosiy fikrlarni ajratib, tuzilgan va manbaga tayangan javob "
+    "bering. Javobingizni o'zbek tilida yozing." + OFF_TOPIC_SUFFIX
+)
+
+# --- Leonardo AI (rasm generatsiya) ---------------------------------------
+LEONARDO_API_KEY = os.getenv("LEONARDO_API_KEY", "")
+LEONARDO_MODEL_ID = os.getenv("LEONARDO_MODEL_ID", "b24e16ff-06e3-43eb-8d33-4416c2d75876")
+LEONARDO_POLL_INTERVAL_SECONDS = 2
+LEONARDO_POLL_MAX_ATTEMPTS = 30
 
 
 CLAUDE_DEEP_THINKING_SUFFIX = (
@@ -255,8 +307,16 @@ GEMINI_DEEP_THINKING_SUFFIX = (
 )
 
 
-async def call_gemini(message: str, history: list[dict], deep_thinking: bool = False) -> str:
-    """Gemini (Google) API'ga so'rov yuboradi — g'oya/erkin suhbat uchun."""
+async def call_gemini(
+    message: str,
+    history: list[dict],
+    deep_thinking: bool = False,
+    model: str | None = None,
+    system_prompt: str | None = None,
+) -> str:
+    """Gemini (Google) API'ga so'rov yuboradi — g'oya/erkin suhbat uchun
+    (yoki `model`/`system_prompt` berilsa, masalan qidiruv/hujjat tahlili
+    domeni uchun kuchliroq model bilan)."""
     if not GEMINI_API_KEY:
         raise HTTPException(
             status_code=500,
@@ -272,18 +332,19 @@ async def call_gemini(message: str, history: list[dict], deep_thinking: bool = F
     ]
     contents.append({"role": "user", "parts": [{"text": message}]})
 
-    system_prompt = GEMINI_SYSTEM_PROMPT + (GEMINI_DEEP_THINKING_SUFFIX if deep_thinking else "")
+    base_prompt = system_prompt or GEMINI_SYSTEM_PROMPT
+    full_system_prompt = base_prompt + (GEMINI_DEEP_THINKING_SUFFIX if deep_thinking else "")
 
     url = (
         f"https://generativelanguage.googleapis.com/v1beta/models/"
-        f"{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
+        f"{model or GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
     )
 
     async with httpx.AsyncClient(timeout=90.0 if deep_thinking else 60.0) as client:
         response = await client.post(
             url,
             json={
-                "system_instruction": {"parts": [{"text": system_prompt}]},
+                "system_instruction": {"parts": [{"text": full_system_prompt}]},
                 "contents": contents,
             },
         )
@@ -301,14 +362,67 @@ async def call_gemini(message: str, history: list[dict], deep_thinking: bool = F
         raise HTTPException(status_code=502, detail="Gemini javobini o'qib bo'lmadi.")
 
 
+async def call_leonardo(prompt: str) -> tuple[str, str]:
+    """Leonardo AI'ga rasm generatsiya so'rovi yuboradi va tayyor bo'lguncha
+    natijani so'raydi (poll qiladi). Qaytaradi: (matn javob, rasm URL'i)."""
+    if not LEONARDO_API_KEY:
+        raise HTTPException(
+            status_code=500,
+            detail="LEONARDO_API_KEY sozlanmagan. .env faylini to'ldiring.",
+        )
+
+    headers = {
+        "authorization": f"Bearer {LEONARDO_API_KEY}",
+        "content-type": "application/json",
+    }
+
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        create_response = await client.post(
+            "https://cloud.leonardo.ai/api/rest/v1/generations",
+            headers=headers,
+            json={"prompt": prompt, "modelId": LEONARDO_MODEL_ID, "num_images": 1},
+        )
+        if create_response.status_code not in (200, 201):
+            logger.error(
+                "Leonardo API xatosi (yaratish): %s %s",
+                create_response.status_code, create_response.text,
+            )
+            raise HTTPException(status_code=502, detail="Leonardo AI bilan bog'lanib bo'lmadi.")
+
+        generation_id = create_response.json()["sdGenerationJob"]["generationId"]
+
+        for _ in range(LEONARDO_POLL_MAX_ATTEMPTS):
+            await asyncio.sleep(LEONARDO_POLL_INTERVAL_SECONDS)
+            status_response = await client.get(
+                f"https://cloud.leonardo.ai/api/rest/v1/generations/{generation_id}",
+                headers=headers,
+            )
+            if status_response.status_code != 200:
+                continue
+            generation = status_response.json().get("generations_by_pk", {})
+            if generation.get("status") == "COMPLETE":
+                images = generation.get("generated_images", [])
+                if images:
+                    return "Mana so'ragan rasmingiz:", images[0]["url"]
+                break
+            if generation.get("status") == "FAILED":
+                break
+
+    raise HTTPException(status_code=502, detail="Rasm generatsiyasi vaqt chegarasidan oshdi.")
+
+
 # ---------------------------------------------------------------------------
 # FASTAPI ILOVASI VA ENDPOINTLAR
 # ---------------------------------------------------------------------------
 class ChatRequest(BaseModel):
     message: str = Field(..., min_length=1, description="Foydalanuvchi xabari")
     session_id: str | None = Field(None, description="Suhbat sessiyasi ID'si")
-    mode: Literal["auto", "code", "idea"] = Field(
-        "auto", description="Foydalanuvchi tanlagan model: avto/kod(claude)/g'oya(gemini)"
+    mode: Literal["auto", "code", "idea", "image", "research"] = Field(
+        "auto",
+        description=(
+            "Foydalanuvchi tanlagan domen: avto/kod(claude)/g'oya(gemini)/"
+            "rasm(leonardo)/qidiruv(gemini pro)"
+        ),
     )
     thinking: bool = Field(False, description="'Chuqur o'ylash' rejimi yoqilganmi")
 
@@ -316,7 +430,8 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     reply: str
     session_id: str
-    intent: Literal["code", "idea"]
+    intent: Literal["code", "idea", "image", "research"]
+    image_url: str | None = None
 
 
 app = FastAPI(title="Kod Yozish Agenti API")
@@ -406,10 +521,12 @@ async def chat(
     chat_history = list_messages(session_id)
 
     # Foydalanuvchi "avto" tanlasa avtomatik aniqlanadi, aks holda uning
-    # tanlovi (kod->Claude, g'oya->Gemini) to'g'ridan-to'g'ri ishlatiladi.
+    # tanlovi (kod->Claude, g'oya->Gemini, rasm->Leonardo,
+    # qidiruv->Gemini Pro) to'g'ridan-to'g'ri ishlatiladi.
     intent = classify_intent(payload.message) if payload.mode == "auto" else payload.mode
     save_message(session_id, "user", payload.message)
 
+    image_url: str | None = None
     if intent == "code":
         if ENABLE_TOOLS:
             from tools import call_claude_with_tools
@@ -417,6 +534,16 @@ async def chat(
             reply = await call_claude_with_tools(payload.message, chat_history, session_id=session_id)
         else:
             reply = await call_claude(payload.message, chat_history, deep_thinking=payload.thinking)
+    elif intent == "image":
+        reply, image_url = await call_leonardo(payload.message)
+    elif intent == "research":
+        reply = await call_gemini(
+            payload.message,
+            chat_history,
+            deep_thinking=payload.thinking,
+            model=GEMINI_RESEARCH_MODEL,
+            system_prompt=GEMINI_RESEARCH_SYSTEM_PROMPT,
+        )
     else:
         reply = await call_gemini(payload.message, chat_history, deep_thinking=payload.thinking)
 
@@ -425,10 +552,11 @@ async def chat(
     output_check = check_output(session_id, reply)
     if not output_check.allowed:
         reply = REFUSAL_MESSAGE
+        image_url = None
 
     save_message(session_id, "assistant", reply)
 
-    return ChatResponse(reply=reply, session_id=session_id, intent=intent)
+    return ChatResponse(reply=reply, session_id=session_id, intent=intent, image_url=image_url)
 
 
 def _assert_session_access(session_id: str, user_id: str | None) -> None:

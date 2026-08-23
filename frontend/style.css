@@ -27,10 +27,13 @@
   --accent-ink: #06201c;
   --accent-2: #a78bfa;
   --accent-2-soft: rgba(167, 139, 250, 0.14);
+  --accent-3: #fb923c;
+  --accent-3-soft: rgba(251, 146, 60, 0.14);
 
   --danger: #f87171;
   --danger-soft: rgba(248, 113, 113, 0.12);
   --success: #4ade80;
+  --success-soft: rgba(74, 222, 128, 0.12);
 
   --glass-bg: rgba(13, 16, 23, 0.6);
 
@@ -68,10 +71,13 @@
   --accent-ink: #ffffff;
   --accent-2: #6d5ce8;
   --accent-2-soft: rgba(109, 92, 232, 0.1);
+  --accent-3: #c2410c;
+  --accent-3-soft: rgba(194, 65, 12, 0.1);
 
   --danger: #dc2626;
   --danger-soft: rgba(220, 38, 38, 0.08);
   --success: #16a34a;
+  --success-soft: rgba(22, 163, 74, 0.08);
 
   --glass-bg: rgba(255, 255, 255, 0.68);
 
@@ -904,6 +910,16 @@ button {
 }
 .message__badge.is-code { background: var(--accent-soft); color: var(--accent-strong); text-shadow: var(--text-glow); }
 .message__badge.is-idea { background: var(--accent-2-soft); color: var(--accent-2); }
+.message__badge.is-image { background: var(--success-soft); color: var(--success); }
+.message__badge.is-research { background: var(--accent-3-soft); color: var(--accent-3); }
+
+.message__image {
+  display: block;
+  max-width: min(420px, 100%);
+  margin-top: 10px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
 
 /* --- Kiritish formasi --- */
 

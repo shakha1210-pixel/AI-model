@@ -13,8 +13,14 @@ bo'lgan barcha joylarni bir joyga jamlaydi.
     So'ng .env faylini ochib quyidagilarni kiriting:
     - ANTHROPIC_API_KEY   (https://console.anthropic.com/settings/keys dan oling)
     - GEMINI_API_KEY      (https://aistudio.google.com/app/apikey dan oling)
+    - LEONARDO_API_KEY    (https://app.leonardo.ai/api-access dan oling —
+      "Rasm chizish" domeni uchun kerak; qo'shilmaguncha faqat shu domen
+      ishlamaydi, qolgan domenlar (kod/g'oya/qidiruv) ta'sirlanmaydi)
     Ikkalasi ham odatda bepul sinov limiti bilan boshlanadi, lekin
     Anthropic uchun ro'yxatdan o'tish va to'lov kartasi kerak bo'lishi mumkin.
+    "Qidiruv/hujjat tahlili" domeni uchun ALOHIDA kalit kerak EMAS — xuddi
+    shu GEMINI_API_KEY bilan kuchliroq model (GEMINI_RESEARCH_MODEL,
+    standart: gemini-2.5-pro) ishlatiladi.
 
 [ ] Python 3.10+ o'rnatilganini tekshiring, so'ng terminalda:
       pip install -r requirements.txt

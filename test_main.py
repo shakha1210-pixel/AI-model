@@ -33,6 +33,14 @@ def test_classify_intent_idea():
     assert classify_intent("Yangi mobil ilova uchun g'oya kerak edi") == "idea"
 
 
+def test_classify_intent_image():
+    assert classify_intent("Menga chiroyli logotip rasm chizib bering") == "image"
+
+
+def test_classify_intent_research():
+    assert classify_intent("Bu hujjatni tahlil qilib xulosa chiqar") == "research"
+
+
 def test_chat_code_intent(monkeypatch):
     async def fake_call_claude(message, history, **kwargs):
         return "Mana tuzatilgan kod:\n```python\nprint('salom')\n```"
@@ -55,6 +63,34 @@ def test_chat_idea_intent(monkeypatch):
     response = client.post("/chat", json={"message": "Menda loyiha uchun g'oya bor"})
     assert response.status_code == 200
     assert response.json()["intent"] == "idea"
+
+
+def test_chat_image_intent(monkeypatch):
+    async def fake_call_leonardo(prompt):
+        return "Mana rasm:", "https://example.com/rasm.png"
+
+    monkeypatch.setattr(main, "call_leonardo", fake_call_leonardo)
+
+    response = client.post("/chat", json={"message": "Menga g'ayrioddiy logotip rasm chizib bering"})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["intent"] == "image"
+    assert data["image_url"] == "https://example.com/rasm.png"
+
+
+def test_chat_research_intent(monkeypatch):
+    captured = {}
+
+    async def fake_call_gemini(message, history, **kwargs):
+        captured.update(kwargs)
+        return "Tahlil natijasi."
+
+    monkeypatch.setattr(main, "call_gemini", fake_call_gemini)
+
+    response = client.post("/chat", json={"message": "Ushbu hujjatni tahlil qilib xulosa chiqar"})
+    assert response.status_code == 200
+    assert response.json()["intent"] == "research"
+    assert captured["model"] == main.GEMINI_RESEARCH_MODEL
 
 
 # ---------------------------------------------------------------------------

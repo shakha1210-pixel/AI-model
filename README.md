@@ -10,7 +10,7 @@ source venv/bin/activate   # Windows: venv\Scripts\activate
 Kutubxonalarni o'rnating:
 pip install -r requirements.txt
 
-.env.example faylidan nusxa olib .env nomli fayl yarating, so'ng uni ochib ANTHROPIC_API_KEY, GEMINI_API_KEY, Leonardo_API_Key qiymatlarini kiriting:
+.env.example faylidan nusxa olib .env nomli fayl yarating, so'ng uni ochib ANTHROPIC_API_KEY, GEMINI_API_KEY, LEONARDO_API_KEY qiymatlarini kiriting:
 cp .env.example .env
 
 Serverni ishga tushiring:

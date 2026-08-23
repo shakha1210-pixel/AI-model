@@ -47,6 +47,21 @@ function setSessionId(sessionId) {
   loadSessions();
 }
 
+async function loadHistory() {
+  const sessionId = getSessionId();
+  if (!sessionId) return;
+  try {
+    const res = await fetch(`/history/${encodeURIComponent(sessionId)}`, { headers: authHeaders() });
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    for (const m of data.messages || []) {
+      addMessage(m.role, m.content);
+    }
+  } catch {
+    /* sessiya topilmasa yoki server bilan bog'lanib bo'lmasa, bo'sh chat bilan davom etamiz */
+  }
+}
+
 async function loadSessions() {
   if (!sessionListEl) return;
   try {
@@ -110,7 +125,13 @@ function renderSessions(sessions) {
    Model picker (input ichida) + "Chuqur o'ylash" rejimi
    --------------------------------------------------------------------- */
 
-const MODE_LABELS = { auto: "avto", code: "claude", idea: "gemini" };
+const MODE_LABELS = {
+  auto: "avto",
+  code: "claude",
+  idea: "gemini",
+  image: "leonardo",
+  research: "gemini pro",
+};
 let currentMode = localStorage.getItem("chat_mode") || "auto";
 
 function applyModeUI() {
@@ -546,14 +567,21 @@ function runJsSandboxed(code, outputEl) {
   }, 3000);
 }
 
-function addMessage(role, text, intent) {
+const INTENT_BADGE_LABELS = {
+  code: "● claude — kod",
+  idea: "● gemini — g'oya",
+  image: "● leonardo — rasm",
+  research: "● gemini pro — qidiruv",
+};
+
+function addMessage(role, text, intent, imageUrl) {
   const bubble = document.createElement("div");
   bubble.className = `message message--${role}`;
 
   if (role === "assistant" && intent) {
     const badge = document.createElement("span");
     badge.className = `message__badge is-${intent}`;
-    badge.textContent = intent === "code" ? "● claude — kod" : "● gemini — g'oya";
+    badge.textContent = INTENT_BADGE_LABELS[intent] || `● ${intent}`;
     bubble.appendChild(badge);
     bubble.appendChild(document.createElement("br"));
     bubble.dataset.intent = intent;
@@ -563,6 +591,14 @@ function addMessage(role, text, intent) {
   contentEl.className = "message__content";
   renderMessageContent(contentEl, text);
   bubble.appendChild(contentEl);
+
+  if (imageUrl) {
+    const img = document.createElement("img");
+    img.src = imageUrl;
+    img.alt = "Leonardo AI tomonidan generatsiya qilingan rasm";
+    img.className = "message__image";
+    bubble.appendChild(img);
+  }
 
   messagesEl.appendChild(bubble);
   messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -623,7 +659,7 @@ async function sendMessage(rawMessage) {
     setSessionId(data.session_id);
     uploadFiles(data.session_id, filesToSend);
     removeTypingIndicator();
-    addMessage("assistant", data.reply, data.intent);
+    addMessage("assistant", data.reply, data.intent, data.image_url);
     refreshRateLimit();
 
     if (window.speakText && localStorage.getItem("voice_enabled") === "true") {
@@ -664,6 +700,7 @@ inputEl.addEventListener("input", () => {
 });
 
 // Ishga tushirish
+loadHistory();
 loadSessions();
 refreshRateLimit();
 probeFilesEnabled();
