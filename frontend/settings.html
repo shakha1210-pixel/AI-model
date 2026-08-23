@@ -87,31 +87,11 @@
         </section>
 
         <p class="auth-note">
-          Aksent rang endi standart (klassik teal) bilan cheklangan — ortiqcha
-          rang variantlari olib tashlandi, shunda interfeys va orqa fondagi
-          orqa fondagi albom surati bilan birga yanada muvozanatli ko'rinadi. Ushbu
-          bo'limdagi barcha tanlovlar to'liq ishlaydi va darhol saqlanadi.
+          Aksent rang standart (klassik teal) bilan cheklangan — ortiqcha rang
+          variantlari olib tashlandi, shunda interfeys sodda va neytral
+          ko'rinadi. Ushbu bo'limdagi barcha tanlovlar to'liq ishlaydi va
+          darhol saqlanadi.
         </p>
-
-        <section class="settings-group">
-          <p class="section-label mono">// orqa fon albomi</p>
-          <div class="settings-row" style="flex-direction: column; align-items: stretch; gap: 12px;">
-            <div class="settings-row__text">
-              <span class="settings-row__title">Surat tanlanish rejimi</span>
-              <span class="settings-row__desc">Orqa fondagi surat qanday tanlanishini belgilaydi</span>
-            </div>
-            <div class="bgmode-row" id="bgmode-row">
-              <button type="button" class="bgmode-pill" data-bgmode="random">
-                <span class="bgmode-pill__title">Tasodifiy</span>
-                <span class="bgmode-pill__desc">Har sessiyada boshqa surat</span>
-              </button>
-              <button type="button" class="bgmode-pill" data-bgmode="sequential">
-                <span class="bgmode-pill__title">Ketma-ket</span>
-                <span class="bgmode-pill__desc">Albom tartibida navbat bilan</span>
-              </button>
-            </div>
-          </div>
-        </section>
       </section>
 
       <section class="settings-panel" data-settings-panel="suhbat" hidden>
@@ -211,36 +191,6 @@
     languageSelect.addEventListener("change", () => {
       localStorage.setItem("language", languageSelect.value);
     });
-
-    // --- Orqa fon albomi: rejim tanlovi (tasodifiy / ketma-ket) ---
-    (function () {
-      const modeRow = document.getElementById("bgmode-row");
-
-      function currentMode() {
-        const m = localStorage.getItem("bg_mode") || "random";
-        return m === "choice" ? "random" : m; // eski "choice" tanlovi qolgan bo'lsa ham fallback
-      }
-
-      function refreshModeUI() {
-        const mode = currentMode();
-        modeRow.querySelectorAll("[data-bgmode]").forEach((btn) => {
-          btn.classList.toggle("is-active", btn.dataset.bgmode === mode);
-        });
-      }
-
-      modeRow.querySelectorAll("[data-bgmode]").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const mode = btn.dataset.bgmode;
-          localStorage.setItem("bg_mode", mode);
-          refreshModeUI();
-          sessionStorage.removeItem("bg_random_idx");
-          sessionStorage.removeItem("bg_seq_consumed");
-          location.reload();
-        });
-      });
-
-      refreshModeUI();
-    })();
   </script>
 </body>
 </html>

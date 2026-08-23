@@ -452,9 +452,9 @@ if ALLOWED_ORIGINS == ["*"]:
         "o'z domeningiz bilan cheklang."
     )
 
-# GZip: orqa fon ASCII albomi (assets/album-data.json, ~516 KB) va boshqa
-# statik fayllarni siqib yuboradi (odatda ~8x kichrayadi). minimum_size —
-# shundan kichik javoblarni siqishga urinmaydi (foyda bermaydi).
+# GZip: statik fayllar (CSS/JS/HTML) va API javoblarini siqib yuboradi
+# (odatda ~8x kichrayadi). minimum_size — shundan kichik javoblarni
+# siqishga urinmaydi (foyda bermaydi).
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 app.add_middleware(

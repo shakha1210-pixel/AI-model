@@ -160,59 +160,35 @@ button {
   align-items: center;
   justify-content: center;
 }
-.ascii-bg__img {
-  --offset-x: 0px;
-  --offset-y: 0px;
+.ascii-bg__glow {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 22%;
-  transform: translate(var(--offset-x), var(--offset-y)) scale(1.03);
-  transform-origin: center;
-  /* Haqiqiy fotosurat — old plandan ajratish uchun monoxrom + past shaffoflik
-     + yengil blur. Kuchliroq yumshoqlik glass panellardagi backdrop-filter
-     orqali qo'shiladi (.sidebar/.topbar/.chat/.auth-card). */
-  filter: grayscale(1) brightness(0.55) contrast(1.05) blur(1.5px);
+  inset: -10%;
+  background: radial-gradient(ellipse 60% 45% at 50% 20%, var(--accent-soft) 0%, transparent 70%);
+  opacity: 0.6;
+  transition: opacity 1.3s ease, filter 1.3s ease;
+  animation: ascii-bg-drift 14s ease-in-out infinite;
+  will-change: opacity, filter;
+}
+/* Agent javob yozayotganda (typing indikatori faol): glow kuchayadi. */
+.ascii-bg.is-active .ascii-bg__glow {
+  opacity: 1;
+  filter: brightness(1.15);
+}
+@keyframes ascii-bg-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(1.5%, 1%) scale(1.04); }
+}
+:root[data-theme="light"] .ascii-bg__glow {
   opacity: 0.5;
-  transition: filter 1.3s ease, opacity 1.3s ease, transform 1.6s cubic-bezier(.2, .7, .2, 1);
-  will-change: filter, opacity, transform;
 }
-/* Agent javob yozayotganda (typing indikatori faol): parda old planga
-   yaqinlashgandek — blur pasayadi, yorug'lik va teal glow kuchayadi.
-   Zumlash juda nozik (1.0 -> 1.015) — sezilarli, lekin haddan tashqari
-   kattalashib ketmasin deb atayin kichik tutilgan. */
-.ascii-bg.is-active .ascii-bg__img {
-  filter: grayscale(0.85) brightness(0.75) contrast(1.1) blur(0.6px)
-    drop-shadow(0 0 22px rgba(94, 234, 212, 0.28));
-  opacity: 0.72;
-  transform: translate(var(--offset-x), var(--offset-y)) scale(1.045);
+:root[data-theme="light"] .ascii-bg.is-active .ascii-bg__glow {
+  opacity: 0.8;
 }
-.ascii-bg::after {
-  /* chekkalarni sahifa foniga yumshoq eritib yuboradi */
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at 50% 25%, transparent 0%, var(--bg) 96%);
-  z-index: 1;
-}
-:root[data-theme="light"] .ascii-bg__img {
-  filter: grayscale(1) brightness(1.5) contrast(0.95) blur(1.5px);
-  opacity: 0.22;
-}
-:root[data-theme="light"] .ascii-bg.is-active .ascii-bg__img {
-  filter: grayscale(0.85) brightness(1.35) contrast(1) blur(0.6px)
-    drop-shadow(0 0 18px rgba(45, 212, 191, 0.25));
-  opacity: 0.34;
+.ascii-bg.is-static .ascii-bg__glow {
+  animation: none;
 }
 @media (prefers-reduced-motion: reduce) {
-  .ascii-bg__img { transition: none; }
-}
-/* Telefonda old plan matni o'qilishi uchun fon biroz xiraroq turadi */
-@media (max-width: 767px) {
-  .ascii-bg__img { opacity: 0.36; }
-  .ascii-bg.is-active .ascii-bg__img { opacity: 0.55; }
+  .ascii-bg__glow { animation: none; transition: none; }
 }
 
 /* =========================================================================
@@ -1397,37 +1373,6 @@ button {
 
 @media (max-width: 480px) {
   .font-row { grid-template-columns: 1fr; }
-}
-
-/* --- Orqa fon albomi: rejim tanlovi (settings.html) --- */
-.bgmode-row {
-  display: flex;
-  gap: 8px;
-}
-.bgmode-pill {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  align-items: flex-start;
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: var(--surface-2);
-  color: var(--text-muted);
-  text-align: left;
-  transition: all 0.15s ease;
-}
-.bgmode-pill__title { font-size: 12.5px; font-weight: 600; }
-.bgmode-pill__desc { font-size: 11px; color: var(--text-faint); }
-.bgmode-pill.is-active {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-  color: var(--accent-strong);
-}
-.bgmode-pill.is-active .bgmode-pill__desc { color: var(--accent-strong); opacity: 0.75; }
-@media (max-width: 480px) {
-  .bgmode-row { flex-direction: column; }
 }
 
 /* =========================================================================
