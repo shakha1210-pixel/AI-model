@@ -1,0 +1,15 @@
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+httpx>=0.27.0
+pydantic[email]>=2.9.0
+python-dotenv>=1.0.1
+sqlalchemy>=2.0.35
+passlib[bcrypt]>=1.7.4
+# DIQQAT: bcrypt<4.1 bilan mahkamlangan — passlib 1.7.4 yangi bcrypt (4.1+)
+# bilan mos kelmaydi ("password cannot be longer than 72 bytes" xatosi
+# beradi, chegarasiz o'rnatilsa). Bu chegara olib tashlanmasin.
+bcrypt<4.1
+python-jose[cryptography]>=3.3.0
+python-multipart>=0.0.12
+pytest>=8.3.0
+pytest-asyncio>=0.24.0

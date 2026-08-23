@@ -1,0 +1,28 @@
+# Muhit va maxfiy fayllar
+.env
+*.env.local
+
+# Python
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+*.egg-info/
+
+# Ma'lumotlar bazasi
+*.db
+*.sqlite3
+
+# Node (agar frontend kelajakda React/Vue'ga o'tsa)
+node_modules/
+
+# IDE va OS
+.vscode/
+.idea/
+.DS_Store
+
+# Build/dist
+dist/
+build/

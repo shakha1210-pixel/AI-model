@@ -1,0 +1,36 @@
+name: Test va Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Kutubxonalarni o'rnatish
+        run: pip install -r requirements.txt
+      - name: Testlarni ishga tushirish
+        run: pytest -v
+
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # TODO: hosting xizmatingizga (Render / Railway / Vercel) mos deploy
+      # qadamini shu yerga qo'shing. Masalan Render "Deploy Hook" uchun:
+      #
+      #   - name: Renderga deploy qilish
+      #     run: curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
+      #
+      # Railway/Vercel uchun ularning rasmiy GitHub Action'idan foydalaning.
+      - name: Deploy qadami hali sozlanmagan
+        run: echo "TODO: hosting tanlab, deploy buyrug'ini shu yerga yozing"

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tarix — Kod Yozish Agenti</title>
+  <script>
+    (function () {
+      var t = localStorage.getItem("theme");
+      if (!t) t = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", t);
+      document.documentElement.setAttribute("data-accent", localStorage.getItem("accent") || "teal");
+      document.documentElement.setAttribute("data-font", localStorage.getItem("font") || "sans");
+    })();
+  </script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  
+
+  <div class="page">
+    <header class="page-header">
+      <a class="brand" href="index.html">
+        <span class="brand__prompt">&gt;</span> kod-agenti
+        <span class="brand__caret"></span>
+      </a>
+      <nav class="page-nav">
+        <a href="index.html">Suhbat</a>
+        <a href="history.html" class="is-active">Tarix</a>
+        <a href="settings.html">Sozlamalar</a>
+      </nav>
+    </header>
+
+    <main class="page-body">
+      <div>
+        <p class="section-label mono">// sessiya tarixi</p>
+        <p style="color: var(--text-muted); font-size: 13.5px; margin: 6px 0 0;">
+          Sessiya ID orqali suhbat tarixini ko'rib chiqing. Joriy brauzeringizdagi oxirgi sessiya
+          avtomatik yuklanadi.
+        </p>
+      </div>
+
+      <div class="history-toolbar">
+        <input type="text" id="session-input" class="mono" placeholder="sessiya-id kiriting..." />
+        <button type="button" class="btn btn--primary" id="load-btn">Yuklash</button>
+      </div>
+
+      <div id="history-list" class="history-list"></div>
+    </main>
+  </div>
+
+  <script src="ascii-bg.js"></script>
+  <script src="theme.js"></script>
+  <script>
+    const listEl = document.getElementById("history-list");
+    const inputEl = document.getElementById("session-input");
+    const loadBtn = document.getElementById("load-btn");
+
+    function renderEmpty(text, hint) {
+      listEl.innerHTML = "";
+      const div = document.createElement("div");
+      div.className = "history-empty";
+      div.innerHTML = `<strong>${text}</strong>${hint || ""}`;
+      listEl.appendChild(div);
+    }
+
+    function renderMessages(messages) {
+      listEl.innerHTML = "";
+      if (!messages || messages.length === 0) {
+        renderEmpty("Bu sessiyada hali xabar yo'q", "Suhbat sahifasidan yangi xabar yuboring.");
+        return;
+      }
+      for (const msg of messages) {
+        const entry = document.createElement("div");
+        entry.className = `history-entry ${msg.role === "assistant" ? "is-assistant" : ""}`;
+        const roleLabel = document.createElement("span");
+        roleLabel.className = "history-entry__role mono";
+        roleLabel.textContent = msg.role === "assistant" ? "agent" : "siz";
+        const text = document.createElement("div");
+        text.className = "history-entry__text";
+        text.textContent = msg.content;
+        entry.appendChild(roleLabel);
+        entry.appendChild(text);
+        listEl.appendChild(entry);
+      }
+    }
+
+    async function loadSession(sessionId) {
+      if (!sessionId) {
+        renderEmpty("Hali faol sessiya topilmadi", "Avval Suhbat sahifasida xabar yuboring yoki sessiya ID'ni qo'lda kiriting.");
+        return;
+      }
+      renderEmpty("Yuklanmoqda...");
+      try {
+        const response = await fetch(`/history/${encodeURIComponent(sessionId)}`);
+        if (!response.ok) throw new Error("Sessiya topilmadi yoki server bilan bog'lanib bo'lmadi.");
+        const data = await response.json();
+        renderMessages(data.messages);
+      } catch (error) {
+        renderEmpty("Tarixni yuklab bo'lmadi", error.message ? `<br>${error.message}` : "");
+      }
+    }
+
+    loadBtn.addEventListener("click", () => loadSession(inputEl.value.trim()));
+    inputEl.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") loadSession(inputEl.value.trim());
+    });
+
+    const storedSession = localStorage.getItem("session_id");
+    if (storedSession) {
+      inputEl.value = storedSession;
+      loadSession(storedSession);
+    } else {
+      renderEmpty("Hali faol sessiya topilmadi", "Avval Suhbat sahifasida xabar yuboring yoki sessiya ID'ni qo'lda kiriting.");
+    }
+  </script>
+</body>
+</html>

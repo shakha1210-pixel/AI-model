@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kod Yozish Agenti</title>
+  <script>
+    // Flash oldini olish uchun temani chizishdan oldin o'rnatamiz
+    (function () {
+      var t = localStorage.getItem("theme");
+      if (!t) t = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", t);
+      document.documentElement.setAttribute("data-accent", localStorage.getItem("accent") || "teal");
+      document.documentElement.setAttribute("data-font", localStorage.getItem("font") || "sans");
+    })();
+  </script>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/base16/tomorrow-night.min.css" id="hljs-theme" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+</head>
+<body>
+  
+
+  <div class="sidebar-scrim" id="sidebar-scrim"></div>
+
+  <div class="shell" id="shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar__top">
+        <div class="sidebar__brand">
+          <span class="brand">
+            <span class="brand__prompt">&gt;</span> <span>kod-agenti</span>
+            <span class="brand__caret"></span>
+          </span>
+        </div>
+        <button type="button" class="sidebar__collapse-btn" id="collapse-btn" title="Yon panelni yig'ish" aria-label="Yon panelni yig'ish">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
+        </button>
+      </div>
+
+      <button type="button" class="sidebar__new" id="new-chat-btn">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        <span>Yangi suhbat</span>
+      </button>
+
+      <div class="sidebar__sessions-wrap">
+        <p class="section-label mono" style="margin: 0 0 8px 4px;">// suhbatlar</p>
+        <div class="sidebar__sessions" id="session-list">
+          <p class="sidebar__sessions-empty mono">yuklanmoqda...</p>
+        </div>
+      </div>
+
+      <nav class="sidebar__nav">
+        <a class="sidebar__link is-active" href="index.html" title="Suhbat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span>Suhbat</span>
+        </a>
+        <a class="sidebar__link" href="settings.html" title="Sozlamalar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>Sozlamalar</span>
+        </a>
+      </nav>
+
+      <div class="sidebar__footer">
+        <button type="button" class="account-btn" id="account-btn">
+          <span class="account-btn__avatar">?</span>
+          <span class="account-btn__text">
+            <span class="account-btn__name" id="account-name">Mehmon</span>
+            <span class="account-btn__hint" id="session-tag">sessiya: yangi</span>
+          </span>
+        </button>
+        <div class="account-popover" id="account-popover">
+          <a href="login.html">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg>
+            Kirish / hisob almashtirish
+          </a>
+          <a href="settings.html">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82"/></svg>
+            Sozlamalar va ko'rinish
+          </a>
+          <hr />
+          <button type="button" id="logout-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+            Chiqish
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <button type="button" class="icon-btn" id="sidebar-toggle" title="Menyu" aria-label="Menyu" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <span></span>
+        <div class="topbar-actions">
+          <span id="rate-limit-badge" class="rate-limit-badge mono" hidden></span>
+        </div>
+      </div>
+
+      <div class="chat">
+        <div id="messages" class="messages" aria-live="polite"></div>
+
+        <div id="attached-files" class="attached-files" hidden></div>
+
+        <form id="chat-form" class="chat-form">
+          <input type="file" id="file-input" hidden multiple />
+          <button type="button" id="attach-button" class="mic-button" title="Fayl biriktirish" aria-label="Fayl biriktirish" hidden>
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+          </button>
+          <button type="button" id="mic-button" class="mic-button" title="Ovozli xabar" hidden aria-label="Ovozli xabar yuborish">
+            <svg class="mic-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+              <line x1="12" y1="19" x2="12" y2="23"></line>
+              <line x1="8" y1="23" x2="16" y2="23"></line>
+            </svg>
+            <span class="mic-waves" aria-hidden="true">
+              <span></span><span></span><span></span><span></span><span></span>
+            </span>
+          </button>
+          <textarea
+            id="message-input"
+            placeholder="Savolingizni yozing... (kod yoki g'oya haqida)"
+            rows="1"
+            required
+          ></textarea>
+
+          <div class="model-picker">
+            <button type="button" id="model-button" class="model-picker__btn">
+              <span id="model-button-label">avto</span>
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div id="model-popover" class="model-popover" hidden>
+              <button type="button" class="model-popover__option" data-mode="auto">
+                <span class="model-popover__title">Avto</span>
+                <span class="model-popover__desc">Mavzuga qarab o'zi tanlaydi</span>
+              </button>
+              <button type="button" class="model-popover__option" data-mode="code">
+                <span class="model-popover__title">Kod &rarr; Claude</span>
+                <span class="model-popover__desc">Kod yozish, debug qilish</span>
+              </button>
+              <button type="button" class="model-popover__option" data-mode="idea">
+                <span class="model-popover__title">G'oya &rarr; Gemini</span>
+                <span class="model-popover__desc">Erkin suhbat, tushuntirish</span>
+              </button>
+              <hr />
+              <label class="model-popover__toggle">
+                <span>
+                  <span class="model-popover__title">Chuqur o'ylash</span>
+                  <span class="model-popover__desc">Murakkab masalalar uchun ko'proq vaqt sarflaydi</span>
+                </span>
+                <span class="switch">
+                  <input type="checkbox" id="thinking-toggle" />
+                  <span class="switch__track"></span>
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <button type="submit" id="send-button">&gt; Yuborish</button>
+        </form>
+        <p id="status" class="status mono" role="status"></p>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Kirish talabi: token (yoki "mehmon sifatida davom etish" belgisi) yo'q
+    // bo'lsa, avval login.htmlga yo'naltiramiz. ENABLE_AUTH=false bo'lsa ham
+    // frontendda shu oqim ishlaydi — login.html'dagi "Mehmon sifatida davom
+    // etish" havolasi orqali auth backend yoqilmagan holatda ham sinash mumkin.
+    (function () {
+      const hasToken = !!localStorage.getItem("access_token");
+      const isGuest = localStorage.getItem("guest_mode") === "true";
+      if (!hasToken && !isGuest) {
+        window.location.href = "login.html";
+      }
+    })();
+  </script>
+  <script src="ascii-bg.js"></script>
+  <script src="theme.js"></script>
+  <script src="voice.js"></script>
+  <script src="chat.js"></script>
+  <script>
+    (function () {
+      const sidebar = document.getElementById("sidebar");
+      const shell = document.getElementById("shell");
+      const scrim = document.getElementById("sidebar-scrim");
+      const mobileToggle = document.getElementById("sidebar-toggle");
+      const collapseBtn = document.getElementById("collapse-btn");
+      const mq = window.matchMedia("(max-width: 860px)");
+
+      // Mobil: sidebar ochish/yopish (overlay)
+      function syncToggleVisibility() {
+        mobileToggle.hidden = !mq.matches;
+      }
+      mq.addEventListener("change", syncToggleVisibility);
+      syncToggleVisibility();
+
+      function closeMobileSidebar() {
+        sidebar.classList.remove("is-open");
+        scrim.classList.remove("is-open");
+      }
+      mobileToggle.addEventListener("click", () => {
+        sidebar.classList.toggle("is-open");
+        scrim.classList.toggle("is-open");
+      });
+      scrim.addEventListener("click", closeMobileSidebar);
+
+      // Desktop: yig'ish/yoyish (collapse/expand), holati saqlanadi
+      if (localStorage.getItem("sidebar_collapsed") === "true") {
+        shell.classList.add("is-collapsed");
+      }
+      collapseBtn.addEventListener("click", () => {
+        const collapsed = shell.classList.toggle("is-collapsed");
+        localStorage.setItem("sidebar_collapsed", collapsed ? "true" : "false");
+      });
+
+      // Joriy sessiya belgisini ko'rsatish
+      const tag = document.getElementById("session-tag");
+      const sid = localStorage.getItem("session_id");
+      if (sid) tag.textContent = "sessiya: " + sid.slice(0, 8);
+
+      // Hisob: agar oldin kirilgan bo'lsa ismi/emaili ko'rsatiladi
+      const userName = localStorage.getItem("user_name");
+      const userEmail = localStorage.getItem("user_email");
+      if (userName || userEmail) {
+        document.getElementById("account-name").textContent = userName || userEmail;
+        document.querySelector(".account-btn__avatar").textContent = (userName || userEmail)[0].toUpperCase();
+      }
+
+      document.getElementById("logout-btn").addEventListener("click", () => {
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("user_name");
+        localStorage.removeItem("user_email");
+        localStorage.removeItem("guest_mode");
+        window.location.href = "login.html";
+      });
+
+      document.getElementById("new-chat-btn").addEventListener("click", () => {
+        localStorage.removeItem("session_id");
+        window.location.reload();
+      });
+    })();
+  </script>
+</body>
+</html>

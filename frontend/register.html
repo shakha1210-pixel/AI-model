@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ro'yxatdan o'tish — Kod Yozish Agenti</title>
+  <script>
+    (function () {
+      var t = localStorage.getItem("theme");
+      if (!t) t = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", t);
+      document.documentElement.setAttribute("data-accent", localStorage.getItem("accent") || "teal");
+      document.documentElement.setAttribute("data-font", localStorage.getItem("font") || "sans");
+    })();
+  </script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  
+
+  <div class="auth-topbar">
+    <a class="brand" href="index.html">
+      <span class="brand__prompt">&gt;</span> kod-agenti
+      <span class="brand__caret"></span>
+    </a>
+  </div>
+
+  <div class="auth-page">
+    <form id="register-form" class="auth-card">
+      <p class="auth-card__eyebrow mono">// yangi hisob</p>
+      <h1>Ro'yxatdan o'tish</h1>
+      <p class="auth-note">
+        Eslatma: bu forma faqat backend'da ENABLE_AUTH=true va
+        ENABLE_DATABASE=true qilinganda ishlaydi (main.py va .env fayliga
+        qarang).
+      </p>
+      <label>
+        Ism
+        <input type="text" id="ism" placeholder="Ismingiz" required />
+      </label>
+      <label>
+        Email
+        <input type="email" id="email" placeholder="siz@misol.uz" required />
+      </label>
+      <label>
+        Parol
+        <input type="password" id="password" placeholder="kamida 6 belgi" required minlength="6" />
+      </label>
+      <button type="submit" class="btn btn--primary btn--block">Ro'yxatdan o'tish</button>
+      <p class="auth-switch">Hisobingiz bormi? <a href="login.html">Kiring</a></p>
+      <p id="auth-error" class="auth-error"></p>
+    </form>
+  </div>
+
+  <script src="ascii-bg.js"></script>
+  <script src="theme.js"></script>
+  <script>
+    document.getElementById("register-form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const ism = document.getElementById("ism").value;
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const errorEl = document.getElementById("auth-error");
+      errorEl.textContent = "";
+
+      try {
+        const response = await fetch("/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ism, email, password }),
+        });
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
+          throw new Error(data.detail || "Ro'yxatdan o'tishda xatolik yuz berdi");
+        }
+        const data = await response.json();
+        localStorage.setItem("access_token", data.access_token);
+        localStorage.setItem("user_name", ism);
+        localStorage.setItem("user_email", email);
+        localStorage.removeItem("guest_mode");
+        window.location.href = "index.html";
+      } catch (error) {
+        errorEl.textContent = error.message;
+      }
+    });
+  </script>
+</body>
+</html>

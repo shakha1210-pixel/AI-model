@@ -1,0 +1,125 @@
+KOD YOZISH AGENTI — TO'LDIRILISHI KERAK BO'LGAN NARSALAR RO'YXATI
+===================================================================
+Ushbu fayl loyihada SIZ shaxsan to'ldirishingiz yoki hal qilishingiz kerak
+bo'lgan barcha joylarni bir joyga jamlaydi.
+
+
+1) DARHOL KERAK — DASTURNI ISHGA TUSHIRISH UCHUN
+-------------------------------------------------
+[ ] agent-project/.env.example faylidan nusxa olib, xuddi shu papkada
+    ".env" nomli yangi fayl yarating (xavfsizlik uchun bu fayl avtomatik
+    yaratilmaydi — o'zingiz nusxalashingiz kerak):
+      cp .env.example .env
+    So'ng .env faylini ochib quyidagilarni kiriting:
+    - ANTHROPIC_API_KEY   (https://console.anthropic.com/settings/keys dan oling)
+    - GEMINI_API_KEY      (https://aistudio.google.com/app/apikey dan oling)
+    Ikkalasi ham odatda bepul sinov limiti bilan boshlanadi, lekin
+    Anthropic uchun ro'yxatdan o'tish va to'lov kartasi kerak bo'lishi mumkin.
+
+[ ] Python 3.10+ o'rnatilganini tekshiring, so'ng terminalda:
+      pip install -r requirements.txt
+      uvicorn main:app --reload
+    va brauzerda http://localhost:8000 oching.
+
+
+2) TEZDA KERAK BO'LADI — 1-HAFTA OXIRIGACHA
+--------------------------------------------
+[ ] Domen sotib oling (masalan Namecheap, GoDaddy yoki Domain.uz kabi
+    xizmatlardan) — bu tayyor FAYL emas, xizmat, shuning uchun loyihada
+    tayyor fayl yo'q, o'zingiz sotib olishingiz kerak.
+
+[ ] Hosting tanlang (Render / Railway / Vercel'dan biri) va akkount
+    oching. Tanlagan xizmatingizga qarab:
+      - Muhit o'zgaruvchilarini (.env dagi barcha qiymatlarni) hosting
+        panelida qo'lda kiriting.
+      - agent-project/.github/workflows/deploy.yml faylidagi "TODO"
+        qismini o'sha xizmatning deploy buyrug'i/hook'i bilan to'ldiring.
+
+
+3) KEYINGI BOSQICHLARDA KERAK — main.py DAGI BAYROQLAR
+--------------------------------------------------------
+Quyidagi funksiyalar allaqachon YOZILGAN va ISHLAYDI, lekin standart
+holatda O'CHIRILGAN (.env faylida "false" qilib qo'yilgan). Har birini
+qachon yoqishni o'zingiz hal qilasiz:
+
+[ ] ENABLE_DATABASE=true — suhbatlarni doimiy saqlash (database.py).
+    Standart: DATABASE_URL=sqlite:///./app.db (hech narsa o'rnatish shart
+    emas). Productionga chiqqanda PostgreSQL'ga o'tkazishni tavsiya
+    qilamiz — DATABASE_URL'ni shunga mos yozing.
+
+[ ] ENABLE_AUTH=true — ro'yxatdan o'tish/kirish tizimi (auth.py,
+    login.html, register.html). ENABLE_DATABASE ham true bo'lishi shart.
+    JWT_SECRET qiymatini albatta o'zgartiring (tasodifiy uzun matn,
+    masalan terminalda: openssl rand -hex 32).
+
+[ ] ENABLE_RATE_LIMIT=true — bir foydalanuvchidan daqiqasiga nechta
+    so'rov qabul qilinishini cheklaydi (rate_limiter.py). Standart: 60
+    soniyada 20 ta so'rov — RATE_LIMIT_MAX_REQUESTS va
+    RATE_LIMIT_WINDOW_SECONDS orqali o'zgartirishingiz mumkin.
+
+[ ] ENABLE_TOOLS=true — Claude'ga kod yozish VA uni ijro etish
+    imkoniyatini beradi (tools.py).
+    !!! MUHIM XAVFSIZLIK QARORI !!!
+    tools.py dagi run_python_code() hozircha kodni to'g'ridan-to'g'ri
+    shu serverning o'zida ishga tushiradi — bu FAQAT DEMO uchun xavfsiz.
+    Haqiqiy foydalanuvchilarga ochishdan oldin quyidagilardan birini
+    TANLASHINGIZ VA ULASHINGIZ kerak:
+      - Docker konteynerida tarmoqsiz ishga tushirish, YOKI
+      - Hostlangan sandbox xizmati (masalan E2B.dev, Modal, Piston), YOKI
+      - gVisor / Firecracker kabi izolyatsiya texnologiyasi.
+    Tanlovingizni tools.py fayliga izoh sifatida yozib qo'ying.
+
+
+4) HUJJATLAR (hujjatlar/ papkasi) — DIPLOM HIMOYASI UCHUN
+------------------------------------------------------------
+Barcha hujjatlarda sariq rang bilan belgilangan joylarni to'ldiring
+(Word/Excel'da Ctrl+F orqali "[" belgisini qidirsangiz, hammasini tez
+topasiz):
+
+[ ] texnik-topshiriq.docx — F.I.Sh., guruh, universitet, ilmiy rahbar,
+    sana va tanlagan hosting xizmati nomini kiriting.
+
+[ ] foydalanuvchi-qollanmasi.docx — dasturni o'zingiz ishga tushirib,
+    chat, ro'yxatdan o'tish va boshqa sahifalarning haqiqiy
+    skrinshotlarini belgilangan joylarga qo'ying.
+
+[ ] test-natijalari.docx — "pytest -v" buyrug'ini ishga tushirib,
+    natijalarni jadvalga kiriting; qo'lda sinab ko'rgan holatlaringizni
+    ham qo'shing.
+
+[ ] byudjet-hisoboti.xlsx — "Haqiqiy sarflangan" ustunini (sariq fon)
+    haqiqiy xarajatlaringiz bilan to'ldiring.
+
+[ ] arxitektura-diagrammasi.png — tayyor va o'zgartirish shart emas,
+    lekin loyihangiz o'zgarsa (masalan yangi xizmat qo'shsangiz),
+    yangilashingiz mumkin.
+
+
+5) IXTIYORIY / KEYINGI G'OYALAR
+---------------------------------
+[ ] voice.js — brauzerning bepul Web Speech API'siga asoslangan, tayyor
+    va ishlaydi. Faqat Chrome/Edge'da to'liq ishlaydi. Agar kerak
+    bo'lmasa, index.html dagi mikrofon tugmasini olib tashlashingiz
+    mumkin.
+
+[ ] settings.html dagi "Til" tanlovi hozircha faqat saqlanadi — haqiqiy
+    ko'p tilli tarjima logikasi yozilmagan. Agar kerak bo'lsa, buni
+    keyingi bosqichda qo'shishingiz kerak bo'ladi.
+
+[ ] package.json — loyiha hozircha oddiy HTML/CSS/JS bilan yozilgan,
+    shuning uchun kerak emas. Agar kelajakda React yoki Vue'ga
+    o'tmoqchi bo'lsangiz, o'shanda qo'shasiz.
+
+
+ISHLASH TARTIBI BO'YICHA ESLATMA
+-----------------------------------
+Yuqoridagi barcha kod fayllari TAYYOR va agent-project/ papkasida
+turibdi, lekin ularni bosqichma-bosqich yoqish tavsiya etiladi —
+hammasini birdan yoqib yubormang:
+
+  1-hafta: .env to'ldirish, dasturni ishga tushirish, domen+hosting
+  2-hafta: ENABLE_DATABASE, ENABLE_TOOLS
+  3-hafta: ENABLE_AUTH, ENABLE_RATE_LIMIT, ovozdan foydalanish
+  4-hafta: pytest bilan test qilish, CI/CD, hujjatlarni yakunlash
+
+Omad tilaymiz!
