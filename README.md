@@ -1,7 +1,5 @@
 Kod Yozish Agenti
-O'zining "Replit-agent"ga o'xshash, AI asosidagi dasturlash yordamchisini yaratish loyihasi. Foydalanuvchi chat orqali savol yozadi, server savol turini ("kod" yoki "g'oya") aniqlaydi va mos AI modeliga (Claude yoki Gemini) yo'naltiradi.
-
-To'ldirilishi kerak bo'lgan barcha narsalar ro'yxati uchun bir papka yuqoridagi TOLDIRILISHI-KERAK-BOLGAN-ROYXAT.txt fayliga qarang.
+AI asosidagi dasturlash yordamchisini yaratish loyihasi. Foydalanuvchi chat orqali savol yozadi, server savol turini ("kod", "g'oya", "surat" yoki "loyihaga a'loqador fayllar") aniqlaydi va mos AI modeliga (Claude yoki Gemini) yo'naltiradi.
 
 Tezkor boshlash
 Python 3.10 yoki undan yuqori versiyani o'rnating.
@@ -12,7 +10,7 @@ source venv/bin/activate   # Windows: venv\Scripts\activate
 Kutubxonalarni o'rnating:
 pip install -r requirements.txt
 
-.env.example faylidan nusxa olib .env nomli fayl yarating, so'ng uni ochib ANTHROPIC_API_KEY, GEMINI_API_KEY qiymatlarini kiriting:
+.env.example faylidan nusxa olib .env nomli fayl yarating, so'ng uni ochib ANTHROPIC_API_KEY, GEMINI_API_KEY, Leonardo_API_Key qiymatlarini kiriting:
 cp .env.example .env
 
 Serverni ishga tushiring:
