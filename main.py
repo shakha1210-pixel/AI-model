@@ -240,7 +240,7 @@ GEMINI_SYSTEM_PROMPT = (
 
 # "Qidiruv/hujjat tahlili" domeni — kuchliroq Gemini modelidan foydalanadi
 # (yangi API kalit talab qilinmaydi, xuddi shu GEMINI_API_KEY ishlatiladi).
-GEMINI_RESEARCH_MODEL = os.getenv("GEMINI_RESEARCH_MODEL", "gemini-2.5-pro")
+GEMINI_RESEARCH_MODEL = os.getenv("GEMINI_RESEARCH_MODEL", "gemini-3.5-flash")
 GEMINI_RESEARCH_SYSTEM_PROMPT = (
     "Siz chuqur tahlil va qidiruv bo'yicha ixtisoslashgan yordamchisiz. "
     "Foydalanuvchi biriktirgan hujjat/matn yoki mavzuni sinchiklab tahlil "
