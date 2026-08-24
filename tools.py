@@ -73,11 +73,12 @@ ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 CLAUDE_MODEL = os.getenv("CLAUDE_MODEL", "claude-sonnet-4-5-20250929")
 CLAUDE_SYSTEM_PROMPT = (
     "Siz tajribali dasturchi yordamchisisiz. Kerak bo'lganda run_python_code "
-    "tool'idan foydalanib yozgan kodingizni sinab ko'ring va natijasini "
-    "foydalanuvchiga o'zbek tilida tushuntiring."
+    "tool'idan foydalanib yozgan kodingizni sinab ko'ring, github_* tool'lari "
+    "orqali (agar mavjud bo'lsa) GitHub repositoriylari bilan ishlang, va "
+    "natijasini foydalanuvchiga o'zbek tilida tushuntiring."
 )
 
-TOOLS = [
+RUN_PYTHON_TOOL = [
     {
         "name": "run_python_code",
         "description": (
@@ -94,6 +95,24 @@ TOOLS = [
         },
     }
 ]
+
+# main.py dagi bilan bir xil bayroqlar (aylanma import'dan qochish uchun
+# takrorlangan) — qaysi tool'lar Claude'ga taqdim etilishini belgilaydi.
+ENABLE_TOOLS = os.getenv("ENABLE_TOOLS", "false").lower() == "true"
+ENABLE_GITHUB_TOOL = os.getenv("ENABLE_GITHUB_TOOL", "false").lower() == "true"
+
+
+def _active_tools() -> list[dict]:
+    """Joriy sozlamalarga qarab Claude'ga taqdim etiladigan tool'lar
+    ro'yxatini yig'adi — har biri mustaqil yoqiladi/o'chiriladi."""
+    active: list[dict] = []
+    if ENABLE_TOOLS:
+        active += RUN_PYTHON_TOOL
+    if ENABLE_GITHUB_TOOL:
+        from github_tool import GITHUB_TOOLS
+
+        active += GITHUB_TOOLS
+    return active
 
 
 def _limit_resources() -> None:
@@ -178,9 +197,13 @@ def run_python_code(code: str, session_id: str = "noma'lum") -> dict:
         }
 
 
-def dispatch_tool_call(name: str, tool_input: dict, session_id: str = "noma'lum") -> dict:
+async def dispatch_tool_call(name: str, tool_input: dict, session_id: str = "noma'lum") -> dict:
     if name == "run_python_code":
         return run_python_code(tool_input.get("code", ""), session_id=session_id)
+    if name.startswith("github_"):
+        from github_tool import dispatch as github_dispatch
+
+        return await github_dispatch(name, tool_input)
     return {"error": f"Noma'lum tool: {name}"}
 
 
@@ -211,7 +234,7 @@ async def call_claude_with_tools(
                     "model": CLAUDE_MODEL,
                     "max_tokens": 2048,
                     "system": CLAUDE_SYSTEM_PROMPT,
-                    "tools": TOOLS,
+                    "tools": _active_tools(),
                     "messages": messages,
                 },
             )
@@ -230,7 +253,7 @@ async def call_claude_with_tools(
             tool_results = []
             for block in data["content"]:
                 if block.get("type") == "tool_use":
-                    result = dispatch_tool_call(
+                    result = await dispatch_tool_call(
                         block["name"], block.get("input", {}), session_id=session_id
                     )
                     tool_results.append(

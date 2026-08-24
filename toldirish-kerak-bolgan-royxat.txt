@@ -75,6 +75,19 @@ qachon yoqishni o'zingiz hal qilasiz:
       - gVisor / Firecracker kabi izolyatsiya texnologiyasi.
     Tanlovingizni tools.py fayliga izoh sifatida yozib qo'ying.
 
+[ ] ENABLE_GITHUB_TOOL=true — Claude'ga GitHub repositoriy bilan ishlash
+    imkoniyatini beradi (github_tool.py): fayl o'qish/yozish, papka
+    ro'yxati, Pull Request ochish. run_python_code'dan farqli — bu
+    serverda kod ijro etmaydi, shuning uchun sandbox tasdiqlash SHART
+    emas. GITHUB_TOKEN kerak (https://github.com/settings/personal-
+    access-tokens — "fine-grained" token, FAQAT kerakli repo(lar)ga va
+    Contents+Pull requests (Read&Write) huquqiga cheklab yarating).
+    !!! DIQQAT: prompt injection xavfi — agent foydalanuvchi xabari yoki
+    biriktirilgan fayl matnidagi yashirin ko'rsatmalarga ergashib repoga
+    kutilmagan o'zgartirish kiritishi mumkin. Tokenni sinov repositoriyga
+    yo'naltiring yoki main/master branch'ni himoyalab, agentga faqat
+    boshqa branch + Pull Request orqali ishlashga ruxsat bering.
+
 
 4) HUJJATLAR (hujjatlar/ papkasi) — DIPLOM HIMOYASI UCHUN
 ------------------------------------------------------------

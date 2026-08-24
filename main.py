@@ -84,6 +84,13 @@ if ENABLE_TOOLS and not CODE_EXECUTION_SANDBOX_CONFIRMED:
         "belgilang. Batafsil: tools.py va TOLDIRILISHI-KERAK-BOLGAN-ROYXAT.txt."
     )
 
+# github_tool.py: Claude'ga GitHub repositoriy bilan ishlash imkoniyatini
+# berish (fayl o'qish/yozish, PR ochish). run_python_code'dan farqli — bu
+# server ichida kod ijro etmaydi, shuning uchun sandbox tasdiqlash talab
+# qilinmaydi. DIQQAT: github_tool.py dagi xavfsizlik ogohlantirishini
+# (token huquqlarini cheklash, prompt injection xavfi) albatta o'qing.
+ENABLE_GITHUB_TOOL = os.getenv("ENABLE_GITHUB_TOOL", "false").lower() == "true"
+
 
 # ---------------------------------------------------------------------------
 # SESSIYA EGALIGI (IDOR himoyasi)
@@ -577,7 +584,7 @@ async def chat(
 
     image_url: str | None = None
     if intent == "code":
-        if ENABLE_TOOLS:
+        if ENABLE_TOOLS or ENABLE_GITHUB_TOOL:
             from tools import call_claude_with_tools
 
             reply = await call_claude_with_tools(payload.message, chat_history, session_id=session_id)

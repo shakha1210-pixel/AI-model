@@ -230,3 +230,101 @@ def test_files_upload_to_session():
     )
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
+
+
+# ---------------------------------------------------------------------------
+# GITHUB TOOL TESTLARI
+# ---------------------------------------------------------------------------
+
+def test_github_dispatch_requires_token(monkeypatch):
+    import asyncio
+
+    import github_tool
+
+    monkeypatch.setattr(github_tool, "GITHUB_TOKEN", "")
+    result = asyncio.run(github_tool.dispatch("github_read_file", {}))
+    assert "GITHUB_TOKEN" in result["error"]
+
+
+def test_github_dispatch_unknown_tool(monkeypatch):
+    import asyncio
+
+    import github_tool
+
+    monkeypatch.setattr(github_tool, "GITHUB_TOKEN", "fake-token")
+    result = asyncio.run(github_tool.dispatch("github_delete_everything", {}))
+    assert "Noma'lum" in result["error"]
+
+
+def test_github_read_file_decodes_base64_content(monkeypatch):
+    import asyncio
+    import base64
+
+    import github_tool
+
+    monkeypatch.setattr(github_tool, "GITHUB_TOKEN", "fake-token")
+
+    class FakeResponse:
+        status_code = 200
+
+        def json(self):
+            return {
+                "path": "main.py",
+                "sha": "abc123",
+                "content": base64.b64encode(b"print('salom')").decode("ascii"),
+            }
+
+    class FakeAsyncClient:
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *args):
+            return False
+
+        async def get(self, *args, **kwargs):
+            return FakeResponse()
+
+    monkeypatch.setattr(github_tool.httpx, "AsyncClient", lambda **kw: FakeAsyncClient())
+
+    result = asyncio.run(github_tool.github_read_file("someone", "repo", "main.py"))
+    assert result["content"] == "print('salom')"
+    assert result["sha"] == "abc123"
+
+
+def test_chat_uses_tools_loop_when_only_github_tool_enabled(monkeypatch):
+    """ENABLE_TOOLS=false bo'lsa ham, ENABLE_GITHUB_TOOL=true bo'lsa /chat
+    kod so'rovlarini call_claude_with_tools orqali yuborishi kerak (sandbox
+    tasdiqlash faqat run_python_code uchun kerak, GitHub tool uchun emas)."""
+    monkeypatch.setattr(main, "ENABLE_TOOLS", False)
+    monkeypatch.setattr(main, "ENABLE_GITHUB_TOOL", True)
+
+    called = {"value": False}
+
+    async def fake_call_claude_with_tools(message, history, **kwargs):
+        called["value"] = True
+        return "GitHub tool orqali bajarildi."
+
+    import tools
+
+    monkeypatch.setattr(tools, "call_claude_with_tools", fake_call_claude_with_tools)
+
+    response = client.post("/chat", json={"message": "python kodimni GitHub'ga joylashtir"})
+    assert response.status_code == 200
+    assert called["value"] is True
+
+
+def test_tools_active_tools_respects_flags(monkeypatch):
+    import tools
+
+    monkeypatch.setattr(tools, "ENABLE_TOOLS", False)
+    monkeypatch.setattr(tools, "ENABLE_GITHUB_TOOL", False)
+    assert tools._active_tools() == []
+
+    monkeypatch.setattr(tools, "ENABLE_TOOLS", True)
+    names = [t["name"] for t in tools._active_tools()]
+    assert "run_python_code" in names
+    assert not any(n.startswith("github_") for n in names)
+
+    monkeypatch.setattr(tools, "ENABLE_GITHUB_TOOL", True)
+    names = [t["name"] for t in tools._active_tools()]
+    assert "github_read_file" in names
