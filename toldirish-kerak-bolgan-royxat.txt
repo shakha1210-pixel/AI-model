@@ -88,6 +88,21 @@ qachon yoqishni o'zingiz hal qilasiz:
     yo'naltiring yoki main/master branch'ni himoyalab, agentga faqat
     boshqa branch + Pull Request orqali ishlashga ruxsat bering.
 
+[ ] ENABLE_GOOGLE_DOCS_TOOL=true — Claude'ga Google Docs hujjatlari bilan
+    ishlash (o'qish, yaratish) imkonini beradi (google_docs_tool.py).
+    auth.py bilan BIR XIL GOOGLE_CLIENT_ID/GOOGLE_CLIENT_SECRET qayta
+    ishlatiladi — yangi OAuth client yaratish shart emas, lekin Google
+    Cloud Console'dagi o'sha client'ning "Authorized redirect URIs"
+    ro'yxatiga GOOGLE_DOCS_REDIRECT_URI qiymatini (standart:
+    http://127.0.0.1:8000/google-docs/callback, productionda o'z
+    domeningiz bilan) QO'SHISHINGIZ kerak. Cloud Console > Google Auth
+    Platform > Audience bo'limida ilova "Testing" holatida qolsa,
+    "Test users" ro'yxatiga qaysi Google email'lar Docs'ni ulay olishini
+    qo'shishni unutmang (himoya paytida faqat shu email'lar ishlaydi).
+    Ulanish sessiya darajasida ishlaydi (foydalanuvchi sozlamalar
+    sahifasidan "Google Docs ulash" tugmasini bosadi) — to'liq
+    ro'yxatdan o'tish/login talab qilinmaydi.
+
 
 4) HUJJATLAR (hujjatlar/ papkasi) — DIPLOM HIMOYASI UCHUN
 ------------------------------------------------------------

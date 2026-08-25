@@ -74,8 +74,9 @@ CLAUDE_MODEL = os.getenv("CLAUDE_MODEL", "claude-sonnet-4-5-20250929")
 CLAUDE_SYSTEM_PROMPT = (
     "Siz tajribali dasturchi yordamchisisiz. Kerak bo'lganda run_python_code "
     "tool'idan foydalanib yozgan kodingizni sinab ko'ring, github_* tool'lari "
-    "orqali (agar mavjud bo'lsa) GitHub repositoriylari bilan ishlang, va "
-    "natijasini foydalanuvchiga o'zbek tilida tushuntiring."
+    "orqali (agar mavjud bo'lsa) GitHub repositoriylari bilan, google_docs_* "
+    "tool'lari orqali (agar mavjud bo'lsa) Google Docs hujjatlari bilan "
+    "ishlang, va natijasini foydalanuvchiga o'zbek tilida tushuntiring."
 )
 
 RUN_PYTHON_TOOL = [
@@ -100,6 +101,7 @@ RUN_PYTHON_TOOL = [
 # takrorlangan) — qaysi tool'lar Claude'ga taqdim etilishini belgilaydi.
 ENABLE_TOOLS = os.getenv("ENABLE_TOOLS", "false").lower() == "true"
 ENABLE_GITHUB_TOOL = os.getenv("ENABLE_GITHUB_TOOL", "false").lower() == "true"
+ENABLE_GOOGLE_DOCS_TOOL = os.getenv("ENABLE_GOOGLE_DOCS_TOOL", "false").lower() == "true"
 
 
 def _active_tools() -> list[dict]:
@@ -112,6 +114,10 @@ def _active_tools() -> list[dict]:
         from github_tool import GITHUB_TOOLS
 
         active += GITHUB_TOOLS
+    if ENABLE_GOOGLE_DOCS_TOOL:
+        from google_docs_tool import GOOGLE_DOCS_TOOLS
+
+        active += GOOGLE_DOCS_TOOLS
     return active
 
 
@@ -204,6 +210,10 @@ async def dispatch_tool_call(name: str, tool_input: dict, session_id: str = "nom
         from github_tool import dispatch as github_dispatch
 
         return await github_dispatch(name, tool_input)
+    if name.startswith("google_docs_"):
+        from google_docs_tool import dispatch as google_docs_dispatch
+
+        return await google_docs_dispatch(name, tool_input, session_id=session_id)
     return {"error": f"Noma'lum tool: {name}"}
 
 

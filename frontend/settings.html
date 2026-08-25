@@ -34,6 +34,7 @@
       <div class="settings-tabs" role="tablist">
         <button type="button" class="settings-tab is-active" data-settings-tab="mavzular">Mavzular</button>
         <button type="button" class="settings-tab" data-settings-tab="suhbat">Suhbat</button>
+        <button type="button" class="settings-tab" data-settings-tab="integratsiyalar">Integratsiyalar</button>
       </div>
 
       <section class="settings-panel" data-settings-panel="mavzular">
@@ -159,6 +160,28 @@
           shu sahifaga qo'shiladi.
         </p>
       </section>
+
+      <section class="settings-panel" data-settings-panel="integratsiyalar" hidden>
+        <section class="settings-group">
+          <p class="section-label mono">// tashqi xizmatlar</p>
+
+          <div class="settings-row">
+            <div class="settings-row__text">
+              <span class="settings-row__title">Google Docs</span>
+              <span class="settings-row__desc" id="google-docs-status">
+                Agent Google Docs hujjatlaringizni o'qishi/yaratishi uchun hisobingizni ulang
+              </span>
+            </div>
+            <a id="google-docs-connect-btn" class="btn btn--primary" href="#">Ulash</a>
+          </div>
+        </section>
+
+        <p class="auth-note">
+          Ulash faqat joriy suhbat sessiyangizga tegishli — boshqa qurilma yoki
+          brauzerda qayta ulash kerak bo'ladi. Agent faqat siz ruxsat bergan
+          hujjatlar bilan ishlaydi.
+        </p>
+      </section>
     </main>
   </div>
 
@@ -191,6 +214,41 @@
     languageSelect.addEventListener("change", () => {
       localStorage.setItem("language", languageSelect.value);
     });
+
+    // --- Google Docs integratsiyasi -----------------------------------
+    (function () {
+      const statusEl = document.getElementById("google-docs-status");
+      const connectBtn = document.getElementById("google-docs-connect-btn");
+
+      function getOrCreateSessionId() {
+        let id = localStorage.getItem("session_id");
+        if (!id) {
+          id = crypto.randomUUID();
+          localStorage.setItem("session_id", id);
+        }
+        return id;
+      }
+
+      const sessionId = getOrCreateSessionId();
+      connectBtn.href = `/google-docs/connect/${encodeURIComponent(sessionId)}`;
+
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("google_docs") === "connected") {
+        statusEl.textContent = "Ulandi — agent endi hujjatlaringiz bilan ishlashi mumkin";
+        connectBtn.textContent = "Qayta ulash";
+        window.history.replaceState({}, "", window.location.pathname);
+      } else {
+        fetch(`/google-docs/status/${encodeURIComponent(sessionId)}`)
+          .then((res) => (res.ok ? res.json() : null))
+          .then((data) => {
+            if (data && data.connected) {
+              statusEl.textContent = "Ulandi — agent endi hujjatlaringiz bilan ishlashi mumkin";
+              connectBtn.textContent = "Qayta ulash";
+            }
+          })
+          .catch(() => {});
+      }
+    })();
   </script>
 </body>
 </html>

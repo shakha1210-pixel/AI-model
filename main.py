@@ -91,6 +91,14 @@ if ENABLE_TOOLS and not CODE_EXECUTION_SANDBOX_CONFIRMED:
 # (token huquqlarini cheklash, prompt injection xavfi) albatta o'qing.
 ENABLE_GITHUB_TOOL = os.getenv("ENABLE_GITHUB_TOOL", "false").lower() == "true"
 
+# google_docs_tool.py: Claude'ga Google Docs hujjatlari bilan ishlash
+# imkoniyatini berish (o'qish, yaratish). Sessiya darajasida OAuth orqali
+# ulanadi (GET /google-docs/connect/{session_id}) — ENABLE_AUTH/DATABASE
+# talab qilinmaydi. DIQQAT: google_docs_tool.py dagi ogohlantirishni o'qing
+# — GOOGLE_CLIENT_ID/SECRET auth.py bilan bir xil OAuth client'dan qayta
+# ishlatiladi, lekin Cloud Console'da yangi redirect URI qo'shish kerak.
+ENABLE_GOOGLE_DOCS_TOOL = os.getenv("ENABLE_GOOGLE_DOCS_TOOL", "false").lower() == "true"
+
 
 # ---------------------------------------------------------------------------
 # SESSIYA EGALIGI (IDOR himoyasi)
@@ -584,7 +592,7 @@ async def chat(
 
     image_url: str | None = None
     if intent == "code":
-        if ENABLE_TOOLS or ENABLE_GITHUB_TOOL:
+        if ENABLE_TOOLS or ENABLE_GITHUB_TOOL or ENABLE_GOOGLE_DOCS_TOOL:
             from tools import call_claude_with_tools
 
             reply = await call_claude_with_tools(payload.message, chat_history, session_id=session_id)
@@ -656,6 +664,11 @@ if ENABLE_AUTH:
     from auth import router as auth_router
 
     app.include_router(auth_router, prefix="/auth", tags=["auth"])
+
+if ENABLE_GOOGLE_DOCS_TOOL:
+    from google_docs_tool import router as google_docs_router
+
+    app.include_router(google_docs_router, tags=["google-docs"])
 
 
 # ---------------------------------------------------------------------------

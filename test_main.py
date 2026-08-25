@@ -318,6 +318,7 @@ def test_tools_active_tools_respects_flags(monkeypatch):
 
     monkeypatch.setattr(tools, "ENABLE_TOOLS", False)
     monkeypatch.setattr(tools, "ENABLE_GITHUB_TOOL", False)
+    monkeypatch.setattr(tools, "ENABLE_GOOGLE_DOCS_TOOL", False)
     assert tools._active_tools() == []
 
     monkeypatch.setattr(tools, "ENABLE_TOOLS", True)
@@ -328,3 +329,65 @@ def test_tools_active_tools_respects_flags(monkeypatch):
     monkeypatch.setattr(tools, "ENABLE_GITHUB_TOOL", True)
     names = [t["name"] for t in tools._active_tools()]
     assert "github_read_file" in names
+
+    monkeypatch.setattr(tools, "ENABLE_GOOGLE_DOCS_TOOL", True)
+    names = [t["name"] for t in tools._active_tools()]
+    assert "google_docs_read" in names
+
+
+# ---------------------------------------------------------------------------
+# GOOGLE DOCS TOOL TESTLARI
+# ---------------------------------------------------------------------------
+
+def test_google_docs_dispatch_unknown_tool():
+    import asyncio
+
+    import google_docs_tool
+
+    result = asyncio.run(google_docs_tool.dispatch("google_docs_delete_everything", {}, session_id="s1"))
+    assert "Noma'lum" in result["error"]
+
+
+def test_google_docs_read_requires_connection():
+    import asyncio
+
+    import google_docs_tool
+
+    result = asyncio.run(
+        google_docs_tool.dispatch("google_docs_read", {"document_id": "abc"}, session_id="hech-qachon-ulanmagan")
+    )
+    assert "ulanmagan" in result["error"]
+
+
+def test_google_docs_status_reflects_connection(monkeypatch):
+    import google_docs_tool
+
+    assert google_docs_tool.is_connected("s-test") is False
+    monkeypatch.setitem(
+        google_docs_tool._session_tokens,
+        "s-test",
+        {"access_token": "fake", "expires_at": __import__("datetime").datetime.utcnow()},
+    )
+    assert google_docs_tool.is_connected("s-test") is True
+
+
+def test_chat_uses_tools_loop_when_only_google_docs_tool_enabled(monkeypatch):
+    """ENABLE_TOOLS/ENABLE_GITHUB_TOOL=false bo'lsa ham, ENABLE_GOOGLE_DOCS_TOOL=true
+    bo'lsa /chat kod so'rovlarini call_claude_with_tools orqali yuborishi kerak."""
+    monkeypatch.setattr(main, "ENABLE_TOOLS", False)
+    monkeypatch.setattr(main, "ENABLE_GITHUB_TOOL", False)
+    monkeypatch.setattr(main, "ENABLE_GOOGLE_DOCS_TOOL", True)
+
+    called = {"value": False}
+
+    async def fake_call_claude_with_tools(message, history, **kwargs):
+        called["value"] = True
+        return "Google Docs tool orqali bajarildi."
+
+    import tools
+
+    monkeypatch.setattr(tools, "call_claude_with_tools", fake_call_claude_with_tools)
+
+    response = client.post("/chat", json={"message": "hujjatimga kod namunasini yoz"})
+    assert response.status_code == 200
+    assert called["value"] is True
