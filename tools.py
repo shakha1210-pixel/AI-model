@@ -203,6 +203,21 @@ def run_python_code(code: str, session_id: str = "noma'lum") -> dict:
         }
 
 
+async def _iter_sse_json(response: httpx.Response):
+    """main.py dagi bilan bir xil SSE-parser (aylanma import'dan qochish
+    uchun takrorlangan — yuqoridagi izohga qarang)."""
+    async for line in response.aiter_lines():
+        if not line.startswith("data:"):
+            continue
+        payload = line[len("data:"):].strip()
+        if not payload:
+            continue
+        try:
+            yield json.loads(payload)
+        except json.JSONDecodeError:
+            continue
+
+
 async def dispatch_tool_call(name: str, tool_input: dict, session_id: str = "noma'lum") -> dict:
     if name == "run_python_code":
         return run_python_code(tool_input.get("code", ""), session_id=session_id)
@@ -276,3 +291,112 @@ async def call_claude_with_tools(
             messages.append({"role": "user", "content": tool_results})
 
     return "Kechirasiz, javobni yakunlab bo'lmadi (juda ko'p tool chaqiruvi)."
+
+
+async def stream_claude_with_tools(
+    message: str, history: list[dict], session_id: str = "noma'lum"
+):
+    """call_claude_with_tools()ning oqim (streaming) varianti. Matn tayyor
+    bo'lgani sayin {"type": "text", "text": ...}, tool chaqirilganda esa
+    {"type": "tool_start", "name": ...} qaytaradi (main.py shu ikkinchisini
+    frontendga "🔧 <tool> ishlatilmoqda..." belgisi sifatida yuboradi)."""
+    if not ANTHROPIC_API_KEY:
+        raise RuntimeError("ANTHROPIC_API_KEY sozlanmagan.")
+
+    messages = [{"role": m["role"], "content": m["content"]} for m in history]
+    messages.append({"role": "user", "content": message})
+
+    async with httpx.AsyncClient(timeout=60.0) as client:
+        for _ in range(5):  # tool-use aylanishlarining maksimal soni
+            blocks: dict[int, dict] = {}
+            stop_reason: str | None = None
+
+            async with client.stream(
+                "POST",
+                "https://api.anthropic.com/v1/messages",
+                headers={
+                    "x-api-key": ANTHROPIC_API_KEY,
+                    "anthropic-version": "2023-06-01",
+                    "content-type": "application/json",
+                },
+                json={
+                    "model": CLAUDE_MODEL,
+                    "max_tokens": 2048,
+                    "system": CLAUDE_SYSTEM_PROMPT,
+                    "tools": _active_tools(),
+                    "messages": messages,
+                    "stream": True,
+                },
+            ) as response:
+                if response.status_code != 200:
+                    body = await response.aread()
+                    logger.error("Claude API xatosi: %s %s", response.status_code, body)
+                    raise RuntimeError("Claude API bilan bog'lanib bo'lmadi.")
+
+                async for event in _iter_sse_json(response):
+                    etype = event.get("type")
+                    if etype == "content_block_start":
+                        index = event["index"]
+                        block = event["content_block"]
+                        if block["type"] == "text":
+                            blocks[index] = {"type": "text", "text": ""}
+                        elif block["type"] == "tool_use":
+                            blocks[index] = {
+                                "type": "tool_use",
+                                "id": block["id"],
+                                "name": block["name"],
+                                "json": "",
+                            }
+                    elif etype == "content_block_delta":
+                        index = event["index"]
+                        delta = event.get("delta", {})
+                        if delta.get("type") == "text_delta":
+                            text = delta.get("text", "")
+                            blocks[index]["text"] += text
+                            if text:
+                                yield {"type": "text", "text": text}
+                        elif delta.get("type") == "input_json_delta":
+                            blocks[index]["json"] += delta.get("partial_json", "")
+                    elif etype == "message_delta":
+                        stop_reason = event.get("delta", {}).get("stop_reason")
+
+            content = []
+            for index in sorted(blocks):
+                block = blocks[index]
+                if block["type"] == "text":
+                    content.append({"type": "text", "text": block["text"]})
+                else:
+                    try:
+                        tool_input = json.loads(block["json"]) if block["json"] else {}
+                    except json.JSONDecodeError:
+                        tool_input = {}
+                    content.append(
+                        {
+                            "type": "tool_use",
+                            "id": block["id"],
+                            "name": block["name"],
+                            "input": tool_input,
+                        }
+                    )
+            messages.append({"role": "assistant", "content": content})
+
+            if stop_reason != "tool_use":
+                return
+
+            tool_results = []
+            for block in content:
+                if block["type"] == "tool_use":
+                    yield {"type": "tool_start", "name": block["name"]}
+                    result = await dispatch_tool_call(
+                        block["name"], block["input"], session_id=session_id
+                    )
+                    tool_results.append(
+                        {
+                            "type": "tool_result",
+                            "tool_use_id": block["id"],
+                            "content": json.dumps(result, ensure_ascii=False),
+                        }
+                    )
+            messages.append({"role": "user", "content": tool_results})
+
+    yield {"type": "text", "text": "\n\n(Kechirasiz, javobni yakunlab bo'lmadi — juda ko'p tool chaqiruvi.)"}

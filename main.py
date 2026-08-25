@@ -13,16 +13,17 @@ Talab qilinadigan Python versiyasi: 3.10+
 """
 
 import asyncio
+import json
 import logging
 import os
-from typing import Literal
+from typing import AsyncIterator, Literal
 
 import httpx
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -323,6 +324,68 @@ async def call_claude(message: str, history: list[dict], deep_thinking: bool = F
     return "".join(block.get("text", "") for block in data.get("content", []))
 
 
+async def _iter_sse_json(response: httpx.Response) -> AsyncIterator[dict]:
+    """Anthropic/Gemini SSE oqimidagi "data: {...}" qatorlarini JSON
+    obyektiga aylantirib beradi (bo'sh yoki JSON bo'lmagan qatorlar
+    e'tiborsiz qoldiriladi)."""
+    async for line in response.aiter_lines():
+        if not line.startswith("data:"):
+            continue
+        payload = line[len("data:"):].strip()
+        if not payload:
+            continue
+        try:
+            yield json.loads(payload)
+        except json.JSONDecodeError:
+            continue
+
+
+async def stream_claude(
+    message: str, history: list[dict], deep_thinking: bool = False
+) -> AsyncIterator[dict]:
+    """call_claude()ning oqim (streaming) varianti — matn bo'lak-bo'lak
+    tayyor bo'lgani sayin {"type": "text", "text": ...} qaytaradi."""
+    if not ANTHROPIC_API_KEY:
+        raise HTTPException(
+            status_code=500,
+            detail="ANTHROPIC_API_KEY sozlanmagan. .env faylini to'ldiring.",
+        )
+
+    messages = [{"role": m["role"], "content": m["content"]} for m in history]
+    messages.append({"role": "user", "content": message})
+
+    system_prompt = CLAUDE_SYSTEM_PROMPT + (CLAUDE_DEEP_THINKING_SUFFIX if deep_thinking else "")
+
+    async with httpx.AsyncClient(timeout=90.0 if deep_thinking else 60.0) as client:
+        async with client.stream(
+            "POST",
+            "https://api.anthropic.com/v1/messages",
+            headers={
+                "x-api-key": ANTHROPIC_API_KEY,
+                "anthropic-version": "2023-06-01",
+                "content-type": "application/json",
+            },
+            json={
+                "model": CLAUDE_MODEL,
+                "max_tokens": 4096 if deep_thinking else 2048,
+                "system": system_prompt,
+                "messages": messages,
+                "stream": True,
+            },
+        ) as response:
+            if response.status_code != 200:
+                body = await response.aread()
+                logger.error("Claude API xatosi: %s %s", response.status_code, body)
+                raise HTTPException(status_code=502, detail="Claude API bilan bog'lanib bo'lmadi.")
+
+            async for event in _iter_sse_json(response):
+                if event.get("type") != "content_block_delta":
+                    continue
+                delta = event.get("delta", {})
+                if delta.get("type") == "text_delta" and delta.get("text"):
+                    yield {"type": "text", "text": delta["text"]}
+
+
 GEMINI_DEEP_THINKING_SUFFIX = (
     " Bu safar 'chuqur o'ylash' rejimi yoqilgan: javob berishdan oldin "
     "muammoni turli tomondan ko'rib chiqing, ortiqcha shoshilmang, va "
@@ -383,6 +446,63 @@ async def call_gemini(
     except (KeyError, IndexError):
         logger.error("Gemini javobi kutilmagan formatda: %s", data)
         raise HTTPException(status_code=502, detail="Gemini javobini o'qib bo'lmadi.")
+
+
+async def stream_gemini(
+    message: str,
+    history: list[dict],
+    deep_thinking: bool = False,
+    model: str | None = None,
+    system_prompt: str | None = None,
+) -> AsyncIterator[dict]:
+    """call_gemini()ning oqim (streaming) varianti."""
+    if not GEMINI_API_KEY:
+        raise HTTPException(
+            status_code=500,
+            detail="GEMINI_API_KEY sozlanmagan. .env faylini to'ldiring.",
+        )
+
+    contents = [
+        {
+            "role": "model" if m["role"] == "assistant" else "user",
+            "parts": [{"text": m["content"]}],
+        }
+        for m in history
+    ]
+    contents.append({"role": "user", "parts": [{"text": message}]})
+
+    base_prompt = system_prompt or GEMINI_SYSTEM_PROMPT
+    full_system_prompt = base_prompt + (GEMINI_DEEP_THINKING_SUFFIX if deep_thinking else "")
+
+    url = (
+        f"https://generativelanguage.googleapis.com/v1beta/models/"
+        f"{model or GEMINI_MODEL}:streamGenerateContent?alt=sse&key={GEMINI_API_KEY}"
+    )
+
+    async with httpx.AsyncClient(timeout=90.0 if deep_thinking else 60.0) as client:
+        async with client.stream(
+            "POST",
+            url,
+            json={
+                "system_instruction": {"parts": [{"text": full_system_prompt}]},
+                "contents": contents,
+            },
+        ) as response:
+            if response.status_code != 200:
+                body = await response.aread()
+                logger.error("Gemini API xatosi: %s %s", response.status_code, body)
+                raise HTTPException(status_code=502, detail="Gemini API bilan bog'lanib bo'lmadi.")
+
+            async for event in _iter_sse_json(response):
+                try:
+                    candidate = event["candidates"][0]
+                    parts = candidate["content"]["parts"]
+                except (KeyError, IndexError):
+                    continue
+                for part in parts:
+                    text = part.get("text", "")
+                    if text:
+                        yield {"type": "text", "text": text}
 
 
 async def call_leonardo(prompt: str) -> tuple[str, str]:
@@ -492,7 +612,7 @@ if ENABLE_RATE_LIMIT:
 
     @app.middleware("http")
     async def rate_limit_middleware(request: Request, call_next):
-        if request.url.path == "/chat":
+        if request.url.path in ("/chat", "/chat/stream"):
             client_key = request.client.host if request.client else "unknown"
             try:
                 check_rate_limit(client_key)
@@ -621,6 +741,113 @@ async def chat(
     save_message(session_id, "assistant", reply, image_url=image_url)
 
     return ChatResponse(reply=reply, session_id=session_id, intent=intent, image_url=image_url)
+
+
+@app.post("/chat/stream")
+async def chat_stream(
+    payload: ChatRequest, user_id: str | None = Depends(current_user_id_optional)
+) -> StreamingResponse:
+    """`/chat` bilan bir xil ishlaydi, lekin javobni Server-Sent Events (SSE)
+    orqali so'z-so'z oqim sifatida qaytaradi ("yozilayotgandek" ko'rinish
+    uchun). Xavfsizlik kafolati saqlanadi: har bir yangi bo'lak yuborilishidan
+    OLDIN to'plangan matnning HAMMASI check_output() orqali qayta tekshiriladi
+    — xavfli deb topilgan bo'lak (yoki undan keyingisi) hech qachon
+    foydalanuvchiga yetib bormaydi, "blocked" hodisasi butun javobni
+    REFUSAL_MESSAGE bilan almashtirishni buyuradi (frontend allaqachon
+    ko'rsatilgan xavfsiz bo'laklarni ham shu bilan almashtiradi)."""
+    existing_owner = get_session_owner(payload.session_id) if payload.session_id else None
+    if existing_owner is not None and existing_owner != user_id:
+        session_id = get_or_create_session(None, user_id=user_id)
+    else:
+        session_id = get_or_create_session(payload.session_id, user_id=user_id)
+
+    def sse(data: dict) -> str:
+        return f"data: {json.dumps(data, ensure_ascii=False)}\n\n"
+
+    async def event_stream() -> AsyncIterator[str]:
+        input_check = check_input(session_id, payload.message)
+        if not input_check.allowed:
+            reply_text = (
+                SUPPORT_MESSAGE if input_check.category == "self_harm" else REFUSAL_MESSAGE
+            )
+            save_message(session_id, "user", payload.message)
+            save_message(session_id, "assistant", reply_text)
+            yield sse({"delta": reply_text})
+            yield sse({"done": True, "session_id": session_id, "intent": "idea", "image_url": None})
+            return
+
+        chat_history = list_messages(session_id)
+        intent = classify_intent(payload.message) if payload.mode == "auto" else payload.mode
+        save_message(session_id, "user", payload.message)
+
+        full_text = ""
+        image_url: str | None = None
+        blocked = False
+
+        try:
+            if intent == "code":
+                if ENABLE_TOOLS or ENABLE_GITHUB_TOOL or ENABLE_GOOGLE_DOCS_TOOL:
+                    from tools import stream_claude_with_tools
+
+                    source = stream_claude_with_tools(
+                        payload.message, chat_history, session_id=session_id
+                    )
+                else:
+                    source = stream_claude(payload.message, chat_history, deep_thinking=payload.thinking)
+
+                async for event in source:
+                    if event["type"] == "tool_start":
+                        yield sse({"tool": event["name"]})
+                        continue
+                    full_text += event["text"]
+                    if not check_output(session_id, full_text).allowed:
+                        blocked = True
+                        break
+                    yield sse({"delta": event["text"]})
+
+            elif intent == "image":
+                reply, image_url = await call_leonardo(payload.message)
+                full_text = reply
+                if not check_output(session_id, full_text).allowed:
+                    blocked = True
+                else:
+                    yield sse({"delta": full_text})
+
+            else:
+                if intent == "research":
+                    source = stream_gemini(
+                        payload.message,
+                        chat_history,
+                        deep_thinking=payload.thinking,
+                        model=GEMINI_RESEARCH_MODEL,
+                        system_prompt=GEMINI_RESEARCH_SYSTEM_PROMPT,
+                    )
+                else:
+                    source = stream_gemini(payload.message, chat_history, deep_thinking=payload.thinking)
+
+                async for event in source:
+                    full_text += event["text"]
+                    if not check_output(session_id, full_text).allowed:
+                        blocked = True
+                        break
+                    yield sse({"delta": event["text"]})
+        except HTTPException as exc:
+            yield sse({"error": exc.detail})
+            return
+
+        if blocked:
+            full_text = REFUSAL_MESSAGE
+            image_url = None
+            yield sse({"blocked": True, "reply": REFUSAL_MESSAGE})
+
+        save_message(session_id, "assistant", full_text, image_url=image_url)
+        yield sse({"done": True, "session_id": session_id, "intent": intent, "image_url": image_url})
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 def _assert_session_access(session_id: str, user_id: str | None) -> None:

@@ -631,6 +631,77 @@ const INTENT_BADGE_LABELS = {
   research: "● gemini pro — qidiruv",
 };
 
+const TOOL_LABELS = {
+  run_python_code: "Python kodi ishga tushirilmoqda",
+};
+
+function toolHintLabel(name) {
+  if (TOOL_LABELS[name]) return TOOL_LABELS[name];
+  if (name.startsWith("github_")) return "GitHub bilan ishlamoqda";
+  if (name.startsWith("google_docs_")) return "Google Docs bilan ishlamoqda";
+  return `"${name}" ishlatilmoqda`;
+}
+
+// Oqim (streaming) davomida bo'sh assistent pufakchasini yaratadi — matn
+// hali xom holatda (markdown/kod bloklari yo'q, faqat pre-wrap), yakunda
+// finalizeStreamingMessage() to'liq render qiladi.
+function addStreamingMessage() {
+  const bubble = document.createElement("div");
+  bubble.className = "message message--assistant is-streaming";
+
+  const contentEl = document.createElement("div");
+  contentEl.className = "message__content message__content--raw";
+  bubble.appendChild(contentEl);
+
+  messagesEl.appendChild(bubble);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+  return bubble;
+}
+
+function finalizeStreamingMessage(bubble, text, intent, imageUrl) {
+  bubble.classList.remove("is-streaming");
+  bubble.innerHTML = "";
+
+  if (intent) {
+    const badge = document.createElement("span");
+    badge.className = `message__badge is-${intent}`;
+    badge.textContent = INTENT_BADGE_LABELS[intent] || `● ${intent}`;
+    bubble.appendChild(badge);
+    bubble.appendChild(document.createElement("br"));
+    bubble.dataset.intent = intent;
+  }
+
+  const contentEl = document.createElement("div");
+  contentEl.className = "message__content";
+  renderMessageContent(contentEl, text);
+  bubble.appendChild(contentEl);
+
+  if (imageUrl) {
+    const imageWrap = document.createElement("div");
+    imageWrap.className = "message__image-wrap";
+
+    const img = document.createElement("img");
+    img.src = imageUrl;
+    img.alt = "Leonardo AI tomonidan generatsiya qilingan rasm";
+    img.className = "message__image";
+    imageWrap.appendChild(img);
+
+    const downloadBtn = document.createElement("button");
+    downloadBtn.type = "button";
+    downloadBtn.className = "message__image-download";
+    downloadBtn.title = "Rasmni yuklab olish";
+    downloadBtn.setAttribute("aria-label", "Rasmni yuklab olish");
+    downloadBtn.innerHTML =
+      '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+    downloadBtn.addEventListener("click", () => downloadImage(imageUrl));
+    imageWrap.appendChild(downloadBtn);
+
+    bubble.appendChild(imageWrap);
+  }
+
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
 function addMessage(role, text, intent, imageUrl) {
   const bubble = document.createElement("div");
   bubble.className = `message message--${role}`;
@@ -710,8 +781,34 @@ async function sendMessage(rawMessage) {
   pendingFiles = [];
   renderAttachedFiles();
 
+  let assistantBubble = null;
+  let rawText = "";
+  let toolHintEl = null;
+
+  function ensureBubble() {
+    if (assistantBubble) return;
+    removeTypingIndicator();
+    assistantBubble = addStreamingMessage();
+  }
+
+  function renderRawText() {
+    const contentEl = assistantBubble.querySelector(".message__content--raw");
+    contentEl.textContent = rawText;
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function showToolHint(name) {
+    ensureBubble();
+    if (!toolHintEl) {
+      toolHintEl = document.createElement("div");
+      toolHintEl.className = "tool-hint mono";
+      assistantBubble.insertBefore(toolHintEl, assistantBubble.firstChild);
+    }
+    toolHintEl.textContent = `🔧 ${toolHintLabel(name)}...`;
+  }
+
   try {
-    const response = await fetch(API_URL, {
+    const response = await fetch("/chat/stream", {
       method: "POST",
       headers: authHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify({
@@ -727,19 +824,75 @@ async function sendMessage(rawMessage) {
       throw new Error(errorBody.detail || `Server xatosi: ${response.status}`);
     }
 
-    const data = await response.json();
-    setSessionId(data.session_id);
-    uploadFiles(data.session_id, filesToSend);
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let finalData = null;
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+
+      const events = buffer.split("\n\n");
+      buffer = events.pop() || "";
+
+      for (const rawEvent of events) {
+        const line = rawEvent.trim();
+        if (!line.startsWith("data:")) continue;
+        let evt;
+        try {
+          evt = JSON.parse(line.slice(5).trim());
+        } catch {
+          continue;
+        }
+
+        if (evt.error) {
+          throw new Error(evt.error);
+        } else if (evt.tool) {
+          showToolHint(evt.tool);
+        } else if (typeof evt.delta === "string") {
+          ensureBubble();
+          if (toolHintEl) {
+            toolHintEl.remove();
+            toolHintEl = null;
+          }
+          rawText += evt.delta;
+          renderRawText();
+        } else if (evt.blocked) {
+          ensureBubble();
+          if (toolHintEl) {
+            toolHintEl.remove();
+            toolHintEl = null;
+          }
+          rawText = evt.reply;
+          renderRawText();
+        } else if (evt.done) {
+          finalData = evt;
+        }
+      }
+    }
+
+    if (!finalData) throw new Error("Server javobni yakunlamadi.");
+
+    setSessionId(finalData.session_id);
+    uploadFiles(finalData.session_id, filesToSend);
     removeTypingIndicator();
-    addMessage("assistant", data.reply, data.intent, data.image_url);
+
+    if (assistantBubble) {
+      finalizeStreamingMessage(assistantBubble, rawText, finalData.intent, finalData.image_url);
+    } else {
+      addMessage("assistant", rawText, finalData.intent, finalData.image_url);
+    }
     refreshRateLimit();
 
-    if (window.speakText && localStorage.getItem("voice_enabled") === "true") {
-      window.speakText(data.reply);
+    if (window.speakText && localStorage.getItem("voice_enabled") === "true" && rawText) {
+      window.speakText(rawText);
     }
   } catch (error) {
     console.error(error);
     removeTypingIndicator();
+    assistantBubble?.remove?.();
     addMessage(
       "system",
       error.message || "Server bilan bog'lanib bo'lmadi. Backend ishga tushirilganiga ishonch hosil qiling."
