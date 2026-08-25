@@ -206,6 +206,14 @@ button {
   color: var(--text);
 }
 
+.brand__logo {
+  height: 24px;
+  width: 24px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
 .brand__prompt {
   color: var(--accent);
   text-shadow: var(--text-glow);
@@ -533,6 +541,8 @@ button {
 .account-popover hr { border: none; border-top: 1px solid var(--border); margin: 5px 2px; }
 
 /* --- Collapsed (rail) holat: matn va sarlavhalarni yashiramiz --- */
+.shell.is-collapsed .sidebar__brand .brand__prompt,
+.shell.is-collapsed .sidebar__brand .brand__caret,
 .shell.is-collapsed .sidebar__brand span:not(.brand__prompt),
 .shell.is-collapsed .sidebar__new span,
 .shell.is-collapsed .sidebar__link span,
