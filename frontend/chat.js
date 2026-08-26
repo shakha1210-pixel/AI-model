@@ -16,9 +16,44 @@ const rateLimitBadge = document.getElementById("rate-limit-badge");
 const fileInput = document.getElementById("file-input");
 const attachButton = document.getElementById("attach-button");
 const attachedFilesEl = document.getElementById("attached-files");
+const limitModal = document.getElementById("limit-modal");
+const limitModalMessage = document.getElementById("limit-modal-message");
 
 let pendingFiles = []; // { name, content }
 let filesEnabled = false;
+
+function showLimitModal(message) {
+  if (!limitModal) {
+    alert(message); // eslint-disable-line no-alert -- modal DOM topilmasa ham xabar yo'qolmasin
+    return;
+  }
+  limitModalMessage.textContent = message;
+  limitModal.hidden = false;
+}
+document.getElementById("limit-modal-close")?.addEventListener("click", () => {
+  limitModal.hidden = true;
+});
+
+/* ---------------------------------------------------------------------
+   URL parametrlari: ?session=<id> — loyiha/tarix sahifasidan aniq
+   suhbatga o'tish; ?project=<id> — loyiha ichidan "yangi suhbat"
+   boshlash (keyingi haqiqiy so'rovga shu loyiha biriktiriladi).
+   --------------------------------------------------------------------- */
+let pendingProjectId = null;
+(function readUrlParams() {
+  const params = new URLSearchParams(window.location.search);
+  const sessionParam = params.get("session");
+  const projectParam = params.get("project");
+  if (sessionParam) {
+    localStorage.setItem("session_id", sessionParam);
+  } else if (projectParam) {
+    localStorage.removeItem("session_id");
+    pendingProjectId = projectParam;
+  }
+  if (sessionParam || projectParam) {
+    window.history.replaceState({}, "", "index.html");
+  }
+})();
 
 /* ---------------------------------------------------------------------
    Avtorizatsiya — token bo'lsa har bir so'rovga qo'shamiz
@@ -88,7 +123,19 @@ function renderSessions(sessions) {
     text.type = "button";
     text.className = "session-item__text";
     text.title = s.preview;
-    text.textContent = s.preview || "Bo'sh suhbat";
+
+    const preview = document.createElement("span");
+    preview.className = "session-item__preview";
+    preview.textContent = s.preview || "Bo'sh suhbat";
+    text.appendChild(preview);
+
+    if (s.project_name) {
+      const tag = document.createElement("span");
+      tag.className = "session-item__project-tag";
+      tag.textContent = s.project_name;
+      text.appendChild(tag);
+    }
+
     text.addEventListener("click", () => {
       localStorage.setItem("session_id", s.id);
       window.location.reload();
@@ -282,7 +329,7 @@ function renderAttachedFiles() {
 async function extractServerSide(file) {
   const form = new FormData();
   form.append("file", file, file.name);
-  const res = await fetch("/files/extract", { method: "POST", body: form });
+  const res = await fetch("/files/extract", { method: "POST", headers: authHeaders(), body: form });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.detail || "Faylni o'qib bo'lmadi.");
@@ -846,12 +893,19 @@ async function sendMessage(rawMessage) {
         session_id: getSessionId(),
         mode: currentMode,
         thinking,
+        project_id: pendingProjectId,
       }),
     });
+    pendingProjectId = null; // faqat sessiya YANGI ochilganda ishlatiladi, bir marta yetarli
 
     if (!response.ok) {
       const errorBody = await response.json().catch(() => ({}));
-      throw new Error(errorBody.detail || `Server xatosi: ${response.status}`);
+      const detail = errorBody.detail;
+      if (detail && typeof detail === "object" && detail.message) {
+        showLimitModal(detail.message);
+        throw new Error(detail.message);
+      }
+      throw new Error(detail || `Server xatosi: ${response.status}`);
     }
 
     const reader = response.body.getReader();

@@ -30,6 +30,7 @@ agent-project/
 ├── auth.py               — ro'yxatdan o'tish/kirish (ENABLE_AUTH=true bo'lsa)
 ├── rate_limiter.py       — so'rovlarni cheklash (ENABLE_RATE_LIMIT=true bo'lsa)
 ├── tools.py              — Claude uchun kod ijro etish (ENABLE_TOOLS=true bo'lsa)
+├── project_tool.py       — Claude uchun loyiha fayllari (ENABLE_PROJECT_FILES_TOOL=true bo'lsa)
 ├── requirements.txt
 ├── .env / .env.example
 ├── Dockerfile / docker-compose.yml
@@ -38,7 +39,7 @@ agent-project/
 └── frontend/
     ├── index.html / style.css / chat.js / voice.js
     ├── login.html / register.html
-    ├── history.html
+    ├── history.html / projects.html
     └── settings.html
 
 Bosqichma-bosqich reja

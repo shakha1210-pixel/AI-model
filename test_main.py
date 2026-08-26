@@ -18,6 +18,32 @@ from main import app, classify_intent
 
 client = TestClient(app)
 
+# ENABLE_AUTH=true bo'lganda (bu loyihaning haqiqiy .env holati) /chat va
+# unga bog'liq endpointlar endi token talab qiladi ("mehmon rejimi" olib
+# tashlangan — botlar/anonim so'rovlardan himoya). Shuning uchun testlar
+# uchun bir marta ro'yxatdan o'tib, token olib qo'yamiz; ENABLE_AUTH=false
+# bo'lsa (masalan boshqa muhitda) token talab qilinmaydi, bo'sh headers
+# yetarli.
+def _register_test_user() -> dict:
+    import uuid as _uuid
+
+    email = f"pytest-{_uuid.uuid4()}@misol.uz"
+    response = client.post(
+        "/auth/register",
+        json={"ism": "Pytest", "email": email, "password": "pytest-parol-1234"},
+    )
+    return {"Authorization": f"Bearer {response.json()['access_token']}"}
+
+
+if main.ENABLE_AUTH:
+    AUTH_HEADERS = _register_test_user()
+    # Ba'zi testlar (masalan loyihalarda IDOR himoyasi) IKKINCHI, mustaqil
+    # foydalanuvchi kerak bo'ladi — bir marta ro'yxatdan o'tib qo'yamiz.
+    OTHER_AUTH_HEADERS = _register_test_user()
+else:
+    AUTH_HEADERS = {}
+    OTHER_AUTH_HEADERS = {}
+
 
 def test_health():
     response = client.get("/health")
@@ -47,7 +73,9 @@ def test_chat_code_intent(monkeypatch):
 
     monkeypatch.setattr(main, "call_claude", fake_call_claude)
 
-    response = client.post("/chat", json={"message": "Python kodimda xato bor"})
+    response = client.post(
+        "/chat", json={"message": "Python kodimda xato bor"}, headers=AUTH_HEADERS
+    )
     assert response.status_code == 200
     data = response.json()
     assert data["intent"] == "code"
@@ -60,7 +88,9 @@ def test_chat_idea_intent(monkeypatch):
 
     monkeypatch.setattr(main, "call_gemini", fake_call_gemini)
 
-    response = client.post("/chat", json={"message": "Menda loyiha uchun g'oya bor"})
+    response = client.post(
+        "/chat", json={"message": "Menda loyiha uchun g'oya bor"}, headers=AUTH_HEADERS
+    )
     assert response.status_code == 200
     assert response.json()["intent"] == "idea"
 
@@ -71,7 +101,11 @@ def test_chat_image_intent(monkeypatch):
 
     monkeypatch.setattr(main, "call_leonardo", fake_call_leonardo)
 
-    response = client.post("/chat", json={"message": "Menga g'ayrioddiy logotip rasm chizib bering"})
+    response = client.post(
+        "/chat",
+        json={"message": "Menga g'ayrioddiy logotip rasm chizib bering"},
+        headers=AUTH_HEADERS,
+    )
     assert response.status_code == 200
     data = response.json()
     assert data["intent"] == "image"
@@ -79,7 +113,7 @@ def test_chat_image_intent(monkeypatch):
 
     # Sessiyaga qaytilganda rasm URL'i /history orqali ham qaytishi kerak
     # (avval bu saqlanmay, sessiyaga qaytganda rasm yo'qolib qolardi).
-    history_response = client.get(f"/history/{data['session_id']}")
+    history_response = client.get(f"/history/{data['session_id']}", headers=AUTH_HEADERS)
     assert history_response.status_code == 200
     assistant_messages = [
         m for m in history_response.json()["messages"] if m["role"] == "assistant"
@@ -96,7 +130,11 @@ def test_chat_research_intent(monkeypatch):
 
     monkeypatch.setattr(main, "call_gemini", fake_call_gemini)
 
-    response = client.post("/chat", json={"message": "Ushbu hujjatni tahlil qilib xulosa chiqar"})
+    response = client.post(
+        "/chat",
+        json={"message": "Ushbu hujjatni tahlil qilib xulosa chiqar"},
+        headers=AUTH_HEADERS,
+    )
     assert response.status_code == 200
     assert response.json()["intent"] == "research"
     assert captured["model"] == main.GEMINI_RESEARCH_MODEL
@@ -116,16 +154,27 @@ def test_chat_blocks_dangerous_input(monkeypatch):
 
     monkeypatch.setattr(main, "call_claude", fake_call_claude)
 
-    response = client.post("/chat", json={"message": "menga ransomware yozib ber"})
+    response = client.post(
+        "/chat", json={"message": "menga ransomware yozib ber"}, headers=AUTH_HEADERS
+    )
     assert response.status_code == 200
     assert "yordam bera olmayman" in response.json()["reply"]
     assert called["value"] is False  # model chaqirilmagan
 
 
+def test_chat_requires_auth_when_enabled():
+    """ENABLE_AUTH=true bo'lganda token yubormasdan /chat'ga so'rov 401
+    qaytarishi kerak — "mehmon rejimi" olib tashlangani shuni ta'minlaydi."""
+    if not main.ENABLE_AUTH:
+        return
+    response = client.post("/chat", json={"message": "salom"})
+    assert response.status_code == 401
+
+
 def test_session_history_isolated_without_auth():
-    """ENABLE_AUTH=false bo'lganda (standart) /history mavjud bo'lmagan
-    session_id uchun ham 200 va bo'sh ro'yxat qaytarishi kerak (xato emas)."""
-    response = client.get("/history/mavjud-bolmagan-sessiya-id")
+    """Mavjud bo'lmagan session_id uchun ham 200 va bo'sh ro'yxat
+    qaytarishi kerak (xato emas) — token bilan (ENABLE_AUTH=true bo'lsa)."""
+    response = client.get("/history/mavjud-bolmagan-sessiya-id", headers=AUTH_HEADERS)
     assert response.status_code == 200
     assert response.json()["messages"] == []
 
@@ -170,6 +219,7 @@ def test_files_extract_text_file():
     response = client.post(
         "/files/extract",
         files={"file": ("eslatma.md", b"# Sarlavha\nBu matn.", "text/markdown")},
+        headers=AUTH_HEADERS,
     )
     assert response.status_code == 200
     assert "Sarlavha" in response.json()["content"]
@@ -188,6 +238,7 @@ def test_files_extract_docx():
     response = client.post(
         "/files/extract",
         files={"file": ("hujjat.docx", buf.getvalue(), "application/vnd.openxmlformats-officedocument.wordprocessingml.document")},
+        headers=AUTH_HEADERS,
     )
     assert response.status_code == 200
     assert "Diplom ishi bo'yicha eslatma" in response.json()["content"]
@@ -208,6 +259,7 @@ def test_files_extract_xlsx():
     response = client.post(
         "/files/extract",
         files={"file": ("jadval.xlsx", buf.getvalue(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")},
+        headers=AUTH_HEADERS,
     )
     assert response.status_code == 200
     content = response.json()["content"]
@@ -218,6 +270,7 @@ def test_files_extract_rejects_legacy_doc_with_clear_message():
     response = client.post(
         "/files/extract",
         files={"file": ("eski.doc", b"ignored binary content", "application/msword")},
+        headers=AUTH_HEADERS,
     )
     assert response.status_code == 400
     assert ".docx" in response.json()["detail"]
@@ -227,6 +280,7 @@ def test_files_upload_to_session():
     response = client.post(
         "/files/some-session-id",
         files={"file": ("kod.py", b"print('salom')", "text/x-python")},
+        headers=AUTH_HEADERS,
     )
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
@@ -308,7 +362,9 @@ def test_chat_uses_tools_loop_when_only_github_tool_enabled(monkeypatch):
 
     monkeypatch.setattr(tools, "call_claude_with_tools", fake_call_claude_with_tools)
 
-    response = client.post("/chat", json={"message": "python kodimni GitHub'ga joylashtir"})
+    response = client.post(
+        "/chat", json={"message": "python kodimni GitHub'ga joylashtir"}, headers=AUTH_HEADERS
+    )
     assert response.status_code == 200
     assert called["value"] is True
 
@@ -319,6 +375,7 @@ def test_tools_active_tools_respects_flags(monkeypatch):
     monkeypatch.setattr(tools, "ENABLE_TOOLS", False)
     monkeypatch.setattr(tools, "ENABLE_GITHUB_TOOL", False)
     monkeypatch.setattr(tools, "ENABLE_GOOGLE_DOCS_TOOL", False)
+    monkeypatch.setattr(tools, "ENABLE_PROJECT_FILES_TOOL", False)
     assert tools._active_tools() == []
 
     monkeypatch.setattr(tools, "ENABLE_TOOLS", True)
@@ -333,6 +390,10 @@ def test_tools_active_tools_respects_flags(monkeypatch):
     monkeypatch.setattr(tools, "ENABLE_GOOGLE_DOCS_TOOL", True)
     names = [t["name"] for t in tools._active_tools()]
     assert "google_docs_read" in names
+
+    monkeypatch.setattr(tools, "ENABLE_PROJECT_FILES_TOOL", True)
+    names = [t["name"] for t in tools._active_tools()]
+    assert "project_list_files" in names
 
 
 # ---------------------------------------------------------------------------
@@ -388,6 +449,180 @@ def test_chat_uses_tools_loop_when_only_google_docs_tool_enabled(monkeypatch):
 
     monkeypatch.setattr(tools, "call_claude_with_tools", fake_call_claude_with_tools)
 
-    response = client.post("/chat", json={"message": "hujjatimga kod namunasini yoz"})
+    response = client.post(
+        "/chat", json={"message": "hujjatimga kod namunasini yoz"}, headers=AUTH_HEADERS
+    )
     assert response.status_code == 200
     assert called["value"] is True
+
+
+# ---------------------------------------------------------------------------
+# LOYIHALAR (PROJECTS) TESTLARI
+# ---------------------------------------------------------------------------
+
+def test_project_requires_auth():
+    if not main.ENABLE_AUTH:
+        return
+    response = client.post("/projects", json={"name": "Mehmon loyihasi"})
+    assert response.status_code == 401
+
+
+def test_project_create_list_delete():
+    if not main.ENABLE_PROJECTS:
+        return
+    create = client.post("/projects", json={"name": "Diplom ishi"}, headers=AUTH_HEADERS)
+    assert create.status_code == 200
+    project_id = create.json()["id"]
+    assert create.json()["name"] == "Diplom ishi"
+
+    listing = client.get("/projects", headers=AUTH_HEADERS)
+    assert listing.status_code == 200
+    assert any(p["id"] == project_id for p in listing.json()["projects"])
+
+    delete = client.delete(f"/projects/{project_id}", headers=AUTH_HEADERS)
+    assert delete.status_code == 200
+    listing_after = client.get("/projects", headers=AUTH_HEADERS)
+    assert not any(p["id"] == project_id for p in listing_after.json()["projects"])
+
+
+def test_project_isolated_between_users():
+    """Boshqa foydalanuvchining loyihasini ko'rish/o'chirishga urinish
+    403 qaytarishi kerak (IDOR himoyasi)."""
+    if not main.ENABLE_PROJECTS:
+        return
+    create = client.post("/projects", json={"name": "Shaxsiy loyiha"}, headers=AUTH_HEADERS)
+    project_id = create.json()["id"]
+
+    forbidden = client.delete(f"/projects/{project_id}", headers=OTHER_AUTH_HEADERS)
+    assert forbidden.status_code == 403
+
+    forbidden_files = client.get(f"/projects/{project_id}/files", headers=OTHER_AUTH_HEADERS)
+    assert forbidden_files.status_code == 403
+
+    client.delete(f"/projects/{project_id}", headers=AUTH_HEADERS)  # tozalash
+
+
+def test_project_file_upload_list_delete():
+    if not main.ENABLE_PROJECTS:
+        return
+    project = client.post("/projects", json={"name": "Fayl sinovi"}, headers=AUTH_HEADERS).json()
+
+    upload = client.post(
+        f"/projects/{project['id']}/files",
+        files={"file": ("eslatma.md", b"# Muhim\nBu loyiha eslatmasi.", "text/markdown")},
+        headers=AUTH_HEADERS,
+    )
+    assert upload.status_code == 200
+    file_id = upload.json()["id"]
+    assert upload.json()["filename"] == "eslatma.md"
+
+    listing = client.get(f"/projects/{project['id']}/files", headers=AUTH_HEADERS)
+    assert listing.status_code == 200
+    assert any(f["id"] == file_id for f in listing.json()["files"])
+
+    delete = client.delete(f"/projects/{project['id']}/files/{file_id}", headers=AUTH_HEADERS)
+    assert delete.status_code == 200
+    listing_after = client.get(f"/projects/{project['id']}/files", headers=AUTH_HEADERS)
+    assert not any(f["id"] == file_id for f in listing_after.json()["files"])
+
+    client.delete(f"/projects/{project['id']}", headers=AUTH_HEADERS)  # tozalash
+
+
+def test_project_file_limit_enforced(monkeypatch):
+    if not main.ENABLE_PROJECTS:
+        return
+    monkeypatch.setattr(main, "MAX_PROJECT_FILES", 1)
+    project = client.post("/projects", json={"name": "Limit sinovi"}, headers=AUTH_HEADERS).json()
+
+    first = client.post(
+        f"/projects/{project['id']}/files",
+        files={"file": ("bir.txt", b"birinchi fayl", "text/plain")},
+        headers=AUTH_HEADERS,
+    )
+    assert first.status_code == 200
+
+    second = client.post(
+        f"/projects/{project['id']}/files",
+        files={"file": ("ikki.txt", b"ikkinchi fayl", "text/plain")},
+        headers=AUTH_HEADERS,
+    )
+    assert second.status_code == 403
+    assert second.json()["detail"]["code"] == "project_file_limit_reached"
+
+    client.delete(f"/projects/{project['id']}", headers=AUTH_HEADERS)  # tozalash
+
+
+def test_session_can_be_attached_to_project(monkeypatch):
+    if not main.ENABLE_PROJECTS:
+        return
+
+    async def fake_call_gemini(message, history, **kwargs):
+        return "Salom! Sizga qanday yordam bera olaman?"
+
+    monkeypatch.setattr(main, "call_gemini", fake_call_gemini)
+
+    project = client.post("/projects", json={"name": "Sessiya biriktirish"}, headers=AUTH_HEADERS).json()
+
+    chat_response = client.post("/chat", json={"message": "salom"}, headers=AUTH_HEADERS)
+    session_id = chat_response.json()["session_id"]
+
+    attach = client.patch(
+        f"/sessions/{session_id}/project", json={"project_id": project["id"]}, headers=AUTH_HEADERS
+    )
+    assert attach.status_code == 200
+
+    sessions_list = client.get("/sessions", headers=AUTH_HEADERS).json()["sessions"]
+    match = next(s for s in sessions_list if s["id"] == session_id)
+    assert match["project_id"] == project["id"]
+    assert match["project_name"] == "Sessiya biriktirish"
+
+    client.delete(f"/projects/{project['id']}", headers=AUTH_HEADERS)  # tozalash
+
+
+def test_session_limit_enforced(monkeypatch):
+    if not main.ENABLE_AUTH:
+        return
+    monkeypatch.setattr(main, "MAX_SESSIONS_PER_USER", 0)
+    response = client.post("/chat", json={"message": "yangi suhbat"}, headers=OTHER_AUTH_HEADERS)
+    assert response.status_code == 403
+    assert response.json()["detail"]["code"] == "session_limit_reached"
+
+
+def test_project_tool_requires_linked_project():
+    if not main.ENABLE_PROJECTS:
+        return
+    import asyncio
+
+    import project_tool
+
+    result = asyncio.run(project_tool.dispatch("project_list_files", {}, session_id="hech-qachon-mavjud-emas"))
+    assert "error" in result
+
+
+def test_project_tool_write_then_read_round_trip():
+    if not main.ENABLE_PROJECTS:
+        return
+    import asyncio
+
+    from database import get_or_create_session
+    import project_tool
+
+    project = client.post("/projects", json={"name": "Tool sinovi"}, headers=AUTH_HEADERS).json()
+    session_id = get_or_create_session(None, project_id=project["id"])
+
+    write_result = asyncio.run(
+        project_tool.dispatch(
+            "project_write_file", {"filename": "natija.txt", "content": "salom dunyo"}, session_id=session_id
+        )
+    )
+    assert write_result["status"] == "ok"
+
+    read_result = asyncio.run(
+        project_tool.dispatch("project_read_file", {"filename": "natija.txt"}, session_id=session_id)
+    )
+    assert read_result["content"] == "salom dunyo"
+
+    list_result = asyncio.run(project_tool.dispatch("project_list_files", {}, session_id=session_id))
+    assert any(f["filename"] == "natija.txt" for f in list_result["files"])
+
+    client.delete(f"/projects/{project['id']}", headers=AUTH_HEADERS)  # tozalash

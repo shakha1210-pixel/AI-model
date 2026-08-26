@@ -249,6 +249,13 @@ button {
 
 .btn--block { width: 100%; }
 
+.btn--danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+  border: 1px solid var(--danger-soft);
+}
+.btn--danger:hover:not(:disabled) { background: var(--danger); color: #fff; }
+
 /* Tema almashtirish tugmasi */
 .theme-toggle {
   position: relative;
@@ -375,12 +382,28 @@ button {
 .session-item__text {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
   text-align: left;
   background: none;
   border: none;
   color: var(--text-muted);
   font-size: 13px;
-  padding: 9px 4px 9px 10px;
+  padding: 8px 4px 8px 10px;
+}
+.session-item__preview {
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.session-item__project-tag {
+  max-width: 100%;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--accent-strong);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1490,6 +1513,136 @@ button {
 }
 .history-entry.is-assistant .history-entry__role { color: var(--accent-2); }
 .history-entry__text { white-space: pre-wrap; line-height: 1.55; font-size: 14px; }
+
+/* =========================================================================
+   Loyihalar (Projects) sahifasi
+   ========================================================================= */
+
+.projects-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.projects-create-form {
+  display: flex;
+  gap: 10px;
+}
+.projects-create-form input {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 14px;
+  color: var(--text);
+  font-size: 13.5px;
+}
+.projects-create-form input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.project-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 18px;
+  text-align: left;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.project-card:hover { border-color: var(--accent); background: var(--surface-2); }
+.project-card__title { font-weight: 600; font-size: 14px; color: var(--text); }
+
+.project-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 14px 0 6px;
+  flex-wrap: wrap;
+}
+.project-detail-header h1 { font-size: 20px; margin: 0; }
+.project-detail-actions { display: flex; gap: 10px; }
+
+.project-files-list,
+.project-sessions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.project-file-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13.5px;
+}
+.project-file-row > span:first-child { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.project-file-row__size { color: var(--text-faint); font-size: 12px; }
+.project-file-row button {
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  font-size: 16px;
+  line-height: 1;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+.project-file-row button:hover { color: var(--danger); background: var(--danger-soft); }
+
+.project-session-row {
+  display: block;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13.5px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.project-session-row:hover { border-color: var(--accent); text-decoration: none; background: var(--surface-2); }
+
+.project-empty-hint { color: var(--text-muted); font-size: 13px; }
+
+/* --- Chegara (limit) oynasi --- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal {
+  width: 100%;
+  max-width: 380px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: var(--shadow-md);
+}
+.modal h2 { margin: 0 0 10px; font-size: 17px; }
+.modal p { margin: 0 0 18px; color: var(--text-muted); font-size: 13.5px; line-height: 1.5; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
 
 /* =========================================================================
    Responsive

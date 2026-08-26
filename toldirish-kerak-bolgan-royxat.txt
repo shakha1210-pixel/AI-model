@@ -103,6 +103,19 @@ qachon yoqishni o'zingiz hal qilasiz:
     sahifasidan "Google Docs ulash" tugmasini bosadi) — to'liq
     ro'yxatdan o'tish/login talab qilinmaydi.
 
+[x] ENABLE_PROJECTS=true / ENABLE_PROJECT_FILES_TOOL=true — "Loyihalar"
+    bo'limi (suhbat va fayllarni guruhlaydigan papkalar) va Claude uchun
+    loyiha fayllarini o'qish/yozish tool'i (project_tool.py). Ikkalasi
+    ham allaqachon yoqilgan va ishlaydi — qo'shimcha kalit/token kerak
+    emas. "Mehmon sifatida davom etish" imkoniyati ATAYLAB olib
+    tashlangan: ENABLE_AUTH=true bo'lgani uchun endi /chat, /chat/stream,
+    /files/*, /history, /sessions, /projects/* — barchasi token talab
+    qiladi (login SHART). Har-user chegaralar (.env orqali
+    o'zgartiriladi): MAX_SESSIONS_PER_USER=30, MAX_PROJECTS_PER_USER=5,
+    MAX_PROJECT_FILES=10 — chegaraga yetganda foydalanuvchiga aniq xabar
+    (va "Pro'ga o'tish" tugmasi — hozircha faqat ko'rinish, haqiqiy
+    to'lov/obuna tizimi ULANMAGAN) bilan 403 qaytadi.
+
 
 4) HUJJATLAR (hujjatlar/ papkasi) — DIPLOM HIMOYASI UCHUN
 ------------------------------------------------------------

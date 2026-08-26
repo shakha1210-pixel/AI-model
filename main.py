@@ -100,24 +100,56 @@ ENABLE_GITHUB_TOOL = os.getenv("ENABLE_GITHUB_TOOL", "false").lower() == "true"
 # ishlatiladi, lekin Cloud Console'da yangi redirect URI qo'shish kerak.
 ENABLE_GOOGLE_DOCS_TOOL = os.getenv("ENABLE_GOOGLE_DOCS_TOOL", "false").lower() == "true"
 
+# ---------------------------------------------------------------------------
+# LOYIHALAR (PROJECTS) — suhbatlarni va fayllarni guruhlaydigan papkalar.
+# Har bir loyiha bitta foydalanuvchiga tegishli bo'lgani uchun ENABLE_AUTH
+# (demak ENABLE_DATABASE ham) SHART.
+# ---------------------------------------------------------------------------
+ENABLE_PROJECTS = os.getenv("ENABLE_PROJECTS", "false").lower() == "true"
+if ENABLE_PROJECTS and not (ENABLE_AUTH and ENABLE_DATABASE):
+    raise RuntimeError(
+        "Noto'g'ri konfiguratsiya: ENABLE_PROJECTS=true uchun ENABLE_AUTH=true "
+        "VA ENABLE_DATABASE=true ham bo'lishi SHART (loyihalar foydalanuvchiga "
+        "bog'langan holda ma'lumotlar bazasida saqlanadi)."
+    )
+
+# project_tool.py: Claude'ga joriy suhbat biriktirilgan loyiha papkasidagi
+# fayllarni o'qish/yozish imkonini beradi. ENABLE_PROJECTS ham SHART.
+ENABLE_PROJECT_FILES_TOOL = os.getenv("ENABLE_PROJECT_FILES_TOOL", "false").lower() == "true"
+if ENABLE_PROJECT_FILES_TOOL and not ENABLE_PROJECTS:
+    raise RuntimeError(
+        "Noto'g'ri konfiguratsiya: ENABLE_PROJECT_FILES_TOOL=true uchun "
+        "ENABLE_PROJECTS=true ham bo'lishi SHART."
+    )
+
+# Har bir foydalanuvchi uchun xotira (sessiya) chegarasi — "cheklangan
+# xotira": chegaraga yetgan foydalanuvchi yangi suhbat boshlay olmaydi (403),
+# frontend shu vaqtda eski suhbatlardan birini o'chirishni yoki (kelajakda)
+# Pro rejasiga o'tishni taklif qiladi. Faqat ENABLE_AUTH=true bo'lganda
+# ma'noga ega (mehmon/anonim rejimda per-user tushunchasi yo'q).
+MAX_SESSIONS_PER_USER = int(os.getenv("MAX_SESSIONS_PER_USER", "30"))
+
 
 # ---------------------------------------------------------------------------
-# SESSIYA EGALIGI (IDOR himoyasi)
+# FOYDALANUVCHI ANIQLASH (IDOR himoyasi + mehmon rejimi yo'q)
 # ---------------------------------------------------------------------------
-# ENABLE_AUTH=true bo'lsa, /history, /sessions, DELETE /sessions
-# endpointlari FAQAT joriy foydalanuvchiga tegishli sessiyalarni ko'rsatadi
-# — aks holda har qanday kishi boshgan session_id (UUID) ni topib olib
-# boshqa foydalanuvchining suhbatini o'qishi/o'chirishi mumkin edi.
-# ENABLE_AUTH=false bo'lganda (demo/mehmon rejimi) egalik tushunchasi yo'q —
-# bu faqat lokal sinov/demo uchun maqsadga muvofiq.
+# ENABLE_AUTH=true bo'lsa, /chat, /chat/stream, /history, /sessions,
+# /files kabi barcha "ishlaydigan" endpointlar TOKEN TALAB QILADI — token
+# bo'lmasa yoki yaroqsiz bo'lsa 401 qaytadi (get_current_user shuni qiladi).
+# Bu "mehmon sifatida davom etish" imkoniyati olib tashlanganini aks
+# ettiradi: avvalgi versiyada token ixtiyoriy edi (anonim so'rovlar ham
+# ishlardi), bu esa botlar/skriptlar login qilmasdan ham serverga cheksiz
+# so'rov (va shu orqali AI API xarajati) yubora olishiga yo'l qo'yardi.
+# ENABLE_AUTH=false bo'lganda (faqat lokal sinov/demo uchun) hech qanday
+# token talab qilinmaydi — bu holatda egalik tushunchasi ham yo'q.
 if ENABLE_AUTH:
-    from auth import get_current_user_optional
+    from auth import get_current_user
     from database import get_session_owner
 
-    def current_user_id_optional(user=Depends(get_current_user_optional)) -> str | None:
-        return user.id if user else None
+    def current_user_id(user=Depends(get_current_user)) -> str:
+        return user.id
 else:
-    def current_user_id_optional() -> str | None:
+    def current_user_id() -> str | None:
         return None
 
     def get_session_owner(session_id: str) -> str | None:  # noqa: ARG001
@@ -129,6 +161,7 @@ else:
 # ---------------------------------------------------------------------------
 if ENABLE_DATABASE:
     from database import (
+        count_sessions,
         delete_session,
         get_or_create_session,
         init_db,
@@ -147,12 +180,17 @@ else:
     _memory_sessions: dict[str, list[dict]] = {}
     _memory_session_order: list[str] = []  # eng yangisi oxirida
 
-    def get_or_create_session(session_id: str | None, user_id: str | None = None) -> str:
+    def get_or_create_session(
+        session_id: str | None, user_id: str | None = None, project_id: str | None = None
+    ) -> str:
         sid = session_id or str(uuid.uuid4())
         if sid not in _memory_sessions:
             _memory_sessions[sid] = []
             _memory_session_order.append(sid)
         return sid
+
+    def count_sessions(user_id: str) -> int:  # noqa: ARG001
+        return 0
 
     def save_message(session_id: str, role: str, content: str, image_url: str | None = None) -> None:
         _memory_sessions.setdefault(session_id, []).append(
@@ -568,6 +606,13 @@ class ChatRequest(BaseModel):
         ),
     )
     thinking: bool = Field(False, description="'Chuqur o'ylash' rejimi yoqilganmi")
+    project_id: str | None = Field(
+        None,
+        description=(
+            "Agar shu qiymat bilan YANGI sessiya ochilsa, sessiya shu loyiha "
+            "papkasiga biriktiriladi (ENABLE_PROJECTS=true bo'lganda)."
+        ),
+    )
 
 
 class ChatResponse(BaseModel):
@@ -651,7 +696,9 @@ async def files_probe() -> dict:
 
 
 @app.post("/files/extract")
-async def files_extract(file: UploadFile = File(...)) -> dict:
+async def files_extract(
+    file: UploadFile = File(...), user_id: str | None = Depends(current_user_id)
+) -> dict:
     """Yuklangan faylni (.docx/.xlsx yoki matn/kod fayl) o'qiladigan matnga
     aylantirib qaytaradi — frontend shu matnni chat xabariga qo'shadi."""
     from files import extract_text
@@ -666,7 +713,7 @@ async def files_extract(file: UploadFile = File(...)) -> dict:
 
 @app.post("/files/{session_id}")
 async def files_upload(
-    session_id: str, file: UploadFile = File(...), user_id: str | None = Depends(current_user_id_optional)
+    session_id: str, file: UploadFile = File(...), user_id: str | None = Depends(current_user_id)
 ) -> dict:
     """Faylni sessiyaga bog'lab qabul qiladi (best-effort — mazmuni allaqachon
     /files/extract orqali xabar matniga qo'shilgan bo'ladi, shuning uchun bu
@@ -678,16 +725,9 @@ async def files_upload(
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat(
-    payload: ChatRequest, user_id: str | None = Depends(current_user_id_optional)
+    payload: ChatRequest, user_id: str | None = Depends(current_user_id)
 ) -> ChatResponse:
-    # session_id boshqa foydalanuvchiga tegishli bo'lsa, unga yozib
-    # qo'yishga yo'l qo'ymaymiz — shu o'rniga yangi (o'ziga tegishli)
-    # sessiya ochiladi.
-    existing_owner = get_session_owner(payload.session_id) if payload.session_id else None
-    if existing_owner is not None and existing_owner != user_id:
-        session_id = get_or_create_session(None, user_id=user_id)
-    else:
-        session_id = get_or_create_session(payload.session_id, user_id=user_id)
+    session_id = _resolve_session(payload, user_id)
 
     # 1-QATLAM MODERATSIYA: xavfli so'rov aniqlansa, model UMUMAN
     # chaqirilmaydi — bu ham xarajatni tejaydi, ham xavfsizlikni ta'minlaydi.
@@ -712,7 +752,7 @@ async def chat(
 
     image_url: str | None = None
     if intent == "code":
-        if ENABLE_TOOLS or ENABLE_GITHUB_TOOL or ENABLE_GOOGLE_DOCS_TOOL:
+        if ENABLE_TOOLS or ENABLE_GITHUB_TOOL or ENABLE_GOOGLE_DOCS_TOOL or ENABLE_PROJECT_FILES_TOOL:
             from tools import call_claude_with_tools
 
             reply = await call_claude_with_tools(payload.message, chat_history, session_id=session_id)
@@ -745,7 +785,7 @@ async def chat(
 
 @app.post("/chat/stream")
 async def chat_stream(
-    payload: ChatRequest, user_id: str | None = Depends(current_user_id_optional)
+    payload: ChatRequest, user_id: str | None = Depends(current_user_id)
 ) -> StreamingResponse:
     """`/chat` bilan bir xil ishlaydi, lekin javobni Server-Sent Events (SSE)
     orqali so'z-so'z oqim sifatida qaytaradi ("yozilayotgandek" ko'rinish
@@ -755,11 +795,7 @@ async def chat_stream(
     foydalanuvchiga yetib bormaydi, "blocked" hodisasi butun javobni
     REFUSAL_MESSAGE bilan almashtirishni buyuradi (frontend allaqachon
     ko'rsatilgan xavfsiz bo'laklarni ham shu bilan almashtiradi)."""
-    existing_owner = get_session_owner(payload.session_id) if payload.session_id else None
-    if existing_owner is not None and existing_owner != user_id:
-        session_id = get_or_create_session(None, user_id=user_id)
-    else:
-        session_id = get_or_create_session(payload.session_id, user_id=user_id)
+    session_id = _resolve_session(payload, user_id)
 
     def sse(data: dict) -> str:
         return f"data: {json.dumps(data, ensure_ascii=False)}\n\n"
@@ -786,7 +822,7 @@ async def chat_stream(
 
         try:
             if intent == "code":
-                if ENABLE_TOOLS or ENABLE_GITHUB_TOOL or ENABLE_GOOGLE_DOCS_TOOL:
+                if ENABLE_TOOLS or ENABLE_GITHUB_TOOL or ENABLE_GOOGLE_DOCS_TOOL or ENABLE_PROJECT_FILES_TOOL:
                     from tools import stream_claude_with_tools
 
                     source = stream_claude_with_tools(
@@ -861,16 +897,60 @@ def _assert_session_access(session_id: str, user_id: str | None) -> None:
         raise HTTPException(status_code=403, detail="Bu sessiyaga kirish huquqingiz yo'q")
 
 
+def _check_session_limit(user_id: str | None) -> None:
+    """Har-user xotira (sessiya) chegarasini tekshiradi — faqat ENABLE_AUTH
+    yoqilgan va foydalanuvchi haqiqatan ANIQLANGAN bo'lsa ma'noga ega."""
+    if not (ENABLE_AUTH and user_id is not None):
+        return
+    used = count_sessions(user_id)
+    if used >= MAX_SESSIONS_PER_USER:
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "code": "session_limit_reached",
+                "message": (
+                    f"Sessiya chegarasiga yetdingiz ({used}/{MAX_SESSIONS_PER_USER}). "
+                    "Davom etish uchun eski suhbatlardan birini o'chiring."
+                ),
+                "used": used,
+                "limit": MAX_SESSIONS_PER_USER,
+            },
+        )
+
+
+def _resolve_session(payload: ChatRequest, user_id: str | None) -> str:
+    """/chat va /chat/stream uchun umumiy sessiya-aniqlash mantig'i.
+    session_id boshqa foydalanuvchiga tegishli bo'lsa, unga yozib qo'yishga
+    yo'l qo'ymaymiz — shu o'rniga yangi (o'ziga tegishli) sessiya ochiladi.
+    Har qanday YANGI sessiya ochilishidan oldin xotira chegarasi
+    tekshiriladi (_check_session_limit)."""
+    existing_owner = get_session_owner(payload.session_id) if payload.session_id else None
+
+    if existing_owner is not None:
+        if existing_owner == user_id:
+            return get_or_create_session(payload.session_id, user_id=user_id)
+        _check_session_limit(user_id)
+        return get_or_create_session(None, user_id=user_id)
+
+    _check_session_limit(user_id)
+    project_id = payload.project_id
+    if project_id and ENABLE_PROJECTS and get_project_owner(project_id) != user_id:
+        # Boshqa foydalanuvchining loyihasiga biriktirishga urinish — jim
+        # e'tiborsiz qoldiramiz (loyihasiz oddiy sessiya ochiladi).
+        project_id = None
+    return get_or_create_session(payload.session_id, user_id=user_id, project_id=project_id)
+
+
 @app.get("/history/{session_id}")
 async def history(
-    session_id: str, user_id: str | None = Depends(current_user_id_optional)
+    session_id: str, user_id: str | None = Depends(current_user_id)
 ) -> dict:
     _assert_session_access(session_id, user_id)
     return {"session_id": session_id, "messages": list_messages(session_id)}
 
 
 @app.get("/sessions")
-async def sessions(user_id: str | None = Depends(current_user_id_optional)) -> dict:
+async def sessions(user_id: str | None = Depends(current_user_id)) -> dict:
     # ENABLE_AUTH yoqilgan bo'lsa, faqat joriy foydalanuvchining o'z
     # sessiyalari qaytariladi (login qilinmagan bo'lsa — bo'sh ro'yxat).
     if ENABLE_AUTH:
@@ -880,11 +960,149 @@ async def sessions(user_id: str | None = Depends(current_user_id_optional)) -> d
 
 @app.delete("/sessions/{session_id}")
 async def delete_session_endpoint(
-    session_id: str, user_id: str | None = Depends(current_user_id_optional)
+    session_id: str, user_id: str | None = Depends(current_user_id)
 ) -> dict:
     _assert_session_access(session_id, user_id)
     delete_session(session_id)
     return {"status": "ok"}
+
+
+# ---------------------------------------------------------------------------
+# LOYIHALAR (PROJECTS) — suhbatlarni va fayllarni guruhlaydigan papkalar.
+# Agent (Claude) bu papkadagi fayllarni project_tool.py orqali o'qiy/yoza
+# oladi (ENABLE_PROJECT_FILES_TOOL=true bo'lsa) — Leonardo/rasm domeni bu
+# tool-use aylanishida umuman ishtirok etmagani uchun avtomatik mustasno.
+# ---------------------------------------------------------------------------
+if ENABLE_PROJECTS:
+    from database import (
+        add_project_file,
+        count_project_files,
+        count_projects,
+        create_project,
+        delete_project,
+        delete_project_file,
+        get_project_file_owner_project,
+        get_project_owner,
+        list_project_files,
+        list_projects,
+        set_session_project,
+    )
+
+    MAX_PROJECTS_PER_USER = int(os.getenv("MAX_PROJECTS_PER_USER", "5"))
+    MAX_PROJECT_FILES = int(os.getenv("MAX_PROJECT_FILES", "10"))
+
+    class ProjectCreateRequest(BaseModel):
+        name: str = Field(..., min_length=1, max_length=80)
+
+    class ProjectResponse(BaseModel):
+        id: str
+        name: str
+
+    class SessionProjectRequest(BaseModel):
+        project_id: str | None = Field(
+            None, description="Biriktiriladigan loyiha ID'si — None bo'lsa, sessiya loyihadan ajratiladi."
+        )
+
+    def _assert_project_access(project_id: str, user_id: str | None) -> None:
+        owner = get_project_owner(project_id)
+        if owner is None:
+            raise HTTPException(status_code=404, detail="Loyiha topilmadi")
+        if owner != user_id:
+            raise HTTPException(status_code=403, detail="Bu loyihaga kirish huquqingiz yo'q")
+
+    @app.post("/projects", response_model=ProjectResponse)
+    async def create_project_endpoint(
+        payload: ProjectCreateRequest, user_id: str = Depends(current_user_id)
+    ) -> ProjectResponse:
+        used = count_projects(user_id)
+        if used >= MAX_PROJECTS_PER_USER:
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "code": "project_limit_reached",
+                    "message": (
+                        f"Loyihalar chegarasiga yetdingiz ({used}/{MAX_PROJECTS_PER_USER}). "
+                        "Davom etish uchun eski loyihalardan birini o'chiring."
+                    ),
+                    "used": used,
+                    "limit": MAX_PROJECTS_PER_USER,
+                },
+            )
+        project = create_project(user_id, payload.name.strip())
+        return ProjectResponse(**project)
+
+    @app.get("/projects")
+    async def list_projects_endpoint(user_id: str = Depends(current_user_id)) -> dict:
+        return {"projects": list_projects(user_id), "limit": MAX_PROJECTS_PER_USER}
+
+    @app.delete("/projects/{project_id}")
+    async def delete_project_endpoint(
+        project_id: str, user_id: str = Depends(current_user_id)
+    ) -> dict:
+        _assert_project_access(project_id, user_id)
+        delete_project(project_id)
+        return {"status": "ok"}
+
+    @app.get("/projects/{project_id}/files")
+    async def list_project_files_endpoint(
+        project_id: str, user_id: str = Depends(current_user_id)
+    ) -> dict:
+        _assert_project_access(project_id, user_id)
+        files = list_project_files(project_id)
+        return {
+            "files": [{"id": f["id"], "filename": f["filename"], "size_bytes": f["size_bytes"]} for f in files],
+            "limit": MAX_PROJECT_FILES,
+        }
+
+    @app.post("/projects/{project_id}/files")
+    async def upload_project_file_endpoint(
+        project_id: str, file: UploadFile = File(...), user_id: str = Depends(current_user_id)
+    ) -> dict:
+        _assert_project_access(project_id, user_id)
+
+        used = count_project_files(project_id)
+        if used >= MAX_PROJECT_FILES:
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "code": "project_file_limit_reached",
+                    "message": (
+                        f"Loyiha fayllar chegarasiga yetdi ({used}/{MAX_PROJECT_FILES}). "
+                        "Yangisini yuklashdan oldin birini o'chiring."
+                    ),
+                    "used": used,
+                    "limit": MAX_PROJECT_FILES,
+                },
+            )
+
+        from files import extract_text
+
+        data = await file.read()
+        if len(data) > MAX_UPLOAD_SIZE_BYTES:
+            raise HTTPException(status_code=400, detail="Fayl juda katta (maksimal 5 MB).")
+        content = extract_text(file.filename or "", data)
+        saved = add_project_file(project_id, file.filename or "fayl", content, len(data))
+        return {"id": saved["id"], "filename": saved["filename"], "size_bytes": saved["size_bytes"]}
+
+    @app.delete("/projects/{project_id}/files/{file_id}")
+    async def delete_project_file_endpoint(
+        project_id: str, file_id: str, user_id: str = Depends(current_user_id)
+    ) -> dict:
+        _assert_project_access(project_id, user_id)
+        if get_project_file_owner_project(file_id) != project_id:
+            raise HTTPException(status_code=404, detail="Fayl topilmadi")
+        delete_project_file(file_id)
+        return {"status": "ok"}
+
+    @app.patch("/sessions/{session_id}/project")
+    async def update_session_project_endpoint(
+        session_id: str, payload: SessionProjectRequest, user_id: str | None = Depends(current_user_id)
+    ) -> dict:
+        _assert_session_access(session_id, user_id)
+        if payload.project_id is not None:
+            _assert_project_access(payload.project_id, user_id)
+        set_session_project(session_id, payload.project_id)
+        return {"status": "ok"}
 
 
 if ENABLE_AUTH:

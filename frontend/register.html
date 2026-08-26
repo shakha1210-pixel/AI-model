@@ -75,7 +75,6 @@
         localStorage.setItem("access_token", data.access_token);
         localStorage.setItem("user_name", ism);
         localStorage.setItem("user_email", email);
-        localStorage.removeItem("guest_mode");
         window.location.href = "index.html";
       } catch (error) {
         errorEl.textContent = error.message;

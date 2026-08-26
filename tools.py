@@ -75,8 +75,10 @@ CLAUDE_SYSTEM_PROMPT = (
     "Siz tajribali dasturchi yordamchisisiz. Kerak bo'lganda run_python_code "
     "tool'idan foydalanib yozgan kodingizni sinab ko'ring, github_* tool'lari "
     "orqali (agar mavjud bo'lsa) GitHub repositoriylari bilan, google_docs_* "
-    "tool'lari orqali (agar mavjud bo'lsa) Google Docs hujjatlari bilan "
-    "ishlang, va natijasini foydalanuvchiga o'zbek tilida tushuntiring."
+    "tool'lari orqali (agar mavjud bo'lsa) Google Docs hujjatlari bilan, "
+    "project_* tool'lari orqali (agar mavjud bo'lsa) joriy suhbat biriktirilgan "
+    "loyiha papkasidagi fayllar bilan ishlang, va natijasini foydalanuvchiga "
+    "o'zbek tilida tushuntiring."
 )
 
 RUN_PYTHON_TOOL = [
@@ -102,6 +104,7 @@ RUN_PYTHON_TOOL = [
 ENABLE_TOOLS = os.getenv("ENABLE_TOOLS", "false").lower() == "true"
 ENABLE_GITHUB_TOOL = os.getenv("ENABLE_GITHUB_TOOL", "false").lower() == "true"
 ENABLE_GOOGLE_DOCS_TOOL = os.getenv("ENABLE_GOOGLE_DOCS_TOOL", "false").lower() == "true"
+ENABLE_PROJECT_FILES_TOOL = os.getenv("ENABLE_PROJECT_FILES_TOOL", "false").lower() == "true"
 
 
 def _active_tools() -> list[dict]:
@@ -118,6 +121,10 @@ def _active_tools() -> list[dict]:
         from google_docs_tool import GOOGLE_DOCS_TOOLS
 
         active += GOOGLE_DOCS_TOOLS
+    if ENABLE_PROJECT_FILES_TOOL:
+        from project_tool import PROJECT_TOOLS
+
+        active += PROJECT_TOOLS
     return active
 
 
@@ -229,6 +236,10 @@ async def dispatch_tool_call(name: str, tool_input: dict, session_id: str = "nom
         from google_docs_tool import dispatch as google_docs_dispatch
 
         return await google_docs_dispatch(name, tool_input, session_id=session_id)
+    if name.startswith("project_"):
+        from project_tool import dispatch as project_dispatch
+
+        return await project_dispatch(name, tool_input, session_id=session_id)
     return {"error": f"Noma'lum tool: {name}"}
 
 

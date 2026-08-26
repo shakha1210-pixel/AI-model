@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Loyihalar — Apeiron</title>
+  <script>
+    (function () {
+      var t = localStorage.getItem("theme");
+      if (!t) t = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", t);
+      document.documentElement.setAttribute("data-accent", localStorage.getItem("accent") || "teal");
+      document.documentElement.setAttribute("data-font", localStorage.getItem("font") || "sans");
+    })();
+  </script>
+  <script>
+    if (!localStorage.getItem("access_token")) {
+      window.location.href = "login.html";
+    }
+  </script>
+  <link rel="icon" type="image/jpeg" href="app_logo.jfif" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+
+  <div class="page">
+    <header class="page-header">
+      <a class="brand" href="index.html">Apeiron</a>
+      <nav class="page-nav">
+        <a href="index.html">Suhbat</a>
+        <a href="projects.html" class="is-active">Loyihalar</a>
+        <a href="history.html">Tarix</a>
+        <a href="settings.html">Sozlamalar</a>
+      </nav>
+    </header>
+
+    <main class="page-body">
+      <div id="projects-list-view">
+        <div>
+          <p class="section-label">Loyihalar</p>
+          <p style="color: var(--text-muted); font-size: 13.5px; margin: 6px 0 0;">
+            Suhbat va fayllarni bitta papkada guruhlang — agent loyiha ichidagi fayllarni
+            o'qiy oladi (Kod yozish bo'limida).
+          </p>
+        </div>
+
+        <div class="projects-toolbar" style="margin-top: 18px;">
+          <form id="create-project-form" class="projects-create-form" style="flex: 1;">
+            <input type="text" id="new-project-name" placeholder="Yangi loyiha nomi..." maxlength="80" required />
+            <button type="submit" class="btn btn--primary">+ Yaratish</button>
+          </form>
+          <span id="projects-limit-hint" class="badge-soon" style="margin: 0;"></span>
+        </div>
+
+        <div id="projects-grid" class="projects-grid" style="margin-top: 18px;"></div>
+      </div>
+
+      <div id="project-detail-view" hidden>
+        <button type="button" id="back-to-list-btn" class="btn btn--ghost">&larr; Loyihalar</button>
+
+        <div class="project-detail-header">
+          <h1 id="project-detail-name"></h1>
+          <div class="project-detail-actions">
+            <a id="new-session-in-project-btn" href="#" class="btn btn--primary">+ Yangi suhbat</a>
+            <button type="button" id="delete-project-btn" class="btn btn--danger">O'chirish</button>
+          </div>
+        </div>
+
+        <section class="settings-group" style="margin-top: 8px;">
+          <div class="projects-toolbar">
+            <p class="section-label" style="margin: 0;">Fayllar</p>
+            <span id="files-limit-hint" class="badge-soon" style="margin: 0;"></span>
+          </div>
+          <div id="project-files-list" class="project-files-list"></div>
+          <label class="btn btn--ghost btn--block" style="cursor: pointer; margin-top: 4px;">
+            <input
+              type="file"
+              id="project-file-input"
+              hidden
+              accept=".py,.js,.ts,.jsx,.tsx,.html,.css,.json,.md,.txt,.csv,.yml,.yaml,.sql,.sh,.java,.c,.cpp,.go,.rs,.rb,.php,.xml,.docx,.xlsx"
+            />
+            + Fayl yuklash
+          </label>
+        </section>
+
+        <section class="settings-group" style="margin-top: 18px;">
+          <p class="section-label">Suhbatlar</p>
+          <div id="project-sessions-list" class="project-sessions-list"></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div id="limit-modal" class="modal-overlay" hidden>
+    <div class="modal">
+      <h2>Chegaraga yetdingiz</h2>
+      <p id="limit-modal-message"></p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn--ghost" id="limit-modal-close">Yopish</button>
+        <button type="button" class="btn btn--primary" disabled title="Tez orada">Pro'ga o'tish</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="ascii-bg.js"></script>
+  <script src="theme.js"></script>
+  <script>
+    function authHeaders(extra) {
+      const headers = { ...(extra || {}) };
+      const token = localStorage.getItem("access_token");
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+      return headers;
+    }
+
+    const listView = document.getElementById("projects-list-view");
+    const detailView = document.getElementById("project-detail-view");
+    const projectsGrid = document.getElementById("projects-grid");
+    const createForm = document.getElementById("create-project-form");
+    const newProjectNameInput = document.getElementById("new-project-name");
+    const projectsLimitHint = document.getElementById("projects-limit-hint");
+
+    const detailName = document.getElementById("project-detail-name");
+    const newSessionBtn = document.getElementById("new-session-in-project-btn");
+    const deleteProjectBtn = document.getElementById("delete-project-btn");
+    const filesListEl = document.getElementById("project-files-list");
+    const filesLimitHint = document.getElementById("files-limit-hint");
+    const fileInput = document.getElementById("project-file-input");
+    const sessionsListEl = document.getElementById("project-sessions-list");
+    const backBtn = document.getElementById("back-to-list-btn");
+
+    const limitModal = document.getElementById("limit-modal");
+    const limitModalMessage = document.getElementById("limit-modal-message");
+    document.getElementById("limit-modal-close").addEventListener("click", () => {
+      limitModal.hidden = true;
+    });
+
+    function showLimitModal(message) {
+      limitModalMessage.textContent = message;
+      limitModal.hidden = false;
+    }
+
+    // Server 403 bilan { detail: { code, message, used, limit } } qaytarsa —
+    // chegara xabari; oddiy { detail: "matn" } bo'lsa ham ishlaydi.
+    async function readErrorDetail(response) {
+      const body = await response.json().catch(() => ({}));
+      const detail = body.detail;
+      if (detail && typeof detail === "object") {
+        return detail.message || "Server xatosi";
+      }
+      return detail || "Server xatosi";
+    }
+
+    let currentProjectId = null;
+    let cachedProjects = [];
+
+    async function loadProjects() {
+      const res = await fetch("/projects", { headers: authHeaders() });
+      if (!res.ok) return;
+      const data = await res.json();
+      cachedProjects = data.projects || [];
+      projectsLimitHint.textContent = `${cachedProjects.length}/${data.limit}`;
+      projectsGrid.innerHTML = "";
+      if (cachedProjects.length === 0) {
+        projectsGrid.innerHTML =
+          '<p class="project-empty-hint">Hali loyiha yo\'q — yuqoridan birinchisini yarating.</p>';
+        return;
+      }
+      for (const p of cachedProjects) {
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "project-card";
+        const title = document.createElement("span");
+        title.className = "project-card__title";
+        title.textContent = p.name;
+        card.appendChild(title);
+        card.addEventListener("click", () => openProject(p.id, p.name));
+        projectsGrid.appendChild(card);
+      }
+    }
+
+    createForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const name = newProjectNameInput.value.trim();
+      if (!name) return;
+      const res = await fetch("/projects", {
+        method: "POST",
+        headers: authHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({ name }),
+      });
+      if (!res.ok) {
+        showLimitModal(await readErrorDetail(res));
+        return;
+      }
+      newProjectNameInput.value = "";
+      loadProjects();
+    });
+
+    function openProject(id, name) {
+      currentProjectId = id;
+      window.history.replaceState({}, "", `projects.html?project=${encodeURIComponent(id)}`);
+      listView.hidden = true;
+      detailView.hidden = false;
+      detailName.textContent = name;
+      newSessionBtn.href = `index.html?project=${encodeURIComponent(id)}`;
+      loadProjectFiles();
+      loadProjectSessions();
+    }
+
+    backBtn.addEventListener("click", () => {
+      currentProjectId = null;
+      window.history.replaceState({}, "", "projects.html");
+      detailView.hidden = true;
+      listView.hidden = false;
+      loadProjects();
+    });
+
+    async function loadProjectFiles() {
+      const res = await fetch(`/projects/${encodeURIComponent(currentProjectId)}/files`, {
+        headers: authHeaders(),
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      filesLimitHint.textContent = `${data.files.length}/${data.limit}`;
+      filesListEl.innerHTML = "";
+      if (data.files.length === 0) {
+        filesListEl.innerHTML = '<p class="project-empty-hint">Hali fayl yo\'q.</p>';
+        return;
+      }
+      for (const f of data.files) {
+        const row = document.createElement("div");
+        row.className = "project-file-row";
+
+        const name = document.createElement("span");
+        name.textContent = f.filename;
+
+        const size = document.createElement("span");
+        size.className = "project-file-row__size";
+        size.textContent = `${Math.max(1, Math.ceil(f.size_bytes / 1024))} KB`;
+
+        const del = document.createElement("button");
+        del.type = "button";
+        del.textContent = "×";
+        del.setAttribute("aria-label", "Faylni o'chirish");
+        del.addEventListener("click", async () => {
+          await fetch(`/projects/${encodeURIComponent(currentProjectId)}/files/${encodeURIComponent(f.id)}`, {
+            method: "DELETE",
+            headers: authHeaders(),
+          });
+          loadProjectFiles();
+        });
+
+        row.appendChild(name);
+        row.appendChild(size);
+        row.appendChild(del);
+        filesListEl.appendChild(row);
+      }
+    }
+
+    fileInput.addEventListener("change", async () => {
+      const file = fileInput.files[0];
+      fileInput.value = "";
+      if (!file || !currentProjectId) return;
+      const form = new FormData();
+      form.append("file", file, file.name);
+      const res = await fetch(`/projects/${encodeURIComponent(currentProjectId)}/files`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: form,
+      });
+      if (!res.ok) {
+        showLimitModal(await readErrorDetail(res));
+        return;
+      }
+      loadProjectFiles();
+    });
+
+    deleteProjectBtn.addEventListener("click", async () => {
+      if (!confirm("Loyihani o'chirishni tasdiqlaysizmi? Fayllar o'chadi, suhbatlar saqlanib qoladi.")) return;
+      await fetch(`/projects/${encodeURIComponent(currentProjectId)}`, {
+        method: "DELETE",
+        headers: authHeaders(),
+      });
+      backBtn.click();
+    });
+
+    async function loadProjectSessions() {
+      const res = await fetch("/sessions", { headers: authHeaders() });
+      if (!res.ok) return;
+      const data = await res.json();
+      const mine = (data.sessions || []).filter((s) => s.project_id === currentProjectId);
+      sessionsListEl.innerHTML = "";
+      if (mine.length === 0) {
+        sessionsListEl.innerHTML = '<p class="project-empty-hint">Bu loyihada hali suhbat yo\'q.</p>';
+        return;
+      }
+      for (const s of mine) {
+        const link = document.createElement("a");
+        link.className = "project-session-row";
+        link.href = `index.html?session=${encodeURIComponent(s.id)}`;
+        link.textContent = s.preview || "Bo'sh suhbat";
+        sessionsListEl.appendChild(link);
+      }
+    }
+
+    (async function init() {
+      await loadProjects();
+      const params = new URLSearchParams(window.location.search);
+      const projectParam = params.get("project");
+      if (projectParam) {
+        const match = cachedProjects.find((p) => p.id === projectParam);
+        if (match) openProject(match.id, match.name);
+      }
+    })();
+  </script>
+</body>
+</html>

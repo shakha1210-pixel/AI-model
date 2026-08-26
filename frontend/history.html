@@ -24,6 +24,7 @@
       <a class="brand" href="index.html">Apeiron</a>
       <nav class="page-nav">
         <a href="index.html">Suhbat</a>
+        <a href="projects.html">Loyihalar</a>
         <a href="history.html" class="is-active">Tarix</a>
         <a href="settings.html">Sozlamalar</a>
       </nav>
@@ -47,9 +48,19 @@
     </main>
   </div>
 
+  <script>
+    if (!localStorage.getItem("access_token")) {
+      window.location.href = "login.html";
+    }
+  </script>
   <script src="ascii-bg.js"></script>
   <script src="theme.js"></script>
   <script>
+    function authHeaders() {
+      const token = localStorage.getItem("access_token");
+      return token ? { Authorization: `Bearer ${token}` } : {};
+    }
+
     const listEl = document.getElementById("history-list");
     const inputEl = document.getElementById("session-input");
     const loadBtn = document.getElementById("load-btn");
@@ -90,7 +101,7 @@
       }
       renderEmpty("Yuklanmoqda...");
       try {
-        const response = await fetch(`/history/${encodeURIComponent(sessionId)}`);
+        const response = await fetch(`/history/${encodeURIComponent(sessionId)}`, { headers: authHeaders() });
         if (!response.ok) throw new Error("Sessiya topilmadi yoki server bilan bog'lanib bo'lmadi.");
         const data = await response.json();
         renderMessages(data.messages);

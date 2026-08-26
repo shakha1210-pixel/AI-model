@@ -54,9 +54,6 @@
       </a>
 
       <p class="auth-switch">Hisobingiz yo'qmi? <a href="register.html">Ro'yxatdan o'ting</a></p>
-      <p class="auth-switch">
-        <a href="#" id="guest-link">Mehmon sifatida davom etish (sinov rejimi)</a>
-      </p>
       <p id="auth-error" class="auth-error"></p>
     </form>
   </div>
@@ -64,11 +61,6 @@
   <script src="ascii-bg.js"></script>
   <script src="theme.js"></script>
   <script>
-    document.getElementById("guest-link").addEventListener("click", (event) => {
-      event.preventDefault();
-      localStorage.setItem("guest_mode", "true");
-      window.location.href = "index.html";
-    });
     // Google orqali kirgandan keyin backend shu sahifaga ?exchange_code=...
     // bilan qaytaradi (xavfsizlik uchun to'liq token emas, faqat bir
     // martalik qisqa muddatli kod). Shu kodni /auth/google/exchange orqali
@@ -91,7 +83,6 @@
           })
           .then((data) => {
             localStorage.setItem("access_token", data.access_token);
-            localStorage.removeItem("guest_mode");
             window.location.href = "index.html";
           })
           .catch(() => {
@@ -121,7 +112,6 @@
         const data = await response.json();
         localStorage.setItem("access_token", data.access_token);
         localStorage.setItem("user_email", email);
-        localStorage.removeItem("guest_mode");
         window.location.href = "index.html";
       } catch (error) {
         errorEl.textContent = error.message;
