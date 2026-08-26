@@ -34,7 +34,7 @@
 
     <main class="page-body">
       <div>
-        <p class="section-label mono">// sessiya tarixi</p>
+        <p class="section-label">Sessiya tarixi</p>
         <p style="color: var(--text-muted); font-size: 13.5px; margin: 6px 0 0;">
           Sessiya ID orqali suhbat tarixini ko'rib chiqing. Joriy brauzeringizdagi oxirgi sessiya
           avtomatik yuklanadi.
@@ -42,7 +42,7 @@
       </div>
 
       <div class="history-toolbar">
-        <input type="text" id="session-input" class="mono" placeholder="sessiya-id kiriting..." />
+        <input type="text" id="session-input" placeholder="sessiya-id kiriting..." />
         <button type="button" class="btn btn--primary" id="load-btn">Yuklash</button>
       </div>
 
@@ -75,7 +75,7 @@
         const entry = document.createElement("div");
         entry.className = `history-entry ${msg.role === "assistant" ? "is-assistant" : ""}`;
         const roleLabel = document.createElement("span");
-        roleLabel.className = "history-entry__role mono";
+        roleLabel.className = "history-entry__role";
         roleLabel.textContent = msg.role === "assistant" ? "agent" : "siz";
         const text = document.createElement("div");
         text.className = "history-entry__text";

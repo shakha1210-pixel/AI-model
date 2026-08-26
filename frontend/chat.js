@@ -70,14 +70,14 @@ async function loadSessions() {
     const data = await res.json();
     renderSessions(data.sessions || []);
   } catch {
-    sessionListEl.innerHTML = '<p class="sidebar__sessions-empty mono">yuklab bo\'lmadi</p>';
+    sessionListEl.innerHTML = '<p class="sidebar__sessions-empty">yuklab bo\'lmadi</p>';
   }
 }
 
 function renderSessions(sessions) {
   const activeId = getSessionId();
   if (sessions.length === 0) {
-    sessionListEl.innerHTML = '<p class="sidebar__sessions-empty mono">hali suhbat yo\'q</p>';
+    sessionListEl.innerHTML = '<p class="sidebar__sessions-empty">hali suhbat yo\'q</p>';
     return;
   }
   sessionListEl.innerHTML = "";
@@ -126,16 +126,16 @@ function renderSessions(sessions) {
    --------------------------------------------------------------------- */
 
 const MODE_LABELS = {
-  auto: "avto",
-  code: "claude",
-  idea: "gemini",
-  image: "leonardo",
-  research: "gemini pro",
+  auto: "Avto",
+  code: "Claude",
+  idea: "Gemini",
+  image: "Leonardo",
+  research: "Gemini Pro",
 };
 let currentMode = localStorage.getItem("chat_mode") || "auto";
 
 function applyModeUI() {
-  if (modelButtonLabel) modelButtonLabel.textContent = MODE_LABELS[currentMode] || "avto";
+  if (modelButtonLabel) modelButtonLabel.textContent = MODE_LABELS[currentMode] || "Avto";
   document.querySelectorAll(".model-popover__option").forEach((btn) => {
     btn.classList.toggle("is-active", btn.dataset.mode === currentMode);
   });
@@ -234,7 +234,7 @@ function renderAttachedFiles() {
   attachedFilesEl.hidden = pendingFiles.length === 0;
   pendingFiles.forEach((f, idx) => {
     const chip = document.createElement("span");
-    chip.className = "file-chip mono";
+    chip.className = "file-chip";
     chip.innerHTML = `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg> ${f.name}`;
     const remove = document.createElement("button");
     remove.type = "button";
@@ -505,7 +505,7 @@ function buildCodeBlock(lang, code) {
   wrap.className = "code-block";
 
   const header = document.createElement("div");
-  header.className = "code-block__header mono";
+  header.className = "code-block__header";
 
   const langLabel = document.createElement("span");
   langLabel.textContent = lang || "code";
@@ -625,10 +625,10 @@ async function downloadImage(url) {
 }
 
 const INTENT_BADGE_LABELS = {
-  code: "● claude — kod",
-  idea: "● gemini — g'oya",
-  image: "● leonardo — rasm",
-  research: "● gemini pro — qidiruv",
+  code: "● Claude — kod",
+  idea: "● Gemini — g'oya",
+  image: "● Leonardo — rasm",
+  research: "● Gemini Pro — qidiruv",
 };
 
 const TOOL_LABELS = {
@@ -801,7 +801,7 @@ async function sendMessage(rawMessage) {
     ensureBubble();
     if (!toolHintEl) {
       toolHintEl = document.createElement("div");
-      toolHintEl.className = "tool-hint mono";
+      toolHintEl.className = "tool-hint";
       assistantBubble.insertBefore(toolHintEl, assistantBubble.firstChild);
     }
     toolHintEl.textContent = `🔧 ${toolHintLabel(name)}...`;

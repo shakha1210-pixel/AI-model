@@ -123,10 +123,6 @@ body {
   transition: background 0.2s ease, color 0.2s ease;
 }
 
-.mono {
-  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-}
-
 a { color: var(--accent-strong); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
@@ -201,7 +197,6 @@ button {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-family: "JetBrains Mono", monospace;
   font-weight: 700;
   font-size: 17px;
   letter-spacing: -0.01em;
@@ -468,7 +463,6 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: "JetBrains Mono", monospace;
   font-weight: 700;
   font-size: 12px;
   flex-shrink: 0;
@@ -590,7 +584,6 @@ button {
   border-radius: 10px;
   padding: 10px 12px;
   font-size: 12.5px;
-  font-family: "JetBrains Mono", monospace;
   white-space: nowrap;
   transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
@@ -712,7 +705,6 @@ button {
   border-radius: 6px;
   padding: 4px 9px;
   font-size: 11px;
-  font-family: "JetBrains Mono", monospace;
 }
 .code-block__actions button:hover { color: var(--text); border-color: var(--border-strong); }
 .code-block pre {
@@ -870,14 +862,12 @@ button {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-family: "JetBrains Mono", monospace;
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
   padding: 3px 8px;
   border-radius: 999px;
   margin-bottom: 8px;
-  text-transform: lowercase;
 }
 .message__badge.is-code { background: var(--accent-soft); color: var(--accent-strong); text-shadow: var(--text-glow); }
 .message__badge.is-idea { background: var(--accent-2-soft); color: var(--accent-2); }
@@ -965,7 +955,6 @@ button {
   padding: 13px 22px;
   font-size: 14.5px;
   font-weight: 700;
-  font-family: "JetBrains Mono", monospace;
   transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
   box-shadow: var(--shadow-sm);
 }
@@ -1032,7 +1021,6 @@ button {
 .status {
   min-height: 18px;
   font-size: 12.5px;
-  font-family: "JetBrains Mono", monospace;
   color: var(--text-faint);
   margin: 0;
   padding: 0 clamp(20px, 6vw, 96px) 4px;
@@ -1253,7 +1241,7 @@ button {
   display: flex;
   gap: 18px;
   font-size: 13.5px;
-  font-family: "JetBrains Mono", monospace;
+  font-weight: 500;
   align-items: center;
 }
 .page-nav a { color: var(--text-muted); }
@@ -1269,11 +1257,11 @@ button {
 }
 
 .section-label {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 11.5px;
-  color: var(--text-faint);
-  text-transform: lowercase;
-  letter-spacing: 0.03em;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   margin: 0 0 -8px;
 }
 
@@ -1396,9 +1384,8 @@ button {
 }
 
 .badge-soon {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 9.5px;
-  text-transform: lowercase;
+  font-size: 10px;
+  font-weight: 600;
   color: var(--text-faint);
   background: var(--surface-2);
   border: 1px solid var(--border);
@@ -1451,7 +1438,6 @@ button {
   padding: 11px 14px;
   color: var(--text);
   font-size: 13.5px;
-  font-family: "JetBrains Mono", monospace;
 }
 .history-toolbar input:focus {
   outline: none;
@@ -1482,9 +1468,10 @@ button {
   padding: 14px 16px;
 }
 .history-entry__role {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 10.5px;
-  text-transform: lowercase;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   color: var(--accent-strong);
   margin-bottom: 6px;
   display: block;
