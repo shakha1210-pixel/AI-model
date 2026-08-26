@@ -287,6 +287,7 @@ button {
   display: grid;
   grid-template-columns: 236px 1fr;
   height: 100vh;
+  height: 100dvh; /* mobil brauzerlarda manzil paneli sabab sakrashning oldini oladi */
   transition: grid-template-columns 0.18s ease;
 }
 
@@ -530,6 +531,7 @@ button {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh;
   min-width: 0;
 }
 
@@ -696,7 +698,7 @@ button {
 
 .landing-cards {
   display: none;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 10px;
   width: 100%;
   max-width: 680px;
@@ -915,7 +917,7 @@ button {
   display: flex;
   align-items: flex-end;
   gap: 10px;
-  padding: 16px clamp(20px, 6vw, 96px) 22px;
+  padding: 16px clamp(20px, 6vw, 96px) calc(22px + env(safe-area-inset-bottom));
   border-top: 1px solid var(--border);
   background: var(--glass-bg);
   backdrop-filter: blur(28px) saturate(1.6);
@@ -926,6 +928,7 @@ button {
   flex: 1;
   resize: none;
   max-height: 160px;
+  overflow-y: auto;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 14px;
@@ -934,12 +937,24 @@ button {
   font-size: 14.5px;
   font-family: inherit;
   line-height: 1.5;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
 }
 .chat-form textarea::placeholder { color: var(--text-faint); }
 .chat-form textarea:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-soft);
+}
+/* Windows'dagi klassik (yuqori/pastida strelka tugmali) skroll-panelni
+   yashirib, o'rniga yupqa va neytral skroll chizig'i ko'rsatamiz. */
+.chat-form textarea::-webkit-scrollbar { width: 6px; }
+.chat-form textarea::-webkit-scrollbar-track { background: transparent; }
+.chat-form textarea::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 999px; }
+
+.chat.is-landing .chat-form textarea {
+  min-height: 52px;
+  font-size: 15.5px;
 }
 
 .chat-form button[type="submit"] {
@@ -1415,6 +1430,7 @@ button {
 
 @media (max-width: 480px) {
   .font-row { grid-template-columns: 1fr; }
+  .landing-cards { grid-template-columns: 1fr; }
 }
 
 /* =========================================================================
@@ -1500,9 +1516,12 @@ button {
   .sidebar-scrim.is-open { display: block; }
   .topbar { padding: 14px 16px; }
   .messages { padding: 20px 16px; }
-  .chat-form { padding: 14px 16px 18px; }
+  .chat-form { padding: 14px 16px calc(18px + env(safe-area-inset-bottom)); }
   .status { padding: 0 16px 4px; }
   .message { max-width: 90%; }
+  .landing { padding: 0 16px; }
+  .landing-cards { padding: 0 16px; }
+  .chat.is-landing .chat-form { padding: 14px 16px; }
 }
 
 @media (max-width: 600px) {
