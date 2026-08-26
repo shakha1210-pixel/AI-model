@@ -1,17 +1,16 @@
-// chat.js — Frontend chat mantiqi (sessiyalar, model tanlovi, fayl
-// biriktirish, kod bloklarini render qilish bilan)
+// chat.js — Frontend chat mantiqi (sessiyalar, vazifa (task) tanlash
+// oqimi, fayl biriktirish, kod bloklarini render qilish bilan)
 
 const API_URL = "/chat";
 
+const chatEl = document.getElementById("chat");
 const messagesEl = document.getElementById("messages");
+const landingCardsEl = document.getElementById("landing-cards");
 const formEl = document.getElementById("chat-form");
 const inputEl = document.getElementById("message-input");
 const statusEl = document.getElementById("status");
 const sendButton = document.getElementById("send-button");
-const modelButton = document.getElementById("model-button");
-const modelButtonLabel = document.getElementById("model-button-label");
-const modelPopover = document.getElementById("model-popover");
-const thinkingToggle = document.getElementById("thinking-toggle");
+const thinkingButton = document.getElementById("thinking-button");
 const sessionListEl = document.getElementById("session-list");
 const rateLimitBadge = document.getElementById("rate-limit-badge");
 const fileInput = document.getElementById("file-input");
@@ -122,61 +121,92 @@ function renderSessions(sessions) {
 }
 
 /* ---------------------------------------------------------------------
-   Model picker (input ichida) + "Chuqur o'ylash" rejimi
+   "Chuqur o'ylash" rejimi (input yonidagi alohida tugma)
    --------------------------------------------------------------------- */
 
-const MODE_LABELS = {
-  auto: "Avto",
-  code: "Claude",
-  idea: "Gemini",
-  image: "Leonardo",
-  research: "Gemini Pro",
+if (thinkingButton) {
+  const applyThinkingUI = () => {
+    thinkingButton.classList.toggle("is-active", localStorage.getItem("thinking_mode") === "true");
+  };
+  applyThinkingUI();
+  thinkingButton.addEventListener("click", () => {
+    const next = localStorage.getItem("thinking_mode") !== "true";
+    localStorage.setItem("thinking_mode", next ? "true" : "false");
+    applyThinkingUI();
+  });
+}
+
+/* ---------------------------------------------------------------------
+   Boshlang'ich (landing) holat: aniq vazifa tanlash oqimi
+   --------------------------------------------------------------------- */
+
+const DOMAIN_INFO = {
+  code: {
+    title: "Kod yozish",
+    intro: "Kod yozish bo'limidasiz. Loyihangiz haqida qisqacha ayting — nima yaratmoqchisiz yoki qaysi muammoni hal qilish kerak?",
+  },
+  idea: {
+    title: "G'oya",
+    intro: "G'oya va erkin suhbat bo'limidasiz. Nima haqida gaplashamiz yoki qanday g'oyani muhokama qilmoqchisiz?",
+  },
+  image: {
+    title: "Rasm chizish",
+    intro: "Rasm chizish bo'limidasiz. Qanday rasm chizishimni ta'riflab bering.",
+  },
+  research: {
+    title: "Tahlil",
+    intro: "Tahlil va qidiruv bo'limidasiz. Qaysi hujjat yoki mavzuni chuqur tahlil qilishim kerak?",
+  },
 };
+
 let currentMode = localStorage.getItem("chat_mode") || "auto";
+let taskInitialText = null; // markazlashgan maydonga aniq bo'lim tanlanmasdan yozilgan matn
 
-function applyModeUI() {
-  if (modelButtonLabel) modelButtonLabel.textContent = MODE_LABELS[currentMode] || "Avto";
-  document.querySelectorAll(".model-popover__option").forEach((btn) => {
-    btn.classList.toggle("is-active", btn.dataset.mode === currentMode);
-  });
+function exitLanding() {
+  chatEl?.classList.remove("is-landing");
 }
 
-if (modelButton && modelPopover) {
-  modelButton.addEventListener("click", (e) => {
-    e.stopPropagation();
-    const willOpen = modelPopover.hidden;
-    modelPopover.hidden = !willOpen;
-    modelButton.classList.toggle("is-open", willOpen);
-  });
+// Foydalanuvchi vazifa kartasini bosganda: bo'lim darhol aniq bo'ladi,
+// agent (haqiqiy so'rovsiz) qisqa tanishtiruv va aniqlashtiruvchi savol
+// beradi, keyingi xabar esa to'g'ridan-to'g'ri haqiqiy agentga boradi.
+function startWithDomain(domain) {
+  currentMode = domain;
+  localStorage.setItem("chat_mode", currentMode);
+  exitLanding();
+  addMessage("assistant", DOMAIN_INFO[domain].intro);
+  inputEl.focus();
+}
 
-  document.querySelectorAll(".model-popover__option").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      currentMode = btn.dataset.mode;
+// Foydalanuvchi bo'lim tanlamasdan to'g'ridan-to'g'ri matn yozib
+// yuborsa: matnni saqlab qo'yamiz va qaysi bo'limga tegishli ekanini
+// tez tugmalar orqali so'raymiz — javob kelgach haqiqiy so'rov ketadi.
+function startWithTypedText(text) {
+  taskInitialText = text;
+  exitLanding();
+  const bubble = addMessage("assistant", "Bu qanday turdagi vazifa? Quyidagilardan birini tanlang:");
+  const chipsWrap = document.createElement("div");
+  chipsWrap.className = "domain-chips";
+  Object.entries(DOMAIN_INFO).forEach(([key, info]) => {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "domain-chip";
+    chip.textContent = info.title;
+    chip.addEventListener("click", () => {
+      chipsWrap.remove();
+      currentMode = key;
       localStorage.setItem("chat_mode", currentMode);
-      applyModeUI();
-      modelPopover.hidden = true;
-      modelButton.classList.remove("is-open");
+      const savedText = taskInitialText;
+      taskInitialText = null;
+      sendMessage(savedText);
     });
+    chipsWrap.appendChild(chip);
   });
-
-  document.addEventListener("click", (e) => {
-    if (!modelPopover.hidden && !modelPopover.contains(e.target) && e.target !== modelButton) {
-      modelPopover.hidden = true;
-      modelButton.classList.remove("is-open");
-    }
-  });
-
-  applyModeUI();
+  bubble.appendChild(chipsWrap);
 }
 
-if (thinkingToggle) {
-  thinkingToggle.checked = localStorage.getItem("thinking_mode") === "true";
-  thinkingToggle.addEventListener("change", () => {
-    localStorage.setItem("thinking_mode", thinkingToggle.checked ? "true" : "false");
-  });
-  // Popover ichidagi bosishlar tashqi "yopish" listeneriga tegmasin
-  thinkingToggle.closest(".model-popover__toggle")?.addEventListener("click", (e) => e.stopPropagation());
-}
+landingCardsEl?.querySelectorAll(".landing-card").forEach((card) => {
+  card.addEventListener("click", () => startWithDomain(card.dataset.domain));
+});
 
 /* ---------------------------------------------------------------------
    Cheklov (rate limit) ko'rsatkichi
@@ -766,7 +796,7 @@ function removeTypingIndicator() {
 function setLoading(isLoading) {
   sendButton.disabled = isLoading;
   inputEl.disabled = isLoading;
-  statusEl.textContent = isLoading ? "> agent javob yozmoqda..." : "";
+  statusEl.textContent = isLoading ? "agent javob yozmoqda..." : "";
   window.AsciiBG?.setActive(isLoading);
 }
 
@@ -777,7 +807,7 @@ async function sendMessage(rawMessage) {
 
   const filesToSend = [...pendingFiles];
   const messageWithFiles = buildMessageWithFiles(rawMessage, filesToSend);
-  const thinking = thinkingToggle ? thinkingToggle.checked : false;
+  const thinking = localStorage.getItem("thinking_mode") === "true";
   pendingFiles = [];
   renderAttachedFiles();
 
@@ -909,6 +939,13 @@ formEl.addEventListener("submit", (event) => {
   if (!message) return;
   inputEl.value = "";
   inputEl.style.height = "auto";
+
+  // Landing holatida (hali aniq bo'lim tanlanmagan) to'g'ridan-to'g'ri
+  // yozilgan matn: haqiqiy so'rov o'rniga avval bo'limni aniqlaymiz.
+  if (chatEl?.classList.contains("is-landing")) {
+    startWithTypedText(message);
+    return;
+  }
   sendMessage(message);
 });
 
@@ -925,7 +962,17 @@ inputEl.addEventListener("input", () => {
 });
 
 // Ishga tushirish
-loadHistory();
+// Sessiya mavjud bo'lsa (qaytgan foydalanuvchi), landing holatini darhol
+// yashiramiz — aks holda tarix yuklangunga qadar bir lahza "yangi vazifa"
+// ekrani ko'rinib ketishi mumkin. Tarix bo'sh chiqsa, landing'ga qaytamiz.
+if (getSessionId()) exitLanding();
+loadHistory().then(() => {
+  if (messagesEl.children.length === 0) {
+    chatEl?.classList.add("is-landing");
+  } else {
+    exitLanding();
+  }
+});
 loadSessions();
 refreshRateLimit();
 probeFilesEnabled();

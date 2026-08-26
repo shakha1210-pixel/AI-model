@@ -28,10 +28,7 @@
     <aside class="sidebar" id="sidebar">
       <div class="sidebar__top">
         <div class="sidebar__brand">
-          <span class="brand">
-            <span class="brand__mark">A</span>
-            <span>apeirΩn</span>
-          </span>
+          <span class="brand">Apeiron</span>
         </div>
         <button type="button" class="sidebar__collapse-btn" id="collapse-btn" title="Yon panelni yig'ish" aria-label="Yon panelni yig'ish">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/></svg>
@@ -98,8 +95,12 @@
         </div>
       </div>
 
-      <div class="chat">
+      <div class="chat is-landing" id="chat">
         <div id="messages" class="messages" aria-live="polite"></div>
+
+        <div class="landing" id="landing">
+          <h1 class="landing__title">Bugun nimani hal qilishni xohlaysiz?</h1>
+        </div>
 
         <div id="attached-files" class="attached-files" hidden></div>
 
@@ -127,53 +128,41 @@
           </button>
           <textarea
             id="message-input"
-            placeholder="Savolingizni yozing... (kod, g'oya, rasm yoki qidiruv haqida)"
+            placeholder="Vazifangizni yozing... (kod, g'oya, rasm yoki qidiruv haqida)"
             rows="1"
             required
           ></textarea>
 
-          <div class="model-picker">
-            <button type="button" id="model-button" class="model-picker__btn">
-              <span id="model-button-label">Avto</span>
-              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-            </button>
-            <div id="model-popover" class="model-popover" hidden>
-              <button type="button" class="model-popover__option" data-mode="auto">
-                <span class="model-popover__title">Avto</span>
-                <span class="model-popover__desc">Mavzuga qarab o'zi tanlaydi</span>
-              </button>
-              <button type="button" class="model-popover__option" data-mode="code">
-                <span class="model-popover__title">Kod &rarr; Claude</span>
-                <span class="model-popover__desc">Kod yozish, debug qilish</span>
-              </button>
-              <button type="button" class="model-popover__option" data-mode="idea">
-                <span class="model-popover__title">G'oya &rarr; Gemini</span>
-                <span class="model-popover__desc">Erkin suhbat, tushuntirish</span>
-              </button>
-              <button type="button" class="model-popover__option" data-mode="image">
-                <span class="model-popover__title">Rasm &rarr; Leonardo</span>
-                <span class="model-popover__desc">Rasm/illyustratsiya generatsiya qilish</span>
-              </button>
-              <button type="button" class="model-popover__option" data-mode="research">
-                <span class="model-popover__title">Qidiruv &rarr; Gemini Pro</span>
-                <span class="model-popover__desc">Hujjat/mavzu chuqur tahlili</span>
-              </button>
-              <hr />
-              <label class="model-popover__toggle">
-                <span>
-                  <span class="model-popover__title">Chuqur o'ylash</span>
-                  <span class="model-popover__desc">Murakkab masalalar uchun ko'proq vaqt sarflaydi</span>
-                </span>
-                <span class="switch">
-                  <input type="checkbox" id="thinking-toggle" />
-                  <span class="switch__track"></span>
-                </span>
-              </label>
-            </div>
-          </div>
+          <button type="button" id="thinking-button" class="mic-button" title="Chuqur o'ylash rejimi" aria-label="Chuqur o'ylash rejimini yoqish/o'chirish">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z"/></svg>
+          </button>
 
           <button type="submit" id="send-button">Yuborish</button>
         </form>
+
+        <div class="landing-cards" id="landing-cards">
+          <button type="button" class="landing-card" data-domain="code">
+            <span class="landing-card__icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span>
+            <span class="landing-card__title">Kod yozish</span>
+            <span class="landing-card__desc">Dastur yozish, xato tuzatish, loyiha qurish</span>
+          </button>
+          <button type="button" class="landing-card" data-domain="idea">
+            <span class="landing-card__icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a6 6 0 0 0-4 10.5c.6.55 1 1.36 1 2.2V15h6v-.3c0-.84.4-1.65 1-2.2A6 6 0 0 0 12 2z"/></svg></span>
+            <span class="landing-card__title">G'oya</span>
+            <span class="landing-card__desc">Erkin suhbat, tushuntirish, brainstorm</span>
+          </button>
+          <button type="button" class="landing-card" data-domain="image">
+            <span class="landing-card__icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></span>
+            <span class="landing-card__title">Rasm chizish</span>
+            <span class="landing-card__desc">Rasm va illyustratsiya generatsiya qilish</span>
+          </button>
+          <button type="button" class="landing-card" data-domain="research">
+            <span class="landing-card__icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+            <span class="landing-card__title">Tahlil</span>
+            <span class="landing-card__desc">Hujjat va mavzuni chuqur tahlil qilish</span>
+          </button>
+        </div>
+
         <p id="status" class="status" role="status"></p>
       </div>
     </main>

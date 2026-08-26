@@ -203,20 +203,6 @@ button {
   color: var(--text);
 }
 
-.brand__mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 24px;
-  width: 24px;
-  border-radius: 6px;
-  background: var(--accent-soft);
-  color: var(--accent-strong);
-  font-size: 13px;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
 .icon-btn {
   background: transparent;
   border: 1px solid var(--border);
@@ -522,7 +508,7 @@ button {
 .account-popover hr { border: none; border-top: 1px solid var(--border); margin: 5px 2px; }
 
 /* --- Collapsed (rail) holat: matn va sarlavhalarni yashiramiz --- */
-.shell.is-collapsed .sidebar__brand span:not(.brand__mark),
+.shell.is-collapsed .sidebar__brand,
 .shell.is-collapsed .sidebar__new span,
 .shell.is-collapsed .sidebar__link span,
 .shell.is-collapsed .sidebar__sessions-wrap,
@@ -566,78 +552,6 @@ button {
 }
 
 .topbar-actions { display: flex; align-items: center; gap: 10px; }
-
-/* ---------- Model picker (input ichida, Gemini uslubida) ---------- */
-
-.model-picker {
-  position: relative;
-  flex-shrink: 0;
-}
-
-.model-picker__btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--surface-2);
-  color: var(--text-muted);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-size: 12.5px;
-  white-space: nowrap;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-}
-.model-picker__btn:hover { background: var(--surface-3); color: var(--text); }
-.model-picker__btn.is-open { border-color: var(--accent); color: var(--text); }
-
-.model-popover {
-  position: absolute;
-  bottom: calc(100% + 8px);
-  right: 0;
-  width: 260px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  box-shadow: var(--shadow-md);
-  padding: 6px;
-  z-index: 40;
-}
-
-.model-popover__option {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 1px;
-  width: 100%;
-  background: none;
-  border: none;
-  border-radius: 10px;
-  padding: 9px 11px;
-  text-align: left;
-}
-.model-popover__option:hover { background: var(--surface-2); }
-.model-popover__option.is-active { background: var(--accent-soft); }
-.model-popover__option.is-active .model-popover__title { color: var(--accent-strong); }
-
-.model-popover__title { font-size: 13.5px; font-weight: 600; color: var(--text); }
-.model-popover__desc { font-size: 11.5px; color: var(--text-faint); }
-
-.model-popover hr { border: none; border-top: 1px solid var(--border); margin: 6px 4px; }
-
-.model-popover__toggle {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 9px 11px;
-  border-radius: 10px;
-  cursor: pointer;
-}
-.model-popover__toggle:hover { background: var(--surface-2); }
-
-@media (max-width: 860px) {
-  .model-popover { right: auto; left: 0; width: 240px; }
-}
 
 .rate-limit-badge {
   font-size: 11px;
@@ -745,6 +659,87 @@ button {
   gap: 16px;
   padding: 28px clamp(20px, 6vw, 96px);
 }
+
+/* --- Boshlang'ich (landing) holat: aniq vazifa tanlanmaguncha kirish
+   maydoni sahifa markazida, katta va diqqat markazida turadi. Birinchi
+   xabar yuborilgach (yoki vazifa kartasi bosilgach) bu holat butunlay
+   yo'qoladi va oddiy chat joylashuviga (pastda pinlangan input) qaytadi. */
+.chat.is-landing {
+  justify-content: center;
+}
+.chat.is-landing .messages { display: none; }
+
+.landing {
+  display: none;
+  text-align: center;
+  padding: 0 24px;
+  margin: 0 auto 4px;
+}
+.chat.is-landing .landing { display: block; }
+.landing__title {
+  font-size: clamp(22px, 3.2vw, 30px);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.chat.is-landing .chat-form {
+  max-width: 680px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 16px 20px;
+  border-top: none;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow-md);
+}
+
+.landing-cards {
+  display: none;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+  width: 100%;
+  max-width: 680px;
+  margin: 14px auto 0;
+  padding: 0 24px;
+}
+.chat.is-landing .landing-cards { display: grid; }
+
+.landing-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  text-align: left;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+}
+.landing-card:hover { border-color: var(--accent); background: var(--surface-2); }
+.landing-card:active { transform: scale(0.98); }
+.landing-card__icon { color: var(--accent-strong); }
+.landing-card__title { font-weight: 600; font-size: 13.5px; color: var(--text); }
+.landing-card__desc { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
+
+.domain-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.domain-chip {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.domain-chip:hover { background: var(--surface-3); border-color: var(--accent); }
 
 .message {
   max-width: 680px;
@@ -977,6 +972,7 @@ button {
   transition: color 0.15s ease, border-color 0.15s ease;
 }
 .mic-button:hover { color: var(--text); border-color: var(--accent); }
+.mic-button.is-active { color: var(--accent-strong); border-color: var(--accent); background: var(--accent-soft); }
 
 .mic-icon { display: block; transition: opacity 0.15s ease; }
 
@@ -1514,15 +1510,14 @@ button {
   .page-header { padding: 16px; }
   .page-body { padding: 22px 16px 32px; }
 
-  /* Tor ekranlarda mic/attach/model-picker/yuborish tugmalari matnni
-     siqib, textarea joyini yeb qo'yardi (flex-shrink: 0 tufayli butun
-     siqilish yukini yagona textarea ko'tarardi). Shu sabab kiritish
-     qatorini ikki qatorga bo'lamiz: birinchi qatorda to'liq kengliqdagi
-     textarea, ikkinchisida tugmalar. */
+  /* Tor ekranlarda mic/attach/yuborish tugmalari matnni siqib, textarea
+     joyini yeb qo'yardi (flex-shrink: 0 tufayli butun siqilish yukini
+     yagona textarea ko'tarardi). Shu sabab kiritish qatorini ikki
+     qatorga bo'lamiz: birinchi qatorda to'liq kengliqdagi textarea,
+     ikkinchisida tugmalar. */
   .chat-form { flex-wrap: wrap; row-gap: 8px; }
   .chat-form textarea { order: 1; flex-basis: 100%; }
   .mic-button { order: 2; }
-  .model-picker { order: 3; }
   .chat-form button[type="submit"] { order: 4; margin-left: auto; }
 }
 
