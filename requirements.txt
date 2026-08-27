@@ -5,10 +5,12 @@ pydantic[email]>=2.9.0
 python-dotenv>=1.0.1
 sqlalchemy>=2.0.35
 passlib[bcrypt]>=1.7.4
-# DIQQAT: bcrypt<4.1 bilan mahkamlangan — passlib 1.7.4 yangi bcrypt (4.1+)
+# DIQQAT: aniq versiyaga mahkamlangan — passlib 1.7.4 yangi bcrypt (4.1+)
 # bilan mos kelmaydi ("password cannot be longer than 72 bytes" xatosi
-# beradi, chegarasiz o'rnatilsa). Bu chegara olib tashlanmasin.
-bcrypt<4.1
+# beradi, ro'yxatdan o'tish/kirishni butunlay buzadi). Faqat "<4.1" emas,
+# ANIQ versiyaga mahkamlangan — build muhitida eski/keshlangan bcrypt
+# qolib ketmasligi uchun.
+bcrypt==4.0.1
 python-jose[cryptography]>=3.3.0
 python-multipart>=0.0.12
 python-docx>=1.1.2
