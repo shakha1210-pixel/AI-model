@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Foydalanish shartlari — Apeiron</title>
+  <script>
+    (function () {
+      var t = localStorage.getItem("theme");
+      if (!t) t = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", t);
+      document.documentElement.setAttribute("data-accent", localStorage.getItem("accent") || "teal");
+      document.documentElement.setAttribute("data-font", localStorage.getItem("font") || "sans");
+    })();
+  </script>
+  <link rel="icon" type="image/jpeg" href="app_logo.jfif" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="page">
+    <header class="page-header">
+      <a class="brand" href="index.html">Apeiron</a>
+      <nav class="page-nav">
+        <a href="index.html">Suhbat</a>
+        <a href="terms.html" class="is-active">Foydalanish shartlari</a>
+      </nav>
+    </header>
+
+    <main class="page-body">
+      <div class="legal-doc">
+        <h1>Foydalanish shartlari</h1>
+        <p class="legal-doc__updated">Oxirgi yangilanish: 2026-yil</p>
+
+        <p>
+          Apeiron — bir nechta sun'iy intellekt modellarini (kod yozish, matn/g'oya
+          va rasm generatsiyasi uchun) bitta interfeysda birlashtiruvchi yordamchi
+          xizmat. Xizmatdan foydalanish orqali siz quyidagi shartlarga rozilik
+          bildirasiz.
+        </p>
+
+        <h2>1. Hisob va mas'uliyat</h2>
+        <p>
+          Xizmatdan foydalanish uchun ro'yxatdan o'tish (yoki Google orqali kirish)
+          shart. Hisobingiz ostida amalga oshirilgan barcha so'rovlar uchun siz
+          javobgarsiz. Parolingizni uchinchi shaxslarga bermang.
+        </p>
+
+        <h2>2. Taqiqlangan foydalanish</h2>
+        <p>Quyidagi maqsadlarda xizmatdan foydalanish qat'iyan taqiqlanadi:</p>
+        <ul>
+          <li>Noqonuniy, zararli, tahdid soluvchi yoki boshqalarni kamsituvchi kontent yaratish;</li>
+          <li>Zararli dastur (virus, ekspluatatsiya kodi) yozish yoki tarqatish uchun foydalanish;</li>
+          <li>Boshqa shaxslarning shaxsiy ma'lumotlarini ruxsatsiz yig'ish yoki tarqatish;</li>
+          <li>Xizmatni avtomatlashtirilgan botlar orqali haddan tashqari yuklash yoki uni buzishga urinish;</li>
+          <li>Mualliflik huquqini buzuvchi kontent yaratish yoki tarqatish.</li>
+        </ul>
+        <p>
+          Ushbu shartlar buzilgan taqdirda hisobingiz ogohlantirishsiz
+          bloklanishi mumkin.
+        </p>
+
+        <h2>3. Sun'iy intellekt javoblari haqida</h2>
+        <p>
+          Apeiron javoblari sun'iy intellekt modellari (Claude, Gemini, Leonardo va
+          boshqalar) tomonidan avtomatik generatsiya qilinadi. Javoblar ba'zan
+          noto'g'ri, chalkash yoki eskirgan bo'lishi mumkin — muhim qarorlar
+          (tibbiy, huquqiy, moliyaviy) uchun mustaqil ravishda tekshiring. Xizmat
+          "qanday bo'lsa shunday" (as is) taqdim etiladi, natijalarning to'liq
+          aniqligi kafolatlanmaydi.
+        </p>
+
+        <h2>4. Cheklovlar (kvota)</h2>
+        <p>
+          Serverni ortiqcha yuklanishdan va suiiste'moldan himoya qilish uchun
+          har bir foydalanuvchi uchun sessiya, loyiha va fayl sonига cheklovlar
+          qo'yilgan. Cheklovga yetganda tizim yangi resurs yaratishni bloklaydi;
+          mavjud resurslardan birini o'chirish orqali joy bo'shatishingiz mumkin.
+        </p>
+
+        <h2>5. Ma'lumotlarni saqlash</h2>
+        <p>
+          Suhbat tarixi, yuklangan fayllar va profil ma'lumotlari xizmat
+          ko'rsatish maqsadida serverda saqlanadi. Hisobingizni o'chirishni
+          so'rash uchun administrator bilan bog'laning.
+        </p>
+
+        <h2>6. Shartlarning o'zgarishi</h2>
+        <p>
+          Ushbu shartlar vaqti-vaqti bilan yangilanishi mumkin. Muhim
+          o'zgarishlar haqida xizmat ichida xabar beriladi.
+        </p>
+
+        <p class="legal-doc__note">
+          Bu sahifa diplom loyihasi doirasida tayyorlangan namunaviy hujjat
+          bo'lib, yuridik maslahat o'rnini bosmaydi.
+        </p>
+      </div>
+    </main>
+  </div>
+
+  <script src="ascii-bg.js"></script>
+  <script src="theme.js"></script>
+</body>
+</html>

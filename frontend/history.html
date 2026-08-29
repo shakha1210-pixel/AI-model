@@ -13,6 +13,11 @@
       document.documentElement.setAttribute("data-font", localStorage.getItem("font") || "sans");
     })();
   </script>
+  <script>
+    if (!localStorage.getItem("access_token")) {
+      window.location.href = "login.html";
+    }
+  </script>
   <link rel="icon" type="image/jpeg" href="app_logo.jfif" />
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -48,11 +53,6 @@
     </main>
   </div>
 
-  <script>
-    if (!localStorage.getItem("access_token")) {
-      window.location.href = "login.html";
-    }
-  </script>
   <script src="ascii-bg.js"></script>
   <script src="theme.js"></script>
   <script>

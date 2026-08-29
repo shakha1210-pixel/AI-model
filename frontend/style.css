@@ -1188,6 +1188,16 @@ button {
 
 .auth-card button[type="submit"] { margin-top: 6px; }
 
+.auth-check {
+  flex-direction: row !important;
+  align-items: flex-start;
+  gap: 8px !important;
+  font-weight: 500 !important;
+  cursor: pointer;
+}
+.auth-check input { margin-top: 2px; flex-shrink: 0; }
+.auth-check a { color: var(--accent-strong); }
+
 .auth-divider {
   display: flex;
   align-items: center;
@@ -1289,6 +1299,19 @@ button {
   gap: 28px;
   flex: 1;
 }
+
+.legal-doc {
+  max-width: 720px;
+  margin: 0 auto;
+  width: 100%;
+}
+.legal-doc h1 { font-size: 24px; margin: 0 0 4px; }
+.legal-doc__updated { color: var(--text-faint); font-size: 12.5px; margin: 0 0 22px; }
+.legal-doc h2 { font-size: 15.5px; margin: 26px 0 8px; }
+.legal-doc p { color: var(--text-muted); font-size: 14px; line-height: 1.6; margin: 0 0 4px; }
+.legal-doc ul { color: var(--text-muted); font-size: 14px; line-height: 1.6; margin: 6px 0; padding-left: 22px; }
+.legal-doc li { margin: 4px 0; }
+.legal-doc__note { margin-top: 28px; font-size: 12.5px; color: var(--text-faint); font-style: italic; }
 
 .section-label {
   font-size: 12px;
@@ -1657,6 +1680,10 @@ button {
     transform: translateX(-100%);
     transition: transform 0.2s ease;
     box-shadow: var(--shadow-md);
+    /* Pastki nav havolalari (masalan "Sozlamalar") ba'zi mobil
+       brauzer/qurilmalarda tizim gest paneli tagida qolib, bosilmay
+       qolardi — xavfsiz hudud uchun joy ajratamiz. */
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
   }
   .sidebar.is-open { transform: translateX(0); }
   .sidebar-scrim {

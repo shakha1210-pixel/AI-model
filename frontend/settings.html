@@ -13,6 +13,11 @@
       document.documentElement.setAttribute("data-font", localStorage.getItem("font") || "sans");
     })();
   </script>
+  <script>
+    if (!localStorage.getItem("access_token")) {
+      window.location.href = "login.html";
+    }
+  </script>
   <link rel="icon" type="image/jpeg" href="app_logo.jfif" />
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -31,12 +36,40 @@
 
     <main class="page-body">
       <div class="settings-tabs" role="tablist">
-        <button type="button" class="settings-tab is-active" data-settings-tab="mavzular">Mavzular</button>
+        <button type="button" class="settings-tab is-active" data-settings-tab="profil">Profil</button>
+        <button type="button" class="settings-tab" data-settings-tab="mavzular">Mavzular</button>
         <button type="button" class="settings-tab" data-settings-tab="suhbat">Suhbat</button>
         <button type="button" class="settings-tab" data-settings-tab="integratsiyalar">Integratsiyalar</button>
       </div>
 
-      <section class="settings-panel" data-settings-panel="mavzular">
+      <section class="settings-panel" data-settings-panel="profil">
+        <section class="settings-group">
+          <p class="section-label">Profil</p>
+          <div class="settings-row" style="flex-direction: column; align-items: stretch; gap: 12px;">
+            <div class="settings-row__text">
+              <span class="settings-row__title">Ism</span>
+              <span class="settings-row__desc">Yon panelda va suhbatda shu ism ko'rsatiladi</span>
+            </div>
+            <input type="text" id="profile-name-input" placeholder="Ismingiz" maxlength="80" style="max-width: 320px;" />
+          </div>
+          <div class="settings-row">
+            <div class="settings-row__text">
+              <span class="settings-row__title">Email</span>
+              <span class="settings-row__desc" id="profile-email">—</span>
+            </div>
+          </div>
+          <div class="settings-row" style="justify-content: flex-end;">
+            <button type="button" class="btn btn--primary" id="profile-save-btn">Saqlash</button>
+          </div>
+          <p id="profile-save-status" class="auth-note" hidden></p>
+        </section>
+
+        <p class="auth-note">
+          <a href="terms.html">Foydalanish shartlari</a> bilan tanishib chiqishingiz mumkin.
+        </p>
+      </section>
+
+      <section class="settings-panel" data-settings-panel="mavzular" hidden>
         <section class="settings-group">
           <p class="section-label">Ko'rinish va fon</p>
           <div class="settings-row" style="flex-direction: column; align-items: stretch; gap: 12px;">
@@ -204,6 +237,60 @@
         });
       });
     });
+
+    // --- Profil (ism/email) -----------------------------------------
+    (function () {
+      const nameInput = document.getElementById("profile-name-input");
+      const emailEl = document.getElementById("profile-email");
+      const saveBtn = document.getElementById("profile-save-btn");
+      const statusEl = document.getElementById("profile-save-status");
+
+      function authHeaders(extra) {
+        const token = localStorage.getItem("access_token");
+        return { ...extra, Authorization: `Bearer ${token}` };
+      }
+
+      fetch("/auth/me", { headers: authHeaders() })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (!data) return;
+          nameInput.value = data.ism || "";
+          emailEl.textContent = data.email || "—";
+          localStorage.setItem("user_name", data.ism || "");
+          localStorage.setItem("user_email", data.email || "");
+        })
+        .catch(() => {});
+
+      saveBtn.addEventListener("click", async () => {
+        const ism = nameInput.value.trim();
+        statusEl.hidden = true;
+        if (!ism) {
+          statusEl.textContent = "Ism bo'sh bo'lishi mumkin emas.";
+          statusEl.hidden = false;
+          return;
+        }
+        saveBtn.disabled = true;
+        try {
+          const res = await fetch("/auth/me", {
+            method: "PATCH",
+            headers: authHeaders({ "Content-Type": "application/json" }),
+            body: JSON.stringify({ ism }),
+          });
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error((data.detail && data.detail.message) || data.detail || "Saqlashda xatolik yuz berdi");
+          }
+          localStorage.setItem("user_name", ism);
+          statusEl.textContent = "Saqlandi.";
+          statusEl.hidden = false;
+        } catch (error) {
+          statusEl.textContent = error.message;
+          statusEl.hidden = false;
+        } finally {
+          saveBtn.disabled = false;
+        }
+      });
+    })();
 
     voiceToggle.checked = localStorage.getItem("voice_enabled") === "true";
     languageSelect.value = localStorage.getItem("language") || "uz";

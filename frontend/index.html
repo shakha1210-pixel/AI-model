@@ -14,6 +14,14 @@
       document.documentElement.setAttribute("data-font", localStorage.getItem("font") || "sans");
     })();
   </script>
+  <script>
+    // Kirish talabi: token yo'q bo'lsa, sahifa chizilishidan OLDIN
+    // login.htmlga yo'naltiramiz — aks holda asosiy sahifa bir lahzaga
+    // (flash) ko'rinib qolardi (script <body> oxirida ishga tushgani sabab).
+    if (!localStorage.getItem("access_token")) {
+      window.location.href = "login.html";
+    }
+  </script>
   <link rel="icon" type="image/jpeg" href="app_logo.jfif" />
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/base16/tomorrow-night.min.css" id="hljs-theme" />
@@ -183,17 +191,19 @@
     </div>
   </div>
 
-  <script>
-    // Kirish talabi: token yo'q bo'lsa, avval login.htmlga yo'naltiramiz.
-    // "Mehmon sifatida davom etish" imkoniyati olib tashlangan — botlar va
-    // anonim so'rovlardan himoya uchun har doim login SHART.
-    (function () {
-      const hasToken = !!localStorage.getItem("access_token");
-      if (!hasToken) {
-        window.location.href = "login.html";
-      }
-    })();
-  </script>
+  <div id="terms-modal" class="modal-overlay" hidden>
+    <div class="modal">
+      <h2>Foydalanish shartlari</h2>
+      <p>
+        Davom etishdan oldin <a href="terms.html" target="_blank" rel="noopener">Foydalanish shartlari</a>
+        bilan tanishib chiqing. Xizmatdan foydalanish orqali siz ularga rozilik bildirasiz.
+      </p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn--primary" id="terms-modal-accept">Qabul qilaman</button>
+      </div>
+    </div>
+  </div>
+
   <script src="ascii-bg.js"></script>
   <script src="theme.js"></script>
   <script src="voice.js"></script>
@@ -238,13 +248,45 @@
       const sid = localStorage.getItem("session_id");
       if (sid) tag.textContent = "sessiya: " + sid.slice(0, 8);
 
-      // Hisob: agar oldin kirilgan bo'lsa ismi/emaili ko'rsatiladi
-      const userName = localStorage.getItem("user_name");
-      const userEmail = localStorage.getItem("user_email");
-      if (userName || userEmail) {
-        document.getElementById("account-name").textContent = userName || userEmail;
-        document.querySelector(".account-btn__avatar").textContent = (userName || userEmail)[0].toUpperCase();
+      // Hisob: avval keshlangan ism/emaildan darhol ko'rsatamiz (flash
+      // bo'lmasin), so'ng /auth/me orqali serverdan yangilaymiz — bu
+      // Google kirish va boshqa qurilmada o'zgargan ism kabi hollarda
+      // "Mehmon" bo'lib qolib ketishning oldini oladi.
+      function renderAccount(name, email) {
+        const label = name || email;
+        if (!label) return;
+        document.getElementById("account-name").textContent = label;
+        document.querySelector(".account-btn__avatar").textContent = label[0].toUpperCase();
       }
+      renderAccount(localStorage.getItem("user_name"), localStorage.getItem("user_email"));
+
+      const termsModal = document.getElementById("terms-modal");
+      const termsAcceptBtn = document.getElementById("terms-modal-accept");
+
+      function authFetch(path, options) {
+        const token = localStorage.getItem("access_token");
+        return fetch(path, {
+          ...options,
+          headers: { ...(options && options.headers), Authorization: `Bearer ${token}` },
+        });
+      }
+
+      authFetch("/auth/me")
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (!data) return;
+          localStorage.setItem("user_name", data.ism || "");
+          localStorage.setItem("user_email", data.email || "");
+          renderAccount(data.ism, data.email);
+          if (!data.terms_accepted) termsModal.hidden = false;
+        })
+        .catch(() => {});
+
+      termsAcceptBtn.addEventListener("click", () => {
+        authFetch("/auth/accept-terms", { method: "POST" }).finally(() => {
+          termsModal.hidden = true;
+        });
+      });
 
       document.getElementById("logout-btn").addEventListener("click", () => {
         localStorage.removeItem("access_token");

@@ -36,6 +36,10 @@ class User(Base):
     parol_hash = Column(String, nullable=True)
     google_id = Column(String, unique=True, nullable=True)
     yaratilgan_vaqt = Column(DateTime, default=datetime.datetime.utcnow)
+    # Foydalanish shartlariga qachon rozilik berilgani (safety/consent
+    # protokoli) — NULL bo'lsa, hali rozilik berilmagan (frontend consent
+    # oynasini ko'rsatadi).
+    terms_accepted_at = Column(DateTime, nullable=True)
 
     sessions = relationship("ChatSession", back_populates="user")
 
@@ -117,12 +121,19 @@ def _migrate_add_missing_columns() -> None:
     yaratilgan ma'lumotlar bazasi bilan server ishga tushganda BARCHA
     sessiyaga oid so'rovlar "no such column" xatosi bilan yiqilardi."""
     inspector = inspect(engine)
-    if "sessions" not in inspector.get_table_names():
-        return
-    columns = {col["name"] for col in inspector.get_columns("sessions")}
-    if "project_id" not in columns:
-        with engine.begin() as conn:
-            conn.execute(text("ALTER TABLE sessions ADD COLUMN project_id VARCHAR"))
+    table_names = inspector.get_table_names()
+
+    if "sessions" in table_names:
+        columns = {col["name"] for col in inspector.get_columns("sessions")}
+        if "project_id" not in columns:
+            with engine.begin() as conn:
+                conn.execute(text("ALTER TABLE sessions ADD COLUMN project_id VARCHAR"))
+
+    if "users" in table_names:
+        columns = {col["name"] for col in inspector.get_columns("users")}
+        if "terms_accepted_at" not in columns:
+            with engine.begin() as conn:
+                conn.execute(text("ALTER TABLE users ADD COLUMN terms_accepted_at DATETIME"))
 
 
 def get_or_create_session(

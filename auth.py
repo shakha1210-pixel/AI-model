@@ -98,11 +98,16 @@ class RegisterRequest(BaseModel):
     ism: str
     email: EmailStr
     password: str
+    accepted_terms: bool = False
 
 
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
+
+
+class UpdateProfileRequest(BaseModel):
+    ism: str
 
 
 def hash_password(password: str) -> str:
@@ -170,13 +175,23 @@ def register(payload: RegisterRequest, request: Request) -> TokenResponse:
     except RateLimitExceeded as exc:
         raise HTTPException(status_code=429, detail=str(exc)) from exc
 
+    if not payload.accepted_terms:
+        raise HTTPException(
+            status_code=400, detail="Ro'yxatdan o'tish uchun foydalanish shartlariga rozilik shart"
+        )
+
     init_db()
     with SessionLocal() as db:
         existing = db.query(User).filter(User.email == payload.email).first()
         if existing:
             raise HTTPException(status_code=400, detail="Bu email allaqachon ro'yxatdan o'tgan")
 
-        user = User(ism=payload.ism, email=payload.email, parol_hash=hash_password(payload.password))
+        user = User(
+            ism=payload.ism,
+            email=payload.email,
+            parol_hash=hash_password(payload.password),
+            terms_accepted_at=datetime.datetime.utcnow(),
+        )
         db.add(user)
         db.commit()
         db.refresh(user)
@@ -207,7 +222,36 @@ def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends()) ->
 
 @router.get("/me")
 def me(current_user: User = Depends(get_current_user)) -> dict:
-    return {"id": current_user.id, "ism": current_user.ism, "email": current_user.email}
+    return {
+        "id": current_user.id,
+        "ism": current_user.ism,
+        "email": current_user.email,
+        "terms_accepted": current_user.terms_accepted_at is not None,
+    }
+
+
+@router.patch("/me")
+def update_profile(payload: UpdateProfileRequest, current_user: User = Depends(get_current_user)) -> dict:
+    ism = payload.ism.strip()
+    if not ism:
+        raise HTTPException(status_code=400, detail="Ism bo'sh bo'lishi mumkin emas")
+    if len(ism) > 80:
+        raise HTTPException(status_code=400, detail="Ism juda uzun (ko'pi bilan 80 belgi)")
+
+    with SessionLocal() as db:
+        user = db.get(User, current_user.id)
+        user.ism = ism
+        db.commit()
+        return {"id": user.id, "ism": user.ism, "email": user.email}
+
+
+@router.post("/accept-terms")
+def accept_terms(current_user: User = Depends(get_current_user)) -> dict:
+    with SessionLocal() as db:
+        user = db.get(User, current_user.id)
+        user.terms_accepted_at = datetime.datetime.utcnow()
+        db.commit()
+        return {"terms_accepted": True}
 
 
 # ---------------------------------------------------------------------------

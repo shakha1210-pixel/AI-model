@@ -44,6 +44,14 @@
         Parol
         <input type="password" id="password" placeholder="kamida 6 belgi" required minlength="6" />
       </label>
+      <label class="auth-check">
+        <input type="checkbox" id="accepted-terms" required />
+        <span>
+          <a href="terms.html" target="_blank" rel="noopener">Foydalanish shartlari</a>ga
+          roziman
+        </span>
+      </label>
+
       <button type="submit" class="btn btn--primary btn--block">Ro'yxatdan o'tish</button>
       <p class="auth-switch">Hisobingiz bormi? <a href="login.html">Kiring</a></p>
       <p id="auth-error" class="auth-error"></p>
@@ -58,6 +66,7 @@
       const ism = document.getElementById("ism").value;
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
+      const acceptedTerms = document.getElementById("accepted-terms").checked;
       const errorEl = document.getElementById("auth-error");
       errorEl.textContent = "";
 
@@ -65,7 +74,7 @@
         const response = await fetch("/auth/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ism, email, password }),
+          body: JSON.stringify({ ism, email, password, accepted_terms: acceptedTerms }),
         });
         if (!response.ok) {
           const data = await response.json().catch(() => ({}));

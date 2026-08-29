@@ -30,7 +30,12 @@ def _register_test_user() -> dict:
     email = f"pytest-{_uuid.uuid4()}@misol.uz"
     response = client.post(
         "/auth/register",
-        json={"ism": "Pytest", "email": email, "password": "pytest-parol-1234"},
+        json={
+            "ism": "Pytest",
+            "email": email,
+            "password": "pytest-parol-1234",
+            "accepted_terms": True,
+        },
     )
     return {"Authorization": f"Bearer {response.json()['access_token']}"}
 
@@ -169,6 +174,58 @@ def test_chat_requires_auth_when_enabled():
         return
     response = client.post("/chat", json={"message": "salom"})
     assert response.status_code == 401
+
+
+def test_register_requires_accepted_terms():
+    """accepted_terms=False (yoki yo'q) bo'lsa, ro'yxatdan o'tish rad
+    etilishi kerak — "safety protokoli" kabi majburiy rozilik."""
+    if not main.ENABLE_AUTH:
+        return
+    import uuid as _uuid
+
+    response = client.post(
+        "/auth/register",
+        json={
+            "ism": "Rozi bo'lmagan",
+            "email": f"pytest-{_uuid.uuid4()}@misol.uz",
+            "password": "pytest-parol-1234",
+            "accepted_terms": False,
+        },
+    )
+    assert response.status_code == 400
+
+
+def test_me_reports_terms_accepted_and_profile_update():
+    if not main.ENABLE_AUTH:
+        return
+    me = client.get("/auth/me", headers=AUTH_HEADERS)
+    assert me.status_code == 200
+    assert me.json()["terms_accepted"] is True
+
+    updated = client.patch("/auth/me", json={"ism": "Yangi Ism"}, headers=AUTH_HEADERS)
+    assert updated.status_code == 200
+    assert updated.json()["ism"] == "Yangi Ism"
+
+    me_again = client.get("/auth/me", headers=AUTH_HEADERS)
+    assert me_again.json()["ism"] == "Yangi Ism"
+
+    # Keyingi testlar buzilmasin uchun ismni qaytaramiz
+    client.patch("/auth/me", json={"ism": "Pytest"}, headers=AUTH_HEADERS)
+
+
+def test_update_profile_rejects_empty_name():
+    if not main.ENABLE_AUTH:
+        return
+    response = client.patch("/auth/me", json={"ism": "   "}, headers=AUTH_HEADERS)
+    assert response.status_code == 400
+
+
+def test_accept_terms_endpoint():
+    if not main.ENABLE_AUTH:
+        return
+    response = client.post("/auth/accept-terms", headers=AUTH_HEADERS)
+    assert response.status_code == 200
+    assert response.json()["terms_accepted"] is True
 
 
 def test_session_history_isolated_without_auth():
