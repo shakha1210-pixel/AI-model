@@ -7,6 +7,7 @@ ham yoqilgan bo'lishi kerak.
 """
 
 import datetime
+import logging
 import os
 from urllib.parse import urlencode
 
@@ -55,6 +56,8 @@ GOOGLE_REDIRECT_URI = os.getenv(
 FRONTEND_LOGIN_SUCCESS_URL = os.getenv(
     "FRONTEND_LOGIN_SUCCESS_URL", "http://127.0.0.1:8000/login.html"
 )
+
+logger = logging.getLogger("agent.auth")
 
 GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
@@ -251,6 +254,15 @@ async def google_callback(code: str | None = None, error: str | None = None):
             },
         )
         if token_response.status_code != 200:
+            # Google'ning aniq sababini (masalan "redirect_uri_mismatch",
+            # "invalid_client") loglab qo'yamiz — foydalanuvchiga umumiy
+            # xabar ko'rsatiladi, lekin Render Logs'da haqiqiy sabab
+            # ko'rinadi (redirect_uri quyida ham loglanadi — Google
+            # Console'dagi ro'yxat bilan solishtirish uchun).
+            logger.error(
+                "Google token almashinuvi xato: %s %s | redirect_uri=%s",
+                token_response.status_code, token_response.text, GOOGLE_REDIRECT_URI,
+            )
             raise HTTPException(
                 status_code=502, detail="Google token olishda xatolik yuz berdi."
             )
@@ -262,6 +274,10 @@ async def google_callback(code: str | None = None, error: str | None = None):
             headers={"Authorization": f"Bearer {google_token}"},
         )
         if userinfo_response.status_code != 200:
+            logger.error(
+                "Google userinfo xato: %s %s",
+                userinfo_response.status_code, userinfo_response.text,
+            )
             raise HTTPException(
                 status_code=502, detail="Google foydalanuvchi ma'lumotini olib bo'lmadi."
             )
