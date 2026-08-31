@@ -28,9 +28,9 @@
       window.location.href = "login.html";
     }
   </script>
-  <script src="i18n.js?v=3"></script>
+  <script src="i18n.js?v=4"></script>
   <link rel="icon" type="image/jpeg" href="app_logo.jfif" />
-  <link rel="stylesheet" href="style.css?v=3" />
+  <link rel="stylesheet" href="style.css?v=4" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/base16/tomorrow-night.min.css" id="hljs-theme" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
 </head>
@@ -220,10 +220,10 @@
     </div>
   </div>
 
-  <script src="ascii-bg.js?v=3"></script>
-  <script src="theme.js?v=3"></script>
-  <script src="voice.js?v=3"></script>
-  <script src="chat.js?v=3"></script>
+  <script src="ascii-bg.js?v=4"></script>
+  <script src="theme.js?v=4"></script>
+  <script src="voice.js?v=4"></script>
+  <script src="chat.js?v=4"></script>
   <script>
     (function () {
       const sidebar = document.getElementById("sidebar");
@@ -250,11 +250,16 @@
       });
       scrim.addEventListener("click", closeMobileSidebar);
 
-      // Desktop: yig'ish/yoyish (collapse/expand), holati saqlanadi
-      if (localStorage.getItem("sidebar_collapsed") === "true") {
+      // Desktop: yig'ish/yoyish (collapse/expand), holati saqlanadi.
+      // Mobilda bu rejim ma'nosiz (sidebar allaqachon overlay) va
+      // oldingi desktop seansidan saqlanib qolgan holat tasodifan
+      // mobil ko'rinishni buzmasligi uchun faqat !mq.matches (ya'ni
+      // desktop kenglikda) qo'llanadi.
+      if (!mq.matches && localStorage.getItem("sidebar_collapsed") === "true") {
         shell.classList.add("is-collapsed");
       }
       collapseBtn.addEventListener("click", () => {
+        if (mq.matches) return;
         const collapsed = shell.classList.toggle("is-collapsed");
         localStorage.setItem("sidebar_collapsed", collapsed ? "true" : "false");
       });

@@ -1707,6 +1707,29 @@ button {
     padding-bottom: calc(16px + env(safe-area-inset-bottom));
   }
   .sidebar.is-open { transform: translateX(0); }
+
+  /* "Yig'ish/yoyish" (rail) rejimi faqat desktop uchun mo'ljallangan.
+     Mobilda bu tugma tasodifan bosilib, butun sidebar torayib
+     ketishi va boshqa tugmalarni siljitib yuborishi mumkin edi —
+     shu sabab mobilda tugmani butunlay yashiramiz va oldingi
+     desktop seansidan saqlanib qolgan "is-collapsed" holatini ham
+     mobilda bekor qilamiz. */
+  .sidebar__collapse-btn { display: none; }
+  .shell.is-collapsed .sidebar__brand,
+  .shell.is-collapsed .sidebar__new span,
+  .shell.is-collapsed .sidebar__link span,
+  .shell.is-collapsed .sidebar__sessions-wrap,
+  .shell.is-collapsed .account-btn__text {
+    display: revert;
+  }
+  .shell.is-collapsed .sidebar__new,
+  .shell.is-collapsed .sidebar__link,
+  .shell.is-collapsed .account-btn {
+    justify-content: flex-start;
+  }
+  .shell.is-collapsed .sidebar { align-items: stretch; }
+  .shell.is-collapsed .sidebar__top { justify-content: space-between; flex-direction: row; }
+  .shell.is-collapsed .account-popover { left: 4px; bottom: calc(100% + 8px); right: 4px; width: auto; }
   .sidebar-scrim {
     display: none;
     position: fixed;
