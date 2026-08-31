@@ -14,7 +14,11 @@
     })();
   </script>
   <script>
-    if (!localStorage.getItem("access_token")) {
+    try {
+      if (!localStorage.getItem("access_token")) {
+        window.location.href = "login.html";
+      }
+    } catch (e) {
       window.location.href = "login.html";
     }
   </script>
@@ -266,6 +270,8 @@
     // --- Til tanlovi: 6 ta til to'liq tarjima bilan ishlaydi, qolganlari
     // hozircha "(tez orada)" belgisi bilan tanlab bo'lmaydigan holatda ---
     (function () {
+      if (!window.I18N) return; // i18n.js yuklanmagan bo'lsa, jimgina chiqib ketamiz
+
       const UPCOMING_LANGS = {
         kaa: "Qoraqalpoq", kk: "Qozoq", ky: "Qirg'iz", tg: "Tojik", tk: "Turkman",
         az: "Ozarbayjon", fa: "Fors", ur: "Urdu", hi: "Hind", zh: "Xitoy",

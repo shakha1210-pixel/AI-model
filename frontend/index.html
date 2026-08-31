@@ -18,7 +18,13 @@
     // Kirish talabi: token yo'q bo'lsa, sahifa chizilishidan OLDIN
     // login.htmlga yo'naltiramiz — aks holda asosiy sahifa bir lahzaga
     // (flash) ko'rinib qolardi (script <body> oxirida ishga tushgani sabab).
-    if (!localStorage.getItem("access_token")) {
+    // localStorage o'qishda xato chiqsa ham (masalan ba'zi mobil
+    // brauzer sozlamalarida) xavfsiz tomonga — login.html'ga — o'tamiz.
+    try {
+      if (!localStorage.getItem("access_token")) {
+        window.location.href = "login.html";
+      }
+    } catch (e) {
       window.location.href = "login.html";
     }
   </script>
@@ -283,29 +289,14 @@
         });
       }
 
+      // MUHIM: hisob/chiqish kabi asosiy funksiyalar quyidagi (til tanlovi
+      // oynasini quruvchi) blokdan OLDIN ulanadi — aks holda i18n.js
+      // tarmoqda yuklanmay qolsa (masalan beqaror mobil aloqada), o'sha
+      // blokdagi xato butun IIFE'ni to'xtatib, hisob nomi/chiqish/sozlamalar
+      // popover kabi u bilan bog'liq bo'lmagan narsalarni ham buzib qo'yardi.
       let pendingTermsAccepted = true;
       function maybeShowTermsModal() {
         if (!pendingTermsAccepted) termsModal.hidden = false;
-      }
-
-      // Til tanlovi: birinchi marta kirganda (hali til tanlanmagan bo'lsa)
-      // asosiy sahifadan foydalanishdan oldin til tanlash oynasi chiqadi.
-      // Tanlangandan keyin butun interfeys shu tilda ko'rsatiladi va
-      // tanlov Sozlamalar bo'limida istalgan payt o'zgartirilishi mumkin.
-      if (!localStorage.getItem("language")) {
-        I18N.SUPPORTED_LANGS.forEach((code) => {
-          const btn = document.createElement("button");
-          btn.type = "button";
-          btn.className = "lang-pick-btn";
-          btn.textContent = I18N.LANG_NAMES[code];
-          btn.addEventListener("click", () => {
-            I18N.applyLanguage(code);
-            languageModal.hidden = true;
-            maybeShowTermsModal();
-          });
-          languageOptionsEl.appendChild(btn);
-        });
-        languageModal.hidden = false;
       }
 
       authFetch("/auth/me")
@@ -337,6 +328,31 @@
         localStorage.removeItem("session_id");
         window.location.reload();
       });
+
+      // Til tanlovi: birinchi marta kirganda (hali til tanlanmagan bo'lsa)
+      // asosiy sahifadan foydalanishdan oldin til tanlash oynasi chiqadi.
+      // window.I18N mavjud bo'lmasa (masalan i18n.js yuklanmay qolsa),
+      // bu bo'limni jimgina o'tkazib yuboramiz — yuqoridagi asosiy
+      // funksiyalarga ta'sir qilmasin.
+      try {
+        if (window.I18N && !localStorage.getItem("language")) {
+          I18N.SUPPORTED_LANGS.forEach((code) => {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "lang-pick-btn";
+            btn.textContent = I18N.LANG_NAMES[code];
+            btn.addEventListener("click", () => {
+              I18N.applyLanguage(code);
+              languageModal.hidden = true;
+              maybeShowTermsModal();
+            });
+            languageOptionsEl.appendChild(btn);
+          });
+          languageModal.hidden = false;
+        }
+      } catch (err) {
+        languageModal.hidden = true;
+      }
     })();
   </script>
 </body>

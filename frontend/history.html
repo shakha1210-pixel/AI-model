@@ -14,7 +14,11 @@
     })();
   </script>
   <script>
-    if (!localStorage.getItem("access_token")) {
+    try {
+      if (!localStorage.getItem("access_token")) {
+        window.location.href = "login.html";
+      }
+    } catch (e) {
       window.location.href = "login.html";
     }
   </script>
