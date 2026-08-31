@@ -18,6 +18,7 @@
       window.location.href = "login.html";
     }
   </script>
+  <script src="i18n.js"></script>
   <link rel="icon" type="image/jpeg" href="app_logo.jfif" />
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -28,17 +29,17 @@
     <header class="page-header">
       <a class="brand" href="index.html">Apeiron</a>
       <nav class="page-nav">
-        <a href="index.html">Suhbat</a>
-        <a href="projects.html" class="is-active">Loyihalar</a>
-        <a href="history.html">Tarix</a>
-        <a href="settings.html">Sozlamalar</a>
+        <a href="index.html" data-i18n="nav.chat">Suhbat</a>
+        <a href="projects.html" class="is-active" data-i18n="nav.projects">Loyihalar</a>
+        <a href="history.html" data-i18n="nav.history">Tarix</a>
+        <a href="settings.html" data-i18n="nav.settings">Sozlamalar</a>
       </nav>
     </header>
 
     <main class="page-body">
       <div id="projects-list-view">
         <div>
-          <p class="section-label">Loyihalar</p>
+          <p class="section-label" data-i18n="projects.title">Loyihalar</p>
           <p style="color: var(--text-muted); font-size: 13.5px; margin: 6px 0 0;">
             Suhbat va fayllarni bitta papkada guruhlang — agent loyiha ichidagi fayllarni
             o'qiy oladi (Kod yozish bo'limida).
@@ -47,8 +48,8 @@
 
         <div class="projects-toolbar" style="margin-top: 18px;">
           <form id="create-project-form" class="projects-create-form" style="flex: 1;">
-            <input type="text" id="new-project-name" placeholder="Yangi loyiha nomi..." maxlength="80" required />
-            <button type="submit" class="btn btn--primary">+ Yaratish</button>
+            <input type="text" id="new-project-name" data-i18n-placeholder="projects.namePlaceholder" placeholder="Yangi loyiha nomi..." maxlength="80" required />
+            <button type="submit" class="btn btn--primary">+ <span data-i18n="projects.create">Yaratish</span></button>
           </form>
           <span id="projects-limit-hint" class="badge-soon" style="margin: 0;"></span>
         </div>
@@ -94,11 +95,11 @@
 
   <div id="limit-modal" class="modal-overlay" hidden>
     <div class="modal">
-      <h2>Chegaraga yetdingiz</h2>
+      <h2 data-i18n="modal.limit.title">Chegaraga yetdingiz</h2>
       <p id="limit-modal-message"></p>
       <div class="modal-actions">
-        <button type="button" class="btn btn--ghost" id="limit-modal-close">Yopish</button>
-        <button type="button" class="btn btn--primary" disabled title="Tez orada">Pro'ga o'tish</button>
+        <button type="button" class="btn btn--ghost" id="limit-modal-close" data-i18n="modal.limit.close">Yopish</button>
+        <button type="button" class="btn btn--primary" disabled title="Tez orada" data-i18n="modal.limit.pro">Pro'ga o'tish</button>
       </div>
     </div>
   </div>

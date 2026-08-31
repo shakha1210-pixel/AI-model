@@ -18,6 +18,7 @@
       window.location.href = "login.html";
     }
   </script>
+  <script src="i18n.js"></script>
   <link rel="icon" type="image/jpeg" href="app_logo.jfif" />
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -28,25 +29,25 @@
     <header class="page-header">
       <a class="brand" href="index.html">Apeiron</a>
       <nav class="page-nav">
-        <a href="index.html">Suhbat</a>
-        <a href="projects.html">Loyihalar</a>
-        <a href="history.html" class="is-active">Tarix</a>
-        <a href="settings.html">Sozlamalar</a>
+        <a href="index.html" data-i18n="nav.chat">Suhbat</a>
+        <a href="projects.html" data-i18n="nav.projects">Loyihalar</a>
+        <a href="history.html" class="is-active" data-i18n="nav.history">Tarix</a>
+        <a href="settings.html" data-i18n="nav.settings">Sozlamalar</a>
       </nav>
     </header>
 
     <main class="page-body">
       <div>
-        <p class="section-label">Sessiya tarixi</p>
-        <p style="color: var(--text-muted); font-size: 13.5px; margin: 6px 0 0;">
+        <p class="section-label" data-i18n="history.title">Sessiya tarixi</p>
+        <p style="color: var(--text-muted); font-size: 13.5px; margin: 6px 0 0;" data-i18n="history.desc">
           Sessiya ID orqali suhbat tarixini ko'rib chiqing. Joriy brauzeringizdagi oxirgi sessiya
           avtomatik yuklanadi.
         </p>
       </div>
 
       <div class="history-toolbar">
-        <input type="text" id="session-input" placeholder="sessiya-id kiriting..." />
-        <button type="button" class="btn btn--primary" id="load-btn">Yuklash</button>
+        <input type="text" id="session-input" data-i18n-placeholder="history.inputPlaceholder" placeholder="sessiya-id kiriting..." />
+        <button type="button" class="btn btn--primary" id="load-btn" data-i18n="history.load">Yuklash</button>
       </div>
 
       <div id="history-list" class="history-list"></div>

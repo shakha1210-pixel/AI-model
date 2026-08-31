@@ -187,24 +187,16 @@ if (thinkingButton) {
    Boshlang'ich (landing) holat: aniq vazifa tanlash oqimi
    --------------------------------------------------------------------- */
 
-const DOMAIN_INFO = {
-  code: {
-    title: "Kod yozish",
-    intro: "Kod yozish bo'limidasiz. Loyihangiz haqida qisqacha ayting — nima yaratmoqchisiz yoki qaysi muammoni hal qilish kerak?",
-  },
-  idea: {
-    title: "G'oya",
-    intro: "G'oya va erkin suhbat bo'limidasiz. Nima haqida gaplashamiz yoki qanday g'oyani muhokama qilmoqchisiz?",
-  },
-  image: {
-    title: "Rasm chizish",
-    intro: "Rasm chizish bo'limidasiz. Qanday rasm chizishimni ta'riflab bering.",
-  },
-  research: {
-    title: "Tahlil",
-    intro: "Tahlil va qidiruv bo'limidasiz. Qaysi hujjat yoki mavzuni chuqur tahlil qilishim kerak?",
-  },
-};
+// Har bir domenning sarlavha/tanishtiruv matnlari i18n.js lug'atidan
+// ("landing.card.<domen>.title"/".intro") o'qiladi — interfeys tiliga qarab
+// avtomatik moslashadi.
+const DOMAIN_KEYS = ["code", "idea", "image", "research"];
+function domainTitle(domain) {
+  return window.I18N ? I18N.t(`landing.card.${domain}.title`) : domain;
+}
+function domainIntro(domain) {
+  return window.I18N ? I18N.t(`landing.card.${domain}.intro`) : "";
+}
 
 let currentMode = localStorage.getItem("chat_mode") || "auto";
 let taskInitialText = null; // markazlashgan maydonga aniq bo'lim tanlanmasdan yozilgan matn
@@ -220,7 +212,7 @@ function startWithDomain(domain) {
   currentMode = domain;
   localStorage.setItem("chat_mode", currentMode);
   exitLanding();
-  addMessage("assistant", DOMAIN_INFO[domain].intro);
+  addMessage("assistant", domainIntro(domain));
   inputEl.focus();
 }
 
@@ -230,14 +222,14 @@ function startWithDomain(domain) {
 function startWithTypedText(text) {
   taskInitialText = text;
   exitLanding();
-  const bubble = addMessage("assistant", "Bu qanday turdagi vazifa? Quyidagilardan birini tanlang:");
+  const bubble = addMessage("assistant", window.I18N ? I18N.t("landing.typeTextPrompt") : "");
   const chipsWrap = document.createElement("div");
   chipsWrap.className = "domain-chips";
-  Object.entries(DOMAIN_INFO).forEach(([key, info]) => {
+  DOMAIN_KEYS.forEach((key) => {
     const chip = document.createElement("button");
     chip.type = "button";
     chip.className = "domain-chip";
-    chip.textContent = info.title;
+    chip.textContent = domainTitle(key);
     chip.addEventListener("click", () => {
       chipsWrap.remove();
       currentMode = key;

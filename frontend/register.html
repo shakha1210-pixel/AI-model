@@ -13,6 +13,7 @@
       document.documentElement.setAttribute("data-font", localStorage.getItem("font") || "sans");
     })();
   </script>
+  <script src="i18n.js"></script>
   <link rel="icon" type="image/jpeg" href="app_logo.jfif" />
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -25,35 +26,38 @@
 
   <div class="auth-page">
     <form id="register-form" class="auth-card">
-      <p class="auth-card__eyebrow">Yangi hisob</p>
-      <h1>Ro'yxatdan o'tish</h1>
-      <p class="auth-note">
+      <p class="auth-card__eyebrow" data-i18n="auth.register.eyebrow">Yangi hisob</p>
+      <h1 data-i18n="auth.register.title">Ro'yxatdan o'tish</h1>
+      <p class="auth-note" data-i18n="auth.register.note">
         Eslatma: bu forma faqat backend'da ENABLE_AUTH=true va
         ENABLE_DATABASE=true qilinganda ishlaydi (main.py va .env fayliga
         qarang).
       </p>
       <label>
-        Ism
-        <input type="text" id="ism" placeholder="Ismingiz" required />
+        <span data-i18n="auth.name">Ism</span>
+        <input type="text" id="ism" data-i18n-placeholder="auth.namePlaceholder" placeholder="Ismingiz" required />
       </label>
       <label>
-        Email
-        <input type="email" id="email" placeholder="siz@misol.uz" required />
+        <span data-i18n="auth.email">Email</span>
+        <input type="email" id="email" data-i18n-placeholder="auth.emailPlaceholder" placeholder="siz@misol.uz" required />
       </label>
       <label>
-        Parol
-        <input type="password" id="password" placeholder="kamida 6 belgi" required minlength="6" />
+        <span data-i18n="auth.password">Parol</span>
+        <input type="password" id="password" data-i18n-placeholder="auth.passwordPlaceholderRegister" placeholder="kamida 6 belgi" required minlength="6" />
       </label>
       <label class="auth-check">
         <input type="checkbox" id="accepted-terms" required />
         <span>
-          <a href="terms.html" target="_blank" rel="noopener">Foydalanish shartlari</a>ga
-          roziman
+          <span data-i18n="auth.terms.prefix"></span>
+          <a href="terms.html" target="_blank" rel="noopener" data-i18n="auth.terms.link">Foydalanish shartlari</a><span data-i18n="auth.terms.suffix">ga roziman</span>
         </span>
       </label>
 
-      <button type="submit" class="btn btn--primary btn--block">Ro'yxatdan o'tish</button>
-      <p class="auth-switch">Hisobingiz bormi? <a href="login.html">Kiring</a></p>
+      <button type="submit" class="btn btn--primary btn--block" data-i18n="auth.register.submit">Ro'yxatdan o'tish</button>
+      <p class="auth-switch">
+        <span data-i18n="auth.register.switchText">Hisobingiz bormi?</span>
+        <a href="login.html" data-i18n="auth.register.switchLink">Kiring</a>
+      </p>
       <p id="auth-error" class="auth-error"></p>
     </form>
   </div>
@@ -78,7 +82,7 @@
         });
         if (!response.ok) {
           const data = await response.json().catch(() => ({}));
-          throw new Error(data.detail || "Ro'yxatdan o'tishda xatolik yuz berdi");
+          throw new Error(data.detail || I18N.t("auth.error.registerFailed"));
         }
         const data = await response.json();
         localStorage.setItem("access_token", data.access_token);

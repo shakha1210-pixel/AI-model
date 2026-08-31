@@ -1667,6 +1667,25 @@ button {
 .modal p { margin: 0 0 18px; color: var(--text-muted); font-size: 13.5px; line-height: 1.5; }
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
 
+.lang-pick-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.lang-pick-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+}
+.lang-pick-btn:hover { border-color: var(--accent); background: var(--accent-soft); }
+
 /* =========================================================================
    Responsive
    ========================================================================= */

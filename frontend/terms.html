@@ -13,6 +13,7 @@
       document.documentElement.setAttribute("data-font", localStorage.getItem("font") || "sans");
     })();
   </script>
+  <script src="i18n.js"></script>
   <link rel="icon" type="image/jpeg" href="app_logo.jfif" />
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -22,8 +23,8 @@
     <header class="page-header">
       <a class="brand" href="index.html">Apeiron</a>
       <nav class="page-nav">
-        <a href="index.html">Suhbat</a>
-        <a href="terms.html" class="is-active">Foydalanish shartlari</a>
+        <a href="index.html" data-i18n="nav.chat">Suhbat</a>
+        <a href="terms.html" class="is-active" data-i18n="nav.terms">Foydalanish shartlari</a>
       </nav>
     </header>
 

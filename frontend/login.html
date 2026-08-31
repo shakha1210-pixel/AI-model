@@ -13,6 +13,7 @@
       document.documentElement.setAttribute("data-font", localStorage.getItem("font") || "sans");
     })();
   </script>
+  <script src="i18n.js"></script>
   <link rel="icon" type="image/jpeg" href="app_logo.jfif" />
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -25,23 +26,23 @@
 
   <div class="auth-page">
     <form id="login-form" class="auth-card">
-      <p class="auth-card__eyebrow">Avtorizatsiya</p>
-      <h1>Kirish</h1>
-      <p class="auth-note">
+      <p class="auth-card__eyebrow" data-i18n="auth.login.eyebrow">Avtorizatsiya</p>
+      <h1 data-i18n="auth.login.title">Kirish</h1>
+      <p class="auth-note" data-i18n="auth.login.note">
         Eslatma: bu forma faqat backend'da ENABLE_AUTH=true qilinganda ishlaydi
         (main.py va .env fayliga qarang).
       </p>
       <label>
-        Email
-        <input type="email" id="email" placeholder="siz@misol.uz" required />
+        <span data-i18n="auth.email">Email</span>
+        <input type="email" id="email" data-i18n-placeholder="auth.emailPlaceholder" placeholder="siz@misol.uz" required />
       </label>
       <label>
-        Parol
+        <span data-i18n="auth.password">Parol</span>
         <input type="password" id="password" placeholder="••••••••" required />
       </label>
-      <button type="submit" class="btn btn--primary btn--block">Kirish</button>
+      <button type="submit" class="btn btn--primary btn--block" data-i18n="auth.login.submit">Kirish</button>
 
-      <div class="auth-divider"><span>yoki</span></div>
+      <div class="auth-divider"><span data-i18n="auth.or">yoki</span></div>
 
       <a href="/auth/google/login" class="btn btn--google btn--block">
         <svg viewBox="0 0 48 48" width="18" height="18" aria-hidden="true">
@@ -50,10 +51,13 @@
           <path fill="#4CAF50" d="M24 45c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 36.4 26.7 37 24 37c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.2 40.4 16 45 24 45z"/>
           <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.2-4.1 5.6l6.2 5.2C40.9 36 44 30.6 44 24c0-1.4-.1-2.7-.4-3.5z"/>
         </svg>
-        Google orqali kirish
+        <span data-i18n="auth.google">Google orqali kirish</span>
       </a>
 
-      <p class="auth-switch">Hisobingiz yo'qmi? <a href="register.html">Ro'yxatdan o'ting</a></p>
+      <p class="auth-switch">
+        <span data-i18n="auth.login.switchText">Hisobingiz yo'qmi?</span>
+        <a href="register.html" data-i18n="auth.login.switchLink">Ro'yxatdan o'ting</a>
+      </p>
       <p id="auth-error" class="auth-error"></p>
     </form>
   </div>
@@ -86,8 +90,7 @@
             window.location.href = "index.html";
           })
           .catch(() => {
-            document.getElementById("auth-error").textContent =
-              "Google orqali kirishda xatolik yuz berdi, qayta urinib ko'ring.";
+            document.getElementById("auth-error").textContent = I18N.t("auth.error.googleFailed");
           });
       }
     })();
@@ -107,7 +110,7 @@
         const response = await fetch("/auth/login", { method: "POST", body });
         if (!response.ok) {
           const data = await response.json().catch(() => ({}));
-          throw new Error(data.detail || "Kirishda xatolik yuz berdi");
+          throw new Error(data.detail || I18N.t("auth.error.loginFailed"));
         }
         const data = await response.json();
         localStorage.setItem("access_token", data.access_token);

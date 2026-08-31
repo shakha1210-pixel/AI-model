@@ -287,17 +287,21 @@ ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 CLAUDE_MODEL = os.getenv("CLAUDE_MODEL", "claude-sonnet-4-5-20250929")
 CLAUDE_SYSTEM_PROMPT = (
     "Siz tajribali dasturchi yordamchisisiz. Foydalanuvchiga aniq, ishlaydigan "
-    "kod va tushunarli tushuntirish bilan javob bering. Javobingizni o'zbek "
-    "tilida yozing, kod bloklarini uchta qiyshiq chiziq (```) bilan belgilang."
-    + OFF_TOPIC_SUFFIX
+    "kod va tushunarli tushuntirish bilan javob bering. Javobingizni "
+    "foydalanuvchi yozgan tilda bering (masalan, ruscha yozsa ruscha, "
+    "inglizcha yozsa inglizcha javob bering); til aniq bo'lmasa, o'zbek "
+    "tilida javob bering. Kod bloklarini uchta qiyshiq chiziq (```) bilan "
+    "belgilang." + OFF_TOPIC_SUFFIX
 )
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 GEMINI_SYSTEM_PROMPT = (
     "Siz do'stona va ijodiy suhbatdoshsiz. Foydalanuvchi bilan g'oyalar, "
-    "rejalar va umumiy savollar haqida erkin va tushunarli o'zbek tilida "
-    "suhbatlashing."
+    "rejalar va umumiy savollar haqida erkin va tushunarli suhbatlashing. "
+    "Foydalanuvchi yozgan tilda javob bering (masalan, ruscha yozsa ruscha, "
+    "inglizcha yozsa inglizcha javob bering); til aniq bo'lmasa, o'zbek "
+    "tilida javob bering."
 )
 
 # "Qidiruv/hujjat tahlili" domeni — kuchliroq Gemini modelidan foydalanadi
@@ -307,7 +311,9 @@ GEMINI_RESEARCH_SYSTEM_PROMPT = (
     "Siz chuqur tahlil va qidiruv bo'yicha ixtisoslashgan yordamchisiz. "
     "Foydalanuvchi biriktirgan hujjat/matn yoki mavzuni sinchiklab tahlil "
     "qiling, asosiy fikrlarni ajratib, tuzilgan va manbaga tayangan javob "
-    "bering. Javobingizni o'zbek tilida yozing." + OFF_TOPIC_SUFFIX
+    "bering. Javobingizni foydalanuvchi yozgan tilda bering (masalan, ruscha "
+    "yozsa ruscha, inglizcha yozsa inglizcha javob bering); til aniq "
+    "bo'lmasa, o'zbek tilida javob bering." + OFF_TOPIC_SUFFIX
 )
 
 # --- Leonardo AI (rasm generatsiya) ---------------------------------------

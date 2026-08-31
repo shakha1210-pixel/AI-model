@@ -78,7 +78,9 @@ CLAUDE_SYSTEM_PROMPT = (
     "tool'lari orqali (agar mavjud bo'lsa) Google Docs hujjatlari bilan, "
     "project_* tool'lari orqali (agar mavjud bo'lsa) joriy suhbat biriktirilgan "
     "loyiha papkasidagi fayllar bilan ishlang, va natijasini foydalanuvchiga "
-    "o'zbek tilida tushuntiring."
+    "u yozgan tilda tushuntiring (masalan, ruscha yozsa ruscha, inglizcha "
+    "yozsa inglizcha javob bering); til aniq bo'lmasa, o'zbek tilida javob "
+    "bering."
 )
 
 RUN_PYTHON_TOOL = [
