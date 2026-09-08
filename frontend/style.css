@@ -1693,7 +1693,21 @@ button {
    ========================================================================= */
 
 @media (max-width: 860px) {
-  .shell { grid-template-columns: 1fr; }
+  .shell {
+    grid-template-columns: 1fr;
+    /* MUHIM: .shell'ning o'zida position:relative + z-index:1 bor —
+       bu ICHKI stacking context yaratadi va .sidebar'ning z-index:20
+       qiymatini shu kontekst ichiga "qamab" qo'yadi. Natijada
+       .sidebar-scrim (z-index:15, .shell'ning FARZANDI EMAS, balki
+       ENGI/sibling'i) solishtiruvda .shell'ning o'zi (z-index:1)
+       bilan raqobatlashadi va 15 > 1 bo'lgani uchun G'OLIB chiqadi —
+       ya'ni sidebar VIZUAL ravishda ustida ko'ringani bilan, aslida
+       bosishlar (tap) uchun scrim TEPADA turardi va sidebar ichidagi
+       deyarli har qanday tugma bosilganda shunchaki sidebar yopilib
+       qolardi. Mobilda .shell'ning z-index'ini scrim'nikidan
+       balandroq qilib shu muammoni tuzatamiz. */
+    z-index: 21;
+  }
   .sidebar {
     position: fixed;
     inset: 0 30% 0 0;
