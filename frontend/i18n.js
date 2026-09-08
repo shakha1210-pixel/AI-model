@@ -38,7 +38,14 @@
       "sidebar.newChat": "Yangi suhbat",
       "sidebar.conversations": "Suhbatlar",
       "sidebar.loading": "yuklanmoqda...",
-      "landing.title": "Bugun nimani hal qilishni xohlaysiz?",
+      "landing.title": [
+        "Bugun nimani hal qilishni xohlaysiz?",
+        "Sizga qanday yordam bera olaman?",
+        "Bugun ustida nima ishlaymiz?",
+        "Qanday vazifa bilan boshlaymiz?",
+        "Nimani birga hal qilamiz?",
+        "Bugun qanday g'oyani ro'yobga chiqaramiz?",
+      ],
       "landing.placeholder": "Vazifangizni yozing...",
       "landing.send": "Yuborish",
       "landing.attach": "Fayl biriktirish",
@@ -143,7 +150,14 @@
       "sidebar.newChat": "Новый чат",
       "sidebar.conversations": "Чаты",
       "sidebar.loading": "загрузка...",
-      "landing.title": "Что вы хотите решить сегодня?",
+      "landing.title": [
+        "Что вы хотите решить сегодня?",
+        "Чем я могу вам помочь?",
+        "Над чем поработаем сегодня?",
+        "С какой задачи начнём?",
+        "Что решим вместе?",
+        "Какую идею воплотим сегодня?",
+      ],
       "landing.placeholder": "Напишите свою задачу...",
       "landing.send": "Отправить",
       "landing.attach": "Прикрепить файл",
@@ -248,7 +262,14 @@
       "sidebar.newChat": "New chat",
       "sidebar.conversations": "Chats",
       "sidebar.loading": "loading...",
-      "landing.title": "What do you want to figure out today?",
+      "landing.title": [
+        "What do you want to figure out today?",
+        "How can I help you today?",
+        "What shall we work on today?",
+        "What task should we start with?",
+        "What shall we solve together?",
+        "What idea should we bring to life today?",
+      ],
       "landing.placeholder": "Type your task...",
       "landing.send": "Send",
       "landing.attach": "Attach file",
@@ -353,7 +374,14 @@
       "sidebar.newChat": "Yeni sohbet",
       "sidebar.conversations": "Sohbetler",
       "sidebar.loading": "yükleniyor...",
-      "landing.title": "Bugün neyi çözmek istiyorsunuz?",
+      "landing.title": [
+        "Bugün neyi çözmek istiyorsunuz?",
+        "Size nasıl yardımcı olabilirim?",
+        "Bugün ne üzerinde çalışalım?",
+        "Hangi görevle başlayalım?",
+        "Birlikte neyi çözelim?",
+        "Bugün hangi fikri hayata geçirelim?",
+      ],
       "landing.placeholder": "Görevinizi yazın...",
       "landing.send": "Gönder",
       "landing.attach": "Dosya ekle",
@@ -458,7 +486,14 @@
       "sidebar.newChat": "محادثة جديدة",
       "sidebar.conversations": "المحادثات",
       "sidebar.loading": "جارٍ التحميل...",
-      "landing.title": "ما الذي تريد حله اليوم؟",
+      "landing.title": [
+        "ما الذي تريد حله اليوم؟",
+        "كيف يمكنني مساعدتك اليوم؟",
+        "علام سنعمل اليوم؟",
+        "بأي مهمة نبدأ؟",
+        "ما الذي سنحله معًا؟",
+        "ما الفكرة التي سنحققها اليوم؟",
+      ],
       "landing.placeholder": "اكتب مهمتك...",
       "landing.send": "إرسال",
       "landing.attach": "إرفاق ملف",
@@ -563,7 +598,14 @@
       "sidebar.newChat": "Jańa sóylesiw",
       "sidebar.conversations": "Sóylesiwler",
       "sidebar.loading": "júklenbekte...",
-      "landing.title": "Bүgin nені sheshiwdi qa'leysiz?",
+      "landing.title": [
+        "Bүgin nені sheshiwdi qa'leysiz?",
+        "Sizge qalay járdem bere alaman?",
+        "Bүgin nemene ústinde isleymiz?",
+        "Qanday tapsırma menen baslaymiz?",
+        "Birge nені sheshemiz?",
+        "Bүgin qanday pikirdi ámelge asıramiz?",
+      ],
       "landing.placeholder": "Wazıypańızdı jazıń...",
       "landing.send": "Jiberiw",
       "landing.attach": "Fayl biriktiriw",
@@ -664,7 +706,11 @@
 
   function t(key, lang) {
     const dict = T[lang || currentLang()] || T.uz;
-    return dict[key] || T.uz[key] || key;
+    const value = dict[key] || T.uz[key] || key;
+    if (Array.isArray(value)) {
+      return value[Math.floor(Math.random() * value.length)];
+    }
+    return value;
   }
 
   function applyLanguage(lang) {
