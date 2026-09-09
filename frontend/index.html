@@ -28,9 +28,9 @@
       window.location.href = "login.html";
     }
   </script>
-  <script src="i18n.js?v=7"></script>
+  <script src="i18n.js?v=8"></script>
   <link rel="icon" type="image/jpeg" href="app_logo.jfif" />
-  <link rel="stylesheet" href="style.css?v=7" />
+  <link rel="stylesheet" href="style.css?v=8" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/base16/tomorrow-night.min.css" id="hljs-theme" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
 </head>
@@ -81,7 +81,7 @@
         <button type="button" class="account-btn" id="account-btn">
           <span class="account-btn__avatar">?</span>
           <span class="account-btn__text">
-            <span class="account-btn__name" id="account-name" data-i18n="account.guest">Mehmon</span>
+            <span class="account-btn__name" id="account-name">Mehmon</span>
             <span class="account-btn__hint" id="session-tag">sessiya: yangi</span>
           </span>
         </button>
@@ -220,10 +220,10 @@
     </div>
   </div>
 
-  <script src="ascii-bg.js?v=7"></script>
-  <script src="theme.js?v=7"></script>
-  <script src="voice.js?v=7"></script>
-  <script src="chat.js?v=7"></script>
+  <script src="ascii-bg.js?v=8"></script>
+  <script src="theme.js?v=8"></script>
+  <script src="voice.js?v=8"></script>
+  <script src="chat.js?v=8"></script>
   <script>
     (function () {
       const sidebar = document.getElementById("sidebar");
@@ -273,6 +273,14 @@
       // bo'lmasin), so'ng /auth/me orqali serverdan yangilaymiz — bu
       // Google kirish va boshqa qurilmada o'zgargan ism kabi hollarda
       // "Mehmon" bo'lib qolib ketishning oldini oladi.
+      // MUHIM: bu elementda ATAYLAB data-i18n ishlatilmaydi — i18n.js
+      // DOMContentLoaded'da barcha [data-i18n] elementlarni qayta
+      // yozib, shu yerda o'rnatilgan haqiqiy ismni "Mehmon"ga
+      // qaytarib qo'yardi (Google Docs ulanish belgisida bo'lgani
+      // kabi xato).
+      document.getElementById("account-name").textContent = window.I18N
+        ? I18N.t("account.guest")
+        : "Mehmon";
       function renderAccount(name, email) {
         const label = name || email;
         if (!label) return;
