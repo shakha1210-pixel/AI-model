@@ -22,9 +22,9 @@
       window.location.href = "login.html";
     }
   </script>
-  <script src="i18n.js?v=6"></script>
+  <script src="i18n.js?v=7"></script>
   <link rel="icon" type="image/jpeg" href="app_logo.jfif" />
-  <link rel="stylesheet" href="style.css?v=6" />
+  <link rel="stylesheet" href="style.css?v=7" />
 </head>
 <body>
   
@@ -171,11 +171,11 @@
           <div class="settings-row">
             <div class="settings-row__text">
               <span class="settings-row__title">Google Docs</span>
-              <span class="settings-row__desc" id="google-docs-status" data-i18n="settings.integrations.googleDocsDesc">
+              <span class="settings-row__desc" id="google-docs-status">
                 Agent Google Docs hujjatlaringizni o'qishi/yaratishi uchun hisobingizni ulang
               </span>
             </div>
-            <a id="google-docs-connect-btn" class="btn btn--primary" href="#" data-i18n="settings.integrations.connect">Ulash</a>
+            <a id="google-docs-connect-btn" class="btn btn--primary" href="#">Ulash</a>
           </div>
         </section>
 
@@ -188,8 +188,8 @@
     </main>
   </div>
 
-  <script src="ascii-bg.js?v=6"></script>
-  <script src="theme.js?v=6"></script>
+  <script src="ascii-bg.js?v=7"></script>
+  <script src="theme.js?v=7"></script>
   <script>
     const voiceToggle = document.getElementById("voice-toggle");
     const languageSelect = document.getElementById("language-select");
@@ -325,20 +325,27 @@
 
       const sessionId = getOrCreateSessionId();
       connectBtn.href = `/google-docs/connect/${encodeURIComponent(sessionId)}`;
+      statusEl.textContent = I18N.t("settings.integrations.googleDocsDesc");
+      connectBtn.textContent = I18N.t("settings.integrations.connect");
 
+      function showConnected() {
+        statusEl.textContent = I18N.t("settings.integrations.connectedDesc");
+        connectBtn.textContent = I18N.t("settings.integrations.reconnect");
+      }
+
+      // MUHIM: i18n.js DOMContentLoaded'da BARCHA [data-i18n] elementlarni
+      // qayta yozadi — shu status/tugma matni statik data-i18n orqali EMAS,
+      // balki shu funksiya orqali (va til almashtirilganda ham to'g'ri
+      // qolishi uchun) qo'lda boshqariladi.
       const params = new URLSearchParams(window.location.search);
       if (params.get("google_docs") === "connected") {
-        statusEl.textContent = "Ulandi — agent endi hujjatlaringiz bilan ishlashi mumkin";
-        connectBtn.textContent = "Qayta ulash";
+        showConnected();
         window.history.replaceState({}, "", window.location.pathname);
       } else {
         fetch(`/google-docs/status/${encodeURIComponent(sessionId)}`)
           .then((res) => (res.ok ? res.json() : null))
           .then((data) => {
-            if (data && data.connected) {
-              statusEl.textContent = "Ulandi — agent endi hujjatlaringiz bilan ishlashi mumkin";
-              connectBtn.textContent = "Qayta ulash";
-            }
+            if (data && data.connected) showConnected();
           })
           .catch(() => {});
       }
