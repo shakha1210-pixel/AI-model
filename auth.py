@@ -63,6 +63,26 @@ GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
 
+# ---------------------------------------------------------------------------
+# Parolni tiklash (forgot password) — SMTP orqali email yuborish.
+# Gmail bilan ishlatish uchun: SMTP_HOST=smtp.gmail.com, SMTP_PORT=587,
+# SMTP_USER=sizning-emailingiz@gmail.com, SMTP_PASSWORD=<App Password —
+# myaccount.google.com/apppasswords orqali yaratiladi, oddiy Gmail
+# parolingiz EMAS>, SMTP_FROM_EMAIL (bo'sh qolsa SMTP_USER ishlatiladi).
+# Bu sozlamalar bo'sh bo'lsa, /auth/forgot-password so'rovga 500 qaytaradi
+# (server ishga tushishini to'xtatmaydi — email ixtiyoriy qo'shimcha).
+# ---------------------------------------------------------------------------
+SMTP_HOST = os.getenv("SMTP_HOST", "")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SMTP_USER = os.getenv("SMTP_USER", "")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
+SMTP_FROM_EMAIL = os.getenv("SMTP_FROM_EMAIL", SMTP_USER)
+FRONTEND_RESET_PASSWORD_URL = os.getenv(
+    "FRONTEND_RESET_PASSWORD_URL", "http://127.0.0.1:8000/reset-password.html"
+)
+_RESET_TOKEN_TTL_SECONDS = 60 * 60  # 1 soat
+_pending_reset_tokens: dict[str, tuple[str, datetime.datetime]] = {}
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=False)
 
@@ -218,6 +238,96 @@ def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends()) ->
         if not verify_password(form_data.password, user.parol_hash):
             raise HTTPException(status_code=401, detail="Email yoki parol noto'g'ri")
         return TokenResponse(access_token=create_access_token(user.id))
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
+
+def _send_email(to_email: str, subject: str, body: str) -> None:
+    if not (SMTP_HOST and SMTP_USER and SMTP_PASSWORD):
+        raise HTTPException(
+            status_code=500,
+            detail="Email yuborish sozlanmagan. SMTP_HOST/SMTP_USER/SMTP_PASSWORD'ni .env fayliga qo'shing.",
+        )
+    import smtplib
+    from email.mime.text import MIMEText
+
+    msg = MIMEText(body, "plain", "utf-8")
+    msg["Subject"] = subject
+    msg["From"] = SMTP_FROM_EMAIL or SMTP_USER
+    msg["To"] = to_email
+
+    with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=20) as server:
+        server.starttls()
+        server.login(SMTP_USER, SMTP_PASSWORD)
+        server.sendmail(SMTP_FROM_EMAIL or SMTP_USER, [to_email], msg.as_string())
+
+
+@router.post("/forgot-password")
+def forgot_password(payload: ForgotPasswordRequest, request: Request) -> dict:
+    """Parolni tiklash havolasini emailga yuboradi. XAVFSIZLIK: email
+    ro'yxatdan o'tganmi yoki yo'qmi — HAR DOIM bir xil (umumiy) javob
+    qaytariladi, aks holda bu endpoint orqali ro'yxatdagi emaillarni
+    "sanab chiqish" (enumeration) mumkin bo'lardi."""
+    try:
+        check_auth_rate_limit(_client_ip(request))
+    except RateLimitExceeded as exc:
+        raise HTTPException(status_code=429, detail=str(exc)) from exc
+
+    generic_response = {
+        "message": "Agar bu email ro'yxatdan o'tgan bo'lsa, parolni tiklash havolasi yuborildi."
+    }
+
+    with SessionLocal() as db:
+        user = db.query(User).filter(User.email == payload.email).first()
+        if not user or not user.parol_hash:
+            # Google orqali ro'yxatdan o'tgan (parolsiz) yoki mavjud bo'lmagan
+            # email — baribir bir xil javob qaytaramiz.
+            return generic_response
+
+        import secrets
+
+        token = secrets.token_urlsafe(32)
+        expires = datetime.datetime.utcnow() + datetime.timedelta(seconds=_RESET_TOKEN_TTL_SECONDS)
+        _pending_reset_tokens[token] = (user.id, expires)
+
+    reset_link = f"{FRONTEND_RESET_PASSWORD_URL}?token={token}"
+    _send_email(
+        payload.email,
+        "Apeiron — parolni tiklash",
+        (
+            "Salom!\n\nHisobingiz uchun parolni tiklash so'rovi yuborildi. "
+            f"Quyidagi havola orqali yangi parol o'rnating (1 soat amal qiladi):\n\n{reset_link}\n\n"
+            "Agar bu so'rovni siz yubormagan bo'lsangiz, bu xabarni e'tiborsiz qoldiring."
+        ),
+    )
+    return generic_response
+
+
+@router.post("/reset-password")
+def reset_password(payload: ResetPasswordRequest) -> dict:
+    entry = _pending_reset_tokens.pop(payload.token, None)
+    if not entry:
+        raise HTTPException(status_code=400, detail="Havola yaroqsiz yoki muddati o'tgan")
+    user_id, expires = entry
+    if datetime.datetime.utcnow() > expires:
+        raise HTTPException(status_code=400, detail="Havola muddati o'tgan")
+    if len(payload.new_password) < 6:
+        raise HTTPException(status_code=400, detail="Parol kamida 6 belgidan iborat bo'lishi kerak")
+
+    with SessionLocal() as db:
+        user = db.get(User, user_id)
+        if not user:
+            raise HTTPException(status_code=400, detail="Foydalanuvchi topilmadi")
+        user.parol_hash = hash_password(payload.new_password)
+        db.commit()
+    return {"message": "Parol muvaffaqiyatli o'zgartirildi"}
 
 
 @router.get("/me")

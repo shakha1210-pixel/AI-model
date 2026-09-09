@@ -22,9 +22,9 @@
       window.location.href = "login.html";
     }
   </script>
-  <script src="i18n.js?v=8"></script>
+  <script src="i18n.js?v=9"></script>
   <link rel="icon" type="image/jpeg" href="app_logo.jfif" />
-  <link rel="stylesheet" href="style.css?v=8" />
+  <link rel="stylesheet" href="style.css?v=9" />
 </head>
 <body>
 
@@ -108,15 +108,11 @@
     </div>
   </div>
 
-  <script src="ascii-bg.js?v=8"></script>
-  <script src="theme.js?v=8"></script>
+  <script src="auth-fetch.js?v=9"></script>
+  <script src="ascii-bg.js?v=9"></script>
+  <script src="theme.js?v=9"></script>
   <script>
-    function authHeaders(extra) {
-      const headers = { ...(extra || {}) };
-      const token = localStorage.getItem("access_token");
-      if (token) headers["Authorization"] = `Bearer ${token}`;
-      return headers;
-    }
+    const authFetch = window.AuthFetch.authFetch;
 
     const listView = document.getElementById("projects-list-view");
     const detailView = document.getElementById("project-detail-view");
@@ -160,7 +156,7 @@
     let cachedProjects = [];
 
     async function loadProjects() {
-      const res = await fetch("/projects", { headers: authHeaders() });
+      const res = await authFetch("/projects");
       if (!res.ok) return;
       const data = await res.json();
       cachedProjects = data.projects || [];
@@ -188,9 +184,9 @@
       event.preventDefault();
       const name = newProjectNameInput.value.trim();
       if (!name) return;
-      const res = await fetch("/projects", {
+      const res = await authFetch("/projects", {
         method: "POST",
-        headers: authHeaders({ "Content-Type": "application/json" }),
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name }),
       });
       if (!res.ok) {
@@ -221,9 +217,7 @@
     });
 
     async function loadProjectFiles() {
-      const res = await fetch(`/projects/${encodeURIComponent(currentProjectId)}/files`, {
-        headers: authHeaders(),
-      });
+      const res = await authFetch(`/projects/${encodeURIComponent(currentProjectId)}/files`);
       if (!res.ok) return;
       const data = await res.json();
       filesLimitHint.textContent = `${data.files.length}/${data.limit}`;
@@ -248,9 +242,8 @@
         del.textContent = "×";
         del.setAttribute("aria-label", "Faylni o'chirish");
         del.addEventListener("click", async () => {
-          await fetch(`/projects/${encodeURIComponent(currentProjectId)}/files/${encodeURIComponent(f.id)}`, {
+          await authFetch(`/projects/${encodeURIComponent(currentProjectId)}/files/${encodeURIComponent(f.id)}`, {
             method: "DELETE",
-            headers: authHeaders(),
           });
           loadProjectFiles();
         });
@@ -268,9 +261,8 @@
       if (!file || !currentProjectId) return;
       const form = new FormData();
       form.append("file", file, file.name);
-      const res = await fetch(`/projects/${encodeURIComponent(currentProjectId)}/files`, {
+      const res = await authFetch(`/projects/${encodeURIComponent(currentProjectId)}/files`, {
         method: "POST",
-        headers: authHeaders(),
         body: form,
       });
       if (!res.ok) {
@@ -282,15 +274,12 @@
 
     deleteProjectBtn.addEventListener("click", async () => {
       if (!confirm("Loyihani o'chirishni tasdiqlaysizmi? Fayllar o'chadi, suhbatlar saqlanib qoladi.")) return;
-      await fetch(`/projects/${encodeURIComponent(currentProjectId)}`, {
-        method: "DELETE",
-        headers: authHeaders(),
-      });
+      await authFetch(`/projects/${encodeURIComponent(currentProjectId)}`, { method: "DELETE" });
       backBtn.click();
     });
 
     async function loadProjectSessions() {
-      const res = await fetch("/sessions", { headers: authHeaders() });
+      const res = await authFetch("/sessions");
       if (!res.ok) return;
       const data = await res.json();
       const mine = (data.sessions || []).filter((s) => s.project_id === currentProjectId);

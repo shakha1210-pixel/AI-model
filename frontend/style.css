@@ -1248,6 +1248,12 @@ button {
   text-align: center;
 }
 
+.auth-forgot {
+  font-size: 12.5px;
+  margin: -4px 0 0;
+  text-align: right;
+}
+
 .auth-error {
   color: var(--danger);
   font-size: 12.5px;

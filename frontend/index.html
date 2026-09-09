@@ -28,9 +28,9 @@
       window.location.href = "login.html";
     }
   </script>
-  <script src="i18n.js?v=8"></script>
+  <script src="i18n.js?v=9"></script>
   <link rel="icon" type="image/jpeg" href="app_logo.jfif" />
-  <link rel="stylesheet" href="style.css?v=8" />
+  <link rel="stylesheet" href="style.css?v=9" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/base16/tomorrow-night.min.css" id="hljs-theme" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
 </head>
@@ -220,10 +220,11 @@
     </div>
   </div>
 
-  <script src="ascii-bg.js?v=8"></script>
-  <script src="theme.js?v=8"></script>
-  <script src="voice.js?v=8"></script>
-  <script src="chat.js?v=8"></script>
+  <script src="auth-fetch.js?v=9"></script>
+  <script src="ascii-bg.js?v=9"></script>
+  <script src="theme.js?v=9"></script>
+  <script src="voice.js?v=9"></script>
+  <script src="chat.js?v=9"></script>
   <script>
     (function () {
       const sidebar = document.getElementById("sidebar");
@@ -294,13 +295,18 @@
       const languageModal = document.getElementById("language-modal");
       const languageOptionsEl = document.getElementById("language-modal-options");
 
-      function authFetch(path, options) {
-        const token = localStorage.getItem("access_token");
-        return fetch(path, {
-          ...options,
-          headers: { ...(options && options.headers), Authorization: `Bearer ${token}` },
-        });
-      }
+      // auth-fetch.js orqali keladi (401 bo'lsa avtomatik login.html'ga
+      // qaytaradi); u yuklanmagan bo'lsa (masalan tarmoq xatosi), oddiy
+      // fetch'ga tushamiz — 401 himoyasisiz, lekin sahifa buzilmaydi.
+      const authFetch = window.AuthFetch
+        ? window.AuthFetch.authFetch
+        : (path, options) => {
+            const token = localStorage.getItem("access_token");
+            return fetch(path, {
+              ...options,
+              headers: { ...(options && options.headers), Authorization: `Bearer ${token}` },
+            });
+          };
 
       // MUHIM: hisob/chiqish kabi asosiy funksiyalar quyidagi (til tanlovi
       // oynasini quruvchi) blokdan OLDIN ulanadi — aks holda i18n.js

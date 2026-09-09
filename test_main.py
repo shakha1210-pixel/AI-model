@@ -13,7 +13,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from fastapi.testclient import TestClient
 
-import main
+import main  # load_dotenv() shu yerda chaqiriladi — auth'dan OLDIN import qilinishi kerak
+import auth
 from main import app, classify_intent
 
 client = TestClient(app)
@@ -226,6 +227,93 @@ def test_accept_terms_endpoint():
     response = client.post("/auth/accept-terms", headers=AUTH_HEADERS)
     assert response.status_code == 200
     assert response.json()["terms_accepted"] is True
+
+
+def test_forgot_password_unknown_email_returns_generic_response():
+    """Ro'yxatdan o'tmagan email uchun ham xatolik chiqmasligi kerak —
+    email mavjudligini oshkor qilmaslik uchun har doim bir xil javob."""
+    if not main.ENABLE_AUTH:
+        return
+    response = client.post(
+        "/auth/forgot-password", json={"email": "mavjud-emas@misol.uz"}
+    )
+    assert response.status_code == 200
+    assert "message" in response.json()
+
+
+def test_forgot_password_and_reset_flow(monkeypatch):
+    """To'liq oqim: ro'yxatdan o'tish -> parolni unutish -> tiklash
+    havolasi (emailga yuborilmasdan, to'g'ridan-to'g'ri xotiradan
+    o'qiladi) -> yangi parol bilan kirish."""
+    if not main.ENABLE_AUTH:
+        return
+    import uuid as _uuid
+
+    sent = {}
+
+    def fake_send_email(to_email, subject, body):
+        sent["to"] = to_email
+        sent["body"] = body
+
+    monkeypatch.setattr(auth, "_send_email", fake_send_email)
+
+    email = f"pytest-reset-{_uuid.uuid4()}@misol.uz"
+    register_res = client.post(
+        "/auth/register",
+        json={"ism": "Reset", "email": email, "password": "eski-parol-1234", "accepted_terms": True},
+    )
+    assert register_res.status_code == 200
+
+    forgot_res = client.post("/auth/forgot-password", json={"email": email})
+    assert forgot_res.status_code == 200
+    assert sent["to"] == email
+
+    # Token to'g'ridan-to'g'ri xotiradagi lug'atdan olinadi (email matnini
+    # parslashning hojati yo'q) — eng so'nggi qo'shilgan token shu foydalanuvchiga tegishli.
+    token = list(auth._pending_reset_tokens.keys())[-1]
+
+    reset_res = client.post(
+        "/auth/reset-password", json={"token": token, "new_password": "yangi-parol-5678"}
+    )
+    assert reset_res.status_code == 200
+
+    # Token bir martalik — qayta ishlatilganda rad etilishi kerak
+    reuse_res = client.post(
+        "/auth/reset-password", json={"token": token, "new_password": "yana-1234"}
+    )
+    assert reuse_res.status_code == 400
+
+    # Eski parol endi ishlamasligi, yangisi ishlashi kerak
+    old_login = client.post(
+        "/auth/login", data={"username": email, "password": "eski-parol-1234"}
+    )
+    assert old_login.status_code == 401
+    new_login = client.post(
+        "/auth/login", data={"username": email, "password": "yangi-parol-5678"}
+    )
+    assert new_login.status_code == 200
+
+
+def test_reset_password_invalid_token():
+    if not main.ENABLE_AUTH:
+        return
+    response = client.post(
+        "/auth/reset-password", json={"token": "notogri-token", "new_password": "yangi-parol-1234"}
+    )
+    assert response.status_code == 400
+
+
+def test_reset_password_rejects_short_password(monkeypatch):
+    if not main.ENABLE_AUTH:
+        return
+    import datetime as _dt
+
+    token = "test-qisqa-parol-token"
+    auth._pending_reset_tokens[token] = (
+        "fake-user-id", _dt.datetime.utcnow() + _dt.timedelta(minutes=5)
+    )
+    response = client.post("/auth/reset-password", json={"token": token, "new_password": "123"})
+    assert response.status_code == 400
 
 
 def test_session_history_isolated_without_auth():

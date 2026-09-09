@@ -22,9 +22,9 @@
       window.location.href = "login.html";
     }
   </script>
-  <script src="i18n.js?v=8"></script>
+  <script src="i18n.js?v=9"></script>
   <link rel="icon" type="image/jpeg" href="app_logo.jfif" />
-  <link rel="stylesheet" href="style.css?v=8" />
+  <link rel="stylesheet" href="style.css?v=9" />
 </head>
 <body>
   
@@ -188,8 +188,9 @@
     </main>
   </div>
 
-  <script src="ascii-bg.js?v=8"></script>
-  <script src="theme.js?v=8"></script>
+  <script src="auth-fetch.js?v=9"></script>
+  <script src="ascii-bg.js?v=9"></script>
+  <script src="theme.js?v=9"></script>
   <script>
     const voiceToggle = document.getElementById("voice-toggle");
     const languageSelect = document.getElementById("language-select");
@@ -214,12 +215,9 @@
       const saveBtn = document.getElementById("profile-save-btn");
       const statusEl = document.getElementById("profile-save-status");
 
-      function authHeaders(extra) {
-        const token = localStorage.getItem("access_token");
-        return { ...extra, Authorization: `Bearer ${token}` };
-      }
+      const authFetch = window.AuthFetch.authFetch;
 
-      fetch("/auth/me", { headers: authHeaders() })
+      authFetch("/auth/me")
         .then((res) => (res.ok ? res.json() : null))
         .then((data) => {
           if (!data) return;
@@ -240,9 +238,9 @@
         }
         saveBtn.disabled = true;
         try {
-          const res = await fetch("/auth/me", {
+          const res = await authFetch("/auth/me", {
             method: "PATCH",
-            headers: authHeaders({ "Content-Type": "application/json" }),
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ ism }),
           });
           if (!res.ok) {

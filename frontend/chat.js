@@ -56,15 +56,13 @@ let pendingProjectId = null;
 })();
 
 /* ---------------------------------------------------------------------
-   Avtorizatsiya — token bo'lsa har bir so'rovga qo'shamiz
+   Avtorizatsiya — token bo'lsa har bir so'rovga qo'shamiz.
+   authHeaders/authFetch endi auth-fetch.js'dan keladi (window.AuthFetch) —
+   401 kelsa avtomatik login.html'ga qaytaradi.
    --------------------------------------------------------------------- */
 
-function authHeaders(extra) {
-  const headers = { ...(extra || {}) };
-  const token = localStorage.getItem("access_token");
-  if (token) headers["Authorization"] = `Bearer ${token}`;
-  return headers;
-}
+const authHeaders = window.AuthFetch.authHeaders;
+const authFetch = window.AuthFetch.authFetch;
 
 /* ---------------------------------------------------------------------
    Sessiya boshqaruvi
@@ -85,7 +83,7 @@ async function loadHistory() {
   const sessionId = getSessionId();
   if (!sessionId) return;
   try {
-    const res = await fetch(`/history/${encodeURIComponent(sessionId)}`, { headers: authHeaders() });
+    const res = await authFetch(`/history/${encodeURIComponent(sessionId)}`);
     if (!res.ok) throw new Error();
     const data = await res.json();
     for (const m of data.messages || []) {
@@ -99,7 +97,7 @@ async function loadHistory() {
 async function loadSessions() {
   if (!sessionListEl) return;
   try {
-    const res = await fetch("/sessions", { headers: authHeaders() });
+    const res = await authFetch("/sessions");
     if (!res.ok) throw new Error();
     const data = await res.json();
     renderSessions(data.sessions || []);
@@ -149,10 +147,7 @@ function renderSessions(sessions) {
     del.addEventListener("click", async (e) => {
       e.stopPropagation();
       try {
-        await fetch(`/sessions/${encodeURIComponent(s.id)}`, {
-          method: "DELETE",
-          headers: authHeaders(),
-        });
+        await authFetch(`/sessions/${encodeURIComponent(s.id)}`, { method: "DELETE" });
       } catch {
         /* server javob bermasa ham UI'dan olib tashlaymiz */
       }
@@ -254,7 +249,7 @@ landingCardsEl?.querySelectorAll(".landing-card").forEach((card) => {
 async function refreshRateLimit() {
   if (!rateLimitBadge) return;
   try {
-    const res = await fetch("/rate-limit/status", { headers: authHeaders() });
+    const res = await authFetch("/rate-limit/status");
     if (!res.ok) {
       rateLimitBadge.hidden = true;
       return;
@@ -321,7 +316,7 @@ function renderAttachedFiles() {
 async function extractServerSide(file) {
   const form = new FormData();
   form.append("file", file, file.name);
-  const res = await fetch("/files/extract", { method: "POST", headers: authHeaders(), body: form });
+  const res = await authFetch("/files/extract", { method: "POST", body: form });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.detail || "Faylni o'qib bo'lmadi.");
@@ -377,11 +372,7 @@ async function uploadFiles(sessionId, files) {
     try {
       const form = new FormData();
       form.append("file", new Blob([f.content], { type: "text/plain" }), f.name);
-      await fetch(`/files/${encodeURIComponent(sessionId)}`, {
-        method: "POST",
-        headers: authHeaders(),
-        body: form,
-      });
+      await authFetch(`/files/${encodeURIComponent(sessionId)}`, { method: "POST", body: form });
     } catch {
       /* saqlanmasa ham suhbat davom etadi — fayl mazmuni xabarga qo'shilgan */
     }
@@ -877,9 +868,9 @@ async function sendMessage(rawMessage) {
   }
 
   try {
-    const response = await fetch("/chat/stream", {
+    const response = await authFetch("/chat/stream", {
       method: "POST",
-      headers: authHeaders({ "Content-Type": "application/json" }),
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         message: messageWithFiles,
         session_id: getSessionId(),
