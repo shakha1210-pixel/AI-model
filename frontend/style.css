@@ -857,6 +857,15 @@ button {
   letter-spacing: 0.02em;
 }
 .md-table tr:last-child td { border-bottom: none; }
+
+.md-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  margin: 10px 0;
+  border: 1px solid var(--border);
+}
 .md-table tr:hover td { background: var(--surface-2); }
 
 .md-inline-code {

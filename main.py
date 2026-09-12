@@ -100,6 +100,13 @@ ENABLE_GITHUB_TOOL = os.getenv("ENABLE_GITHUB_TOOL", "false").lower() == "true"
 # ishlatiladi, lekin Cloud Console'da yangi redirect URI qo'shish kerak.
 ENABLE_GOOGLE_DOCS_TOOL = os.getenv("ENABLE_GOOGLE_DOCS_TOOL", "false").lower() == "true"
 
+# collab_tool.py: Claude'ga (kod yozish domenida) boshqa modellarga —
+# Gemini (ask_gemini, tezkor fikr/g'oya uchun) va Leonardo (generate_image,
+# tasvir kerak bo'lganda) — murojaat qilish imkonini beradi. Bu "modellar
+# hamkorligi": agent bir domenning ichida qolib, kerak bo'lganda boshqa
+# modeldan yordam so'raydi, foydalanuvchi qo'lda domen almashtirmaydi.
+ENABLE_COLLAB_TOOL = os.getenv("ENABLE_COLLAB_TOOL", "false").lower() == "true"
+
 # ---------------------------------------------------------------------------
 # LOYIHALAR (PROJECTS) — suhbatlarni va fayllarni guruhlaydigan papkalar.
 # Har bir loyiha bitta foydalanuvchiga tegishli bo'lgani uchun ENABLE_AUTH
@@ -758,7 +765,7 @@ async def chat(
 
     image_url: str | None = None
     if intent == "code":
-        if ENABLE_TOOLS or ENABLE_GITHUB_TOOL or ENABLE_GOOGLE_DOCS_TOOL or ENABLE_PROJECT_FILES_TOOL:
+        if ENABLE_TOOLS or ENABLE_GITHUB_TOOL or ENABLE_GOOGLE_DOCS_TOOL or ENABLE_PROJECT_FILES_TOOL or ENABLE_COLLAB_TOOL:
             from tools import call_claude_with_tools
 
             reply = await call_claude_with_tools(payload.message, chat_history, session_id=session_id)
@@ -828,7 +835,7 @@ async def chat_stream(
 
         try:
             if intent == "code":
-                if ENABLE_TOOLS or ENABLE_GITHUB_TOOL or ENABLE_GOOGLE_DOCS_TOOL or ENABLE_PROJECT_FILES_TOOL:
+                if ENABLE_TOOLS or ENABLE_GITHUB_TOOL or ENABLE_GOOGLE_DOCS_TOOL or ENABLE_PROJECT_FILES_TOOL or ENABLE_COLLAB_TOOL:
                     from tools import stream_claude_with_tools
 
                     source = stream_claude_with_tools(

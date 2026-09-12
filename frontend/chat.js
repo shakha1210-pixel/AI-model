@@ -534,13 +534,22 @@ function buildMarkdownTable(tableLines) {
 // **qalin**, *kursiv*, `inline kod` — DOM elementlari orqali (innerHTML'siz)
 function parseInlineToFragment(text) {
   const frag = document.createDocumentFragment();
-  const re = /(\*\*[^*]+\*\*|`[^`]+`|\*[^*]+\*)/g;
+  const re = /(!\[[^\]]*\]\([^)\s]+\)|\*\*[^*]+\*\*|`[^`]+`|\*[^*]+\*)/g;
   let lastIndex = 0;
   let m;
   while ((m = re.exec(text)) !== null) {
     if (m.index > lastIndex) frag.appendChild(document.createTextNode(text.slice(lastIndex, m.index)));
     const token = m[0];
-    if (token.startsWith("**")) {
+    if (token.startsWith("![")) {
+      // Rasm: ![tavsif](url) — masalan generate_image tool natijasi.
+      const imgMatch = token.match(/^!\[([^\]]*)\]\(([^)\s]+)\)$/);
+      const img = document.createElement("img");
+      img.src = imgMatch[2];
+      img.alt = imgMatch[1];
+      img.className = "md-image";
+      img.loading = "lazy";
+      frag.appendChild(img);
+    } else if (token.startsWith("**")) {
       const strong = document.createElement("strong");
       strong.textContent = token.slice(2, -2);
       frag.appendChild(strong);
@@ -693,6 +702,8 @@ const INTENT_BADGE_LABELS = {
 
 const TOOL_LABELS = {
   run_python_code: "Python kodi ishga tushirilmoqda",
+  ask_gemini: "Gemini'dan fikr so'ralmoqda",
+  generate_image: "Leonardo orqali tasvir generatsiya qilinmoqda",
 };
 
 function toolHintLabel(name) {

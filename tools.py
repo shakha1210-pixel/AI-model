@@ -77,10 +77,14 @@ CLAUDE_SYSTEM_PROMPT = (
     "orqali (agar mavjud bo'lsa) GitHub repositoriylari bilan, google_docs_* "
     "tool'lari orqali (agar mavjud bo'lsa) Google Docs hujjatlari bilan, "
     "project_* tool'lari orqali (agar mavjud bo'lsa) joriy suhbat biriktirilgan "
-    "loyiha papkasidagi fayllar bilan ishlang, va natijasini foydalanuvchiga "
-    "u yozgan tilda tushuntiring (masalan, ruscha yozsa ruscha, inglizcha "
-    "yozsa inglizcha javob bering); til aniq bo'lmasa, o'zbek tilida javob "
-    "bering."
+    "loyiha papkasidagi fayllar bilan ishlang. Agar mavjud bo'lsa, "
+    "ask_gemini tool'idan qisqa fikr/g'oya uchun, generate_image tool'idan "
+    "esa loyihaga kerakli tasvir (logotip, ikonka, banner) generatsiya "
+    "qilish uchun ham foydalanishingiz mumkin — bularni o'zingiz mustaqil "
+    "hal qilib, mos vaziyatda chaqiring, foydalanuvchidan alohida so'ramang. "
+    "Natijasini foydalanuvchiga u yozgan tilda tushuntiring (masalan, "
+    "ruscha yozsa ruscha, inglizcha yozsa inglizcha javob bering); til "
+    "aniq bo'lmasa, o'zbek tilida javob bering."
 )
 
 RUN_PYTHON_TOOL = [
@@ -107,6 +111,9 @@ ENABLE_TOOLS = os.getenv("ENABLE_TOOLS", "false").lower() == "true"
 ENABLE_GITHUB_TOOL = os.getenv("ENABLE_GITHUB_TOOL", "false").lower() == "true"
 ENABLE_GOOGLE_DOCS_TOOL = os.getenv("ENABLE_GOOGLE_DOCS_TOOL", "false").lower() == "true"
 ENABLE_PROJECT_FILES_TOOL = os.getenv("ENABLE_PROJECT_FILES_TOOL", "false").lower() == "true"
+# Claude'ning boshqa modellarga (Gemini/Leonardo) murojaat qilish
+# imkoniyati — "modellar hamkorligi" (collab_tool.py'ga qarang).
+ENABLE_COLLAB_TOOL = os.getenv("ENABLE_COLLAB_TOOL", "false").lower() == "true"
 
 
 def _active_tools() -> list[dict]:
@@ -127,6 +134,10 @@ def _active_tools() -> list[dict]:
         from project_tool import PROJECT_TOOLS
 
         active += PROJECT_TOOLS
+    if ENABLE_COLLAB_TOOL:
+        from collab_tool import COLLAB_TOOLS
+
+        active += COLLAB_TOOLS
     return active
 
 
@@ -242,6 +253,10 @@ async def dispatch_tool_call(name: str, tool_input: dict, session_id: str = "nom
         from project_tool import dispatch as project_dispatch
 
         return await project_dispatch(name, tool_input, session_id=session_id)
+    if name in ("ask_gemini", "generate_image"):
+        from collab_tool import dispatch as collab_dispatch
+
+        return await collab_dispatch(name, tool_input)
     return {"error": f"Noma'lum tool: {name}"}
 
 

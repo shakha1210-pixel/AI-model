@@ -521,6 +521,7 @@ def test_tools_active_tools_respects_flags(monkeypatch):
     monkeypatch.setattr(tools, "ENABLE_GITHUB_TOOL", False)
     monkeypatch.setattr(tools, "ENABLE_GOOGLE_DOCS_TOOL", False)
     monkeypatch.setattr(tools, "ENABLE_PROJECT_FILES_TOOL", False)
+    monkeypatch.setattr(tools, "ENABLE_COLLAB_TOOL", False)
     assert tools._active_tools() == []
 
     monkeypatch.setattr(tools, "ENABLE_TOOLS", True)
@@ -539,6 +540,68 @@ def test_tools_active_tools_respects_flags(monkeypatch):
     monkeypatch.setattr(tools, "ENABLE_PROJECT_FILES_TOOL", True)
     names = [t["name"] for t in tools._active_tools()]
     assert "project_list_files" in names
+
+    monkeypatch.setattr(tools, "ENABLE_COLLAB_TOOL", True)
+    names = [t["name"] for t in tools._active_tools()]
+    assert "ask_gemini" in names
+    assert "generate_image" in names
+
+
+# ---------------------------------------------------------------------------
+# MODELLAR HAMKORLIGI (collab_tool.py) TESTLARI
+# ---------------------------------------------------------------------------
+
+def test_collab_dispatch_unknown_tool():
+    import asyncio
+
+    import collab_tool
+
+    result = asyncio.run(collab_tool.dispatch("delete_everything", {}))
+    assert "Noma'lum" in result["error"]
+
+
+def test_collab_ask_gemini_rejects_empty_question():
+    import asyncio
+
+    import collab_tool
+
+    result = asyncio.run(collab_tool.dispatch("ask_gemini", {"question": "  "}))
+    assert "error" in result
+
+
+def test_collab_generate_image_rejects_empty_prompt():
+    import asyncio
+
+    import collab_tool
+
+    result = asyncio.run(collab_tool.dispatch("generate_image", {"prompt": ""}))
+    assert "error" in result
+
+
+def test_collab_ask_gemini_returns_answer(monkeypatch):
+    import asyncio
+
+    import collab_tool
+
+    async def fake_ask_gemini(question):
+        return {"answer": f"javob: {question}"}
+
+    monkeypatch.setattr(collab_tool, "_ask_gemini", fake_ask_gemini)
+    result = asyncio.run(collab_tool.dispatch("ask_gemini", {"question": "salom"}))
+    assert result["answer"] == "javob: salom"
+
+
+def test_collab_generate_image_returns_url(monkeypatch):
+    import asyncio
+
+    import collab_tool
+
+    async def fake_generate_image(prompt):
+        return {"image_url": "https://example.com/rasm.png"}
+
+    monkeypatch.setattr(collab_tool, "_generate_image", fake_generate_image)
+    result = asyncio.run(collab_tool.dispatch("generate_image", {"prompt": "mushuk"}))
+    assert result["image_url"] == "https://example.com/rasm.png"
 
 
 # ---------------------------------------------------------------------------
