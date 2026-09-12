@@ -556,6 +556,35 @@ async def stream_gemini(
                         yield {"type": "text", "text": text}
 
 
+IMAGE_PROMPT_TRANSLATE_SYSTEM_PROMPT = (
+    "Siz rasm generatsiya modeli uchun prompt tayyorlovchi yordamchisiz. "
+    "Foydalanuvchi qaysi tilda yozmasin, uning so'rovini rasm generatsiya "
+    "modeli (Leonardo AI) yaxshi tushunadigan, aniq va jonli tasvirlovchi "
+    "INGLIZ tilidagi promptga aylantiring. FAQAT tayyor promptni "
+    "qaytaring — hech qanday izoh, tirnoq belgisi yoki qo'shimcha matn "
+    "yozmang."
+)
+
+
+async def _prepare_image_prompt(message: str) -> str:
+    """Foydalanuvchi so'rovini (istalgan tilda) Leonardo uchun mos INGLIZ
+    tilidagi promptga aylantiradi. SABAB: Leonardo modeli asosan ingliz
+    tilidagi matnda o'qitilgan — o'zbek (yoki boshqa) tilidagi prompt
+    berilganda so'rovga umuman aloqasi bo'lmagan tasodifiy rasm qaytarishi
+    aniqlandi. Tarjima muvaffaqiyatsiz bo'lsa, asl xabar ishlatiladi (rasm
+    generatsiyasi butunlay to'xtab qolmasligi uchun)."""
+    if not GEMINI_API_KEY:
+        return message
+    try:
+        translated = await call_gemini(
+            message, [], system_prompt=IMAGE_PROMPT_TRANSLATE_SYSTEM_PROMPT
+        )
+        return translated.strip() or message
+    except HTTPException:
+        logger.warning("Rasm prompt'ini tarjima qilib bo'lmadi, asl matn ishlatiladi.")
+        return message
+
+
 async def call_leonardo(prompt: str) -> tuple[str, str]:
     """Leonardo AI'ga rasm generatsiya so'rovi yuboradi va tayyor bo'lguncha
     natijani so'raydi (poll qiladi). Qaytaradi: (matn javob, rasm URL'i)."""
@@ -772,7 +801,8 @@ async def chat(
         else:
             reply = await call_claude(payload.message, chat_history, deep_thinking=payload.thinking)
     elif intent == "image":
-        reply, image_url = await call_leonardo(payload.message)
+        image_prompt = await _prepare_image_prompt(payload.message)
+        reply, image_url = await call_leonardo(image_prompt)
     elif intent == "research":
         reply = await call_gemini(
             payload.message,
@@ -855,7 +885,8 @@ async def chat_stream(
                     yield sse({"delta": event["text"]})
 
             elif intent == "image":
-                reply, image_url = await call_leonardo(payload.message)
+                image_prompt = await _prepare_image_prompt(payload.message)
+                reply, image_url = await call_leonardo(image_prompt)
                 full_text = reply
                 if not check_output(session_id, full_text).allowed:
                     blocked = True

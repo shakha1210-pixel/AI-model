@@ -105,7 +105,11 @@ def test_chat_image_intent(monkeypatch):
     async def fake_call_leonardo(prompt):
         return "Mana rasm:", "https://example.com/rasm.png"
 
+    async def fake_prepare_image_prompt(message):
+        return message  # tarjima bosqichini chetlab o'tamiz (alohida test bor)
+
     monkeypatch.setattr(main, "call_leonardo", fake_call_leonardo)
+    monkeypatch.setattr(main, "_prepare_image_prompt", fake_prepare_image_prompt)
 
     response = client.post(
         "/chat",
@@ -125,6 +129,46 @@ def test_chat_image_intent(monkeypatch):
         m for m in history_response.json()["messages"] if m["role"] == "assistant"
     ]
     assert assistant_messages[-1]["image_url"] == "https://example.com/rasm.png"
+
+
+def test_chat_image_intent_translates_prompt_before_leonardo(monkeypatch):
+    """MUHIM REGRESSIYA TESTI: Leonardo asosan ingliz tilida o'qitilgan —
+    o'zbek (yoki boshqa) tildagi prompt so'rovga aloqasiz tasodifiy rasm
+    qaytarishi aniqlangan edi. Endi Leonardo'ga yuborishdan oldin prompt
+    Gemini orqali ingliz tiliga o'giriladi."""
+    captured = {}
+
+    async def fake_call_gemini(message, history, **kwargs):
+        assert kwargs.get("system_prompt") == main.IMAGE_PROMPT_TRANSLATE_SYSTEM_PROMPT
+        return "a cute kitten playing with a ball of yarn"
+
+    async def fake_call_leonardo(prompt):
+        captured["prompt"] = prompt
+        return "Mana rasm:", "https://example.com/mushuk.png"
+
+    monkeypatch.setattr(main, "call_gemini", fake_call_gemini)
+    monkeypatch.setattr(main, "call_leonardo", fake_call_leonardo)
+
+    response = client.post(
+        "/chat",
+        json={"message": "Menga koptok bilan o'ynayotgan mushukcha surati kerak", "mode": "image"},
+        headers=AUTH_HEADERS,
+    )
+    assert response.status_code == 200
+    assert captured["prompt"] == "a cute kitten playing with a ball of yarn"
+
+
+def test_prepare_image_prompt_falls_back_on_gemini_error(monkeypatch):
+    import asyncio
+
+    from fastapi import HTTPException
+
+    async def failing_call_gemini(message, history, **kwargs):
+        raise HTTPException(status_code=502, detail="Gemini bilan bog'lanib bo'lmadi.")
+
+    monkeypatch.setattr(main, "call_gemini", failing_call_gemini)
+    result = asyncio.run(main._prepare_image_prompt("original xabar"))
+    assert result == "original xabar"
 
 
 def test_chat_research_intent(monkeypatch):

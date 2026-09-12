@@ -60,15 +60,22 @@ COLLAB_TOOLS = [
             "Boshqa AI model (Leonardo) orqali tasvir (rasm, ikonka, "
             "illyustratsiya) generatsiya qiladi — masalan yozayotgan loyihangiz "
             "uchun placeholder logotip yoki banner kerak bo'lsa ishlating. "
-            "Natijada olingan URL'ni javobingizga markdown rasm sintaksisi "
-            "bilan (![tavsif](URL)) qo'shing."
+            "MUHIM: 'prompt' parametrini FAQAT ingliz tilida yozing (boshqa "
+            "tilda mutlaqo aloqasiz rasm chiqishi mumkin). Natijada olingan "
+            "URL'ni javobingizga markdown rasm sintaksisi bilan "
+            "(![tavsif](URL)) qo'shing."
         ),
         "input_schema": {
             "type": "object",
             "properties": {
                 "prompt": {
                     "type": "string",
-                    "description": "Qanday tasvir kerakligini ingliz yoki o'zbek tilida ta'riflang",
+                    "description": (
+                        "Qanday tasvir kerakligini FAQAT INGLIZ tilida, aniq va "
+                        "tasvirlovchi tarzda yozing — rasm generatsiya modeli "
+                        "boshqa tillarni yaxshi tushunmaydi va so'rovga aloqasi "
+                        "yo'q rasm qaytarishi mumkin."
+                    ),
                 },
             },
             "required": ["prompt"],
