@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "uz.apeiron.app",
+      "sha256_cert_fingerprints": [
+        "F0:73:C5:56:9B:BE:B6:A2:0E:FA:8F:A7:32:73:AA:FD:8C:EC:CC:7A:94:1E:B9:18:BD:75:71:FB:F8:19:1F:F4"
+      ]
+    }
+  }
+]

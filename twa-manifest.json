@@ -1,0 +1,24 @@
+{
+  "packageId": "uz.apeiron.app",
+  "host": "apeiron.uz",
+  "name": "Apeiron",
+  "launcherName": "Apeiron",
+  "display": "standalone",
+  "themeColor": "#0a0c11",
+  "navigationColor": "#0a0c11",
+  "navigationColorDark": "#0a0c11",
+  "backgroundColor": "#0a0c11",
+  "enableNotifications": false,
+  "startUrl": "/index.html",
+  "iconUrl": "https://apeiron.uz/icons/icon-512.png",
+  "maskableIconUrl": "https://apeiron.uz/icons/icon-maskable-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./android-signing/apeiron-release.keystore",
+    "alias": "apeiron"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [],
+  "generatorApp": "Bubblewrap"
+}

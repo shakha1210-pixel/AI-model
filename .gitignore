@@ -2,6 +2,14 @@
 .env
 *.env.local
 
+# Android imzolash kaliti — BU FAYL HECH QACHON commit qilinmasligi kerak!
+# Yo'qotilsa, ilovani Play Market'da bir xil identifikator ostida yangilab
+# bo'lmay qoladi; oshkor bo'lsa, boshqa birov ilova nomidan soxta yangilanish
+# chiqarishi mumkin.
+android-signing/
+*.keystore
+*.jks
+
 # Python
 venv/
 env/
