@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0c11">
+<script>
+  // Allaqachon kirgan foydalanuvchini to'g'ridan-to'g'ri chatga o'tkazamiz
+  // (sahifa chizilishidan oldin — flash bo'lmasligi uchun).
+  try {
+    if (localStorage.getItem("access_token")) {
+      window.location.replace("index.html");
+    }
+  } catch (e) { /* localStorage yo'q bo'lsa landing ko'rsatiladi */ }
+</script>
+<link rel="icon" type="image/jpeg" href="app_logo.jfif">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>Apeiron — Sun'iy intellekt yordamchingiz</title>
+<meta name="description" content="Apeiron — kod yozish, g'oyalar, rasm yaratish va chuqur tahlil uchun o'zbek tilidagi sun'iy intellekt yordamchisi.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0c11; --bg2:#0f1219; --card:#12161f; --line:rgba(255,255,255,.08);
+  --txt:#eef1f7; --mut:#8b93a7; --a:#7c5cff; --b:#22d3ee; --c:#f472b6;
+  --grad:linear-gradient(120deg,var(--a),var(--b) 55%,var(--c));
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1160px;margin:0 auto;padding:0 20px}
+#bg{position:fixed;inset:0;z-index:0;pointer-events:none}
+.orb{position:fixed;border-radius:50%;filter:blur(90px);opacity:.35;z-index:0;pointer-events:none;animation:float 14s ease-in-out infinite}
+.o1{width:480px;height:480px;background:var(--a);top:-120px;left:-120px}
+.o2{width:420px;height:420px;background:var(--b);top:30%;right:-140px;animation-delay:-5s;opacity:.22}
+.o3{width:380px;height:380px;background:var(--c);bottom:-120px;left:25%;animation-delay:-9s;opacity:.18}
+@keyframes float{50%{transform:translate(40px,-50px) scale(1.12)}}
+main,header,footer{position:relative;z-index:1}
+
+/* nav */
+nav{position:fixed;top:0;left:0;right:0;z-index:50;transition:.3s;padding:14px 0}
+nav.s{background:rgba(10,12,17,.75);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.nv{display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;letter-spacing:-.02em}
+.logo i{width:30px;height:30px;border-radius:9px;background:var(--grad);display:grid;place-items:center;box-shadow:0 0 24px rgba(124,92,255,.55);animation:pulse 3s infinite}
+.logo i::after{content:"";width:12px;height:12px;border:2.5px solid #fff;border-radius:50%;border-right-color:transparent;animation:spin 2.5s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{50%{box-shadow:0 0 38px rgba(34,211,238,.7)}}
+.links{display:flex;gap:28px;font-size:14px;color:var(--mut)}
+.links a:hover{color:#fff}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:12px;font-weight:600;font-size:14px;border:1px solid var(--line);transition:.25s;cursor:pointer;background:transparent;color:var(--txt)}
+.btn:hover{background:rgba(255,255,255,.06);transform:translateY(-2px)}
+.btn.p{background:var(--grad);background-size:200% 200%;border:0;color:#fff;box-shadow:0 8px 30px rgba(124,92,255,.4);animation:shift 6s ease infinite}
+.btn.p:hover{box-shadow:0 12px 40px rgba(34,211,238,.45);background:var(--grad);background-size:200% 200%}
+@keyframes shift{50%{background-position:100% 50%}}
+.btn.lg{padding:15px 30px;font-size:16px;border-radius:14px}
+
+/* hero */
+.hero{min-height:100vh;display:flex;align-items:center;padding:130px 0 70px}
+.hg{display:grid;grid-template-columns:1.05fr .95fr;gap:50px;align-items:center}
+.pill{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border:1px solid var(--line);border-radius:99px;font-size:13px;color:var(--mut);background:rgba(255,255,255,.03);margin-bottom:22px}
+.pill b{width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 0 0 rgba(52,211,153,.7);animation:ping 2s infinite}
+@keyframes ping{70%{box-shadow:0 0 0 10px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
+h1{font-size:clamp(38px,6vw,68px);line-height:1.05;letter-spacing:-.035em;font-weight:800}
+.gt{background:var(--grad);background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shift 5s linear infinite}
+.lead{margin:22px 0 34px;font-size:18px;color:var(--mut);max-width:520px}
+.cta{display:flex;gap:14px;flex-wrap:wrap}
+.chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:34px;font-size:13px;color:var(--mut)}
+.chips span{padding:6px 12px;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.02)}
+
+/* chat demo */
+.demo{background:linear-gradient(180deg,#141925,#0e121a);border:1px solid var(--line);border-radius:22px;box-shadow:0 30px 80px rgba(0,0,0,.5),0 0 0 1px rgba(124,92,255,.15);overflow:hidden;transform:perspective(1200px) rotateY(-6deg) rotateX(3deg);transition:transform .4s;animation:bob 6s ease-in-out infinite}
+.demo:hover{transform:perspective(1200px) rotateY(0) rotateX(0)}
+@keyframes bob{50%{translate:0 -10px}}
+.dh{display:flex;gap:7px;padding:14px 16px;border-bottom:1px solid var(--line);align-items:center}
+.dh i{width:11px;height:11px;border-radius:50%;background:#ff5f57}.dh i:nth-child(2){background:#febc2e}.dh i:nth-child(3){background:#28c840}
+.dh em{margin-left:10px;font-style:normal;font-size:12px;color:var(--mut)}
+.dm{padding:20px;min-height:330px;display:flex;flex-direction:column;gap:14px;font-size:14px}
+.msg{max-width:88%;padding:12px 15px;border-radius:14px;opacity:0;transform:translateY(10px);animation:in .5s forwards}
+.msg.u{align-self:flex-end;background:linear-gradient(120deg,var(--a),#5b7cff);color:#fff;border-bottom-right-radius:4px}
+.msg.a{background:#1a2030;border:1px solid var(--line);border-bottom-left-radius:4px}
+.msg code{display:block;margin-top:8px;padding:10px;border-radius:8px;background:#090b10;font:12px/1.6 'JetBrains Mono',monospace;color:#7dd3fc;white-space:pre}
+@keyframes in{to{opacity:1;transform:none}}
+.cur::after{content:"▍";color:var(--b);animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+.dots{display:inline-flex;gap:4px}
+.dots i{width:6px;height:6px;border-radius:50%;background:var(--mut);animation:dot 1.2s infinite}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+@keyframes dot{40%{transform:translateY(-5px);background:#fff}}
+
+/* sections */
+section{padding:100px 0}
+.sh{text-align:center;max-width:640px;margin:0 auto 56px}
+.sh small{color:var(--b);font-weight:600;letter-spacing:.12em;text-transform:uppercase;font-size:12px}
+.sh h2{font-size:clamp(28px,4vw,44px);letter-spacing:-.03em;line-height:1.15;margin:12px 0}
+.sh p{color:var(--mut)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.card{position:relative;padding:28px 24px;background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden;transition:transform .3s,border-color .3s}
+.card::before{content:"";position:absolute;inset:0;background:radial-gradient(320px circle at var(--x,50%) var(--y,0%),rgba(124,92,255,.22),transparent 60%);opacity:0;transition:.3s}
+.card:hover{transform:translateY(-6px);border-color:rgba(124,92,255,.4)}
+.card:hover::before{opacity:1}
+.ic{position:relative;width:48px;height:48px;border-radius:14px;display:grid;place-items:center;font-size:22px;background:rgba(124,92,255,.14);margin-bottom:18px}
+.card h3{position:relative;font-size:18px;margin-bottom:8px}
+.card p{position:relative;font-size:14px;color:var(--mut)}
+
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;counter-reset:s}
+.step{position:relative;padding:30px;border-radius:20px;background:var(--bg2);border:1px solid var(--line)}
+.step::before{counter-increment:s;content:"0" counter(s);font-size:44px;font-weight:800;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;display:block;margin-bottom:10px}
+.step h3{margin-bottom:6px}.step p{color:var(--mut);font-size:14px}
+
+.marq{overflow:hidden;border-block:1px solid var(--line);padding:20px 0;mask-image:linear-gradient(90deg,transparent,#000 15%,#000 85%,transparent)}
+.track{display:flex;gap:50px;width:max-content;animation:mq 28s linear infinite;font-size:22px;font-weight:700;color:#3a4156;white-space:nowrap}
+.track span:nth-child(odd){color:#566082}
+@keyframes mq{to{transform:translateX(-50%)}}
+
+.box{position:relative;text-align:center;padding:70px 24px;border-radius:28px;border:1px solid var(--line);background:radial-gradient(600px circle at 50% 0,rgba(124,92,255,.25),transparent 70%),var(--bg2);overflow:hidden}
+.box h2{font-size:clamp(28px,4.4vw,48px);letter-spacing:-.03em;margin-bottom:14px}
+.box p{color:var(--mut);margin-bottom:30px}
+footer{border-top:1px solid var(--line);padding:34px 0;color:var(--mut);font-size:14px}
+.ft{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
+.ft nav{all:unset}
+.fl{display:flex;gap:22px}.fl a:hover{color:#fff}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(34px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1)}
+.rv.on{opacity:1;transform:none}
+.d1{transition-delay:.1s}.d2{transition-delay:.2s}.d3{transition-delay:.3s}
+
+@media(max-width:960px){
+  .hg{grid-template-columns:1fr}.demo{transform:none;animation:none}
+  .grid{grid-template-columns:repeat(2,1fr)}.steps{grid-template-columns:1fr}
+  .links{display:none}
+}
+@media(max-width:540px){.grid{grid-template-columns:1fr}.hero{padding-top:110px}.btn.lg{width:100%;justify-content:center}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
+
+<nav id="nav"><div class="wrap nv">
+  <a href="#" class="logo"><i></i>Apeiron</a>
+  <div class="links"><a href="#imkoniyat">Imkoniyatlar</a><a href="#qanday">Qanday ishlaydi</a><a href="#boshlash">Boshlash</a></div>
+  <a href="/login.html" class="btn p">Kirish</a>
+</div></nav>
+
+<header class="hero"><div class="wrap hg">
+  <div>
+    <div class="pill rv"><b></b> O'zbek tilida AI yordamchi</div>
+    <h1 class="rv d1">Bugun nimani <span class="gt">hal qilamiz?</span></h1>
+    <p class="lead rv d2">Apeiron — kod yozish, g'oyalar yaratish, rasm chizish va hujjatlarni chuqur tahlil qilish uchun bitta aqlli suhbat oynasi.</p>
+    <div class="cta rv d3">
+      <a href="/login.html" class="btn p lg">Bepul boshlash →</a>
+      <a href="/index.html" class="btn lg">Mehmon sifatida kirish</a>
+    </div>
+    <div class="chips rv d3"><span>⚡ Tezkor javoblar</span><span>🗂 Loyihalar</span><span>🎨 Rasm generatsiya</span></div>
+  </div>
+  <div class="demo rv d2">
+    <div class="dh"><i></i><i></i><i></i><em>Apeiron — yangi suhbat</em></div>
+    <div class="dm" id="dm"></div>
+  </div>
+</div></header>
+
+<div class="marq"><div class="track" id="track"></div></div>
+
+<main>
+<section id="imkoniyat"><div class="wrap">
+  <div class="sh rv"><small>Imkoniyatlar</small><h2>Barcha vazifalar uchun bitta joy</h2><p>Murakkab ishlarni sodda suhbatga aylantiring.</p></div>
+  <div class="grid">
+    <div class="card rv"><div class="ic">💻</div><h3>Kod yozish</h3><p>Dastur yozish, xatolarni topib tuzatish va loyihani noldan qurishda yordam beradi.</p></div>
+    <div class="card rv d1"><div class="ic">💡</div><h3>G'oya</h3><p>Erkin suhbat, tushuntirish va brainstorm — fikrlaringizni tartibga soling.</p></div>
+    <div class="card rv d2"><div class="ic">🎨</div><h3>Rasm chizish</h3><p>Matn tavsifidan rasm va illyustratsiyalarni bir necha soniyada yarating.</p></div>
+    <div class="card rv d3"><div class="ic">📊</div><h3>Tahlil</h3><p>Hujjat va mavzularni chuqur tahlil qilib, asosiy xulosalarni ajratib beradi.</p></div>
+  </div>
+</div></section>
+
+<section id="qanday" style="background:linear-gradient(180deg,transparent,rgba(15,18,25,.7),transparent)"><div class="wrap">
+  <div class="sh rv"><small>Qanday ishlaydi</small><h2>Uch qadamda natijaga</h2></div>
+  <div class="steps">
+    <div class="step rv"><h3>Savolingizni yozing</h3><p>Nimani hal qilmoqchi ekaningizni o'zingiz gapirgandek yozing.</p></div>
+    <div class="step rv d1"><h3>Apeiron o'ylaydi</h3><p>Vazifani tahlil qilib, aniq va tushunarli javob tayyorlaydi.</p></div>
+    <div class="step rv d2"><h3>Loyihada davom eting</h3><p>Suhbatlaringizni loyihalarda saqlang va istalgan payt qaytib keling.</p></div>
+  </div>
+</div></section>
+
+<section id="boshlash"><div class="wrap">
+  <div class="box rv">
+    <h2>Hoziroq <span class="gt">Apeiron</span> bilan boshlang</h2>
+    <p>Ro'yxatdan o'ting yoki mehmon sifatida sinab ko'ring.</p>
+    <div class="cta" style="justify-content:center">
+      <a href="/login.html" class="btn p lg">Kirish / Ro'yxatdan o'tish</a>
+      <a href="/index.html" class="btn lg">Mehmon sessiya</a>
+    </div>
+  </div>
+</div></section>
+</main>
+
+<footer><div class="wrap ft">
+  <a href="#" class="logo"><i></i>Apeiron</a>
+  <div class="fl"><a href="/index.html">Suhbat</a><a href="/projects.html">Loyihalar</a><a href="/settings.html">Sozlamalar</a></div>
+  <span>© <span id="yr"></span> Apeiron. Barcha huquqlar himoyalangan.</span>
+</div></footer>
+
+<script>
+document.getElementById('yr').textContent=new Date().getFullYear();
+const nav=document.getElementById('nav');
+addEventListener('scroll',()=>nav.classList.toggle('s',scrollY>20),{passive:true});
+
+// scroll reveal
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('on');io.unobserve(e.target)}}),{threshold:.15});
+document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+
+// marquee
+const words=['Kod yozish','G\'oya','Rasm chizish','Tahlil','Loyihalar','Brainstorm','Xatolarni tuzatish','Illyustratsiya'];
+const tr=document.getElementById('track');
+tr.innerHTML=[...words,...words].map(w=>`<span>${w}</span><span>✦</span>`).join('');
+
+// card spotlight
+document.querySelectorAll('.card').forEach(c=>c.addEventListener('pointermove',e=>{
+  const r=c.getBoundingClientRect();c.style.setProperty('--x',(e.clientX-r.left)+'px');c.style.setProperty('--y',(e.clientY-r.top)+'px');
+}));
+
+// particle network
+const cv=document.getElementById('bg'),cx=cv.getContext('2d');
+let W,H,P=[];const mouse={x:-999,y:-999};
+function size(){W=cv.width=innerWidth;H=cv.height=innerHeight;P=Array.from({length:Math.min(80,Math.floor(W*H/18000))},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35}))}
+size();addEventListener('resize',size);
+addEventListener('pointermove',e=>{mouse.x=e.clientX;mouse.y=e.clientY});
+if(!matchMedia('(prefers-reduced-motion:reduce)').matches)(function draw(){
+  cx.clearRect(0,0,W,H);
+  for(const p of P){
+    p.x+=p.vx;p.y+=p.vy;
+    if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1;
+    cx.fillStyle='rgba(160,170,255,.55)';cx.beginPath();cx.arc(p.x,p.y,1.4,0,6.3);cx.fill();
+  }
+  for(let i=0;i<P.length;i++)for(let j=i+1;j<P.length;j++){
+    const a=P[i],b=P[j],d=Math.hypot(a.x-b.x,a.y-b.y);
+    if(d<130){cx.strokeStyle=`rgba(124,92,255,${.16*(1-d/130)})`;cx.beginPath();cx.moveTo(a.x,a.y);cx.lineTo(b.x,b.y);cx.stroke()}
+  }
+  for(const p of P){const d=Math.hypot(p.x-mouse.x,p.y-mouse.y);if(d<160){cx.strokeStyle=`rgba(34,211,238,${.35*(1-d/160)})`;cx.beginPath();cx.moveTo(p.x,p.y);cx.lineTo(mouse.x,mouse.y);cx.stroke()}}
+  requestAnimationFrame(draw);
+})();
+
+// chat demo typing loop
+const dm=document.getElementById('dm');
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const script=[
+  {u:"Python'da ro'yxatni tartiblovchi funksiya yozib ber",a:"Albatta! Mana oddiy variant:",code:"def sort_list(items):\n    return sorted(items)"},
+  {u:"Yangi kafe uchun logotip g'oyasi ber",a:"Qahva donasi va bug' shaklini birlashtirgan minimalistik logotip — iliq jigarrang va krem ranglarda. Rasmini chizib beraymi? 🎨"},
+  {u:"Bu hujjatni qisqacha tahlil qil",a:"Hujjatdagi 3 ta asosiy g'oyani ajratdim va har biriga qisqa xulosa tayyorladim. 📊"}
+];
+async function type(el,text){for(const ch of text){el.textContent+=ch;await sleep(18+Math.random()*22)}}
+async function run(){
+  const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  for(let i=0;;i=(i+1)%script.length){
+    const s=script[i];dm.innerHTML='';
+    const u=document.createElement('div');u.className='msg u';dm.appendChild(u);
+    reduce?u.textContent=s.u:await type(u,s.u);
+    await sleep(350);
+    const a=document.createElement('div');a.className='msg a';a.innerHTML='<span class="dots"><i></i><i></i><i></i></span>';dm.appendChild(a);
+    await sleep(900);
+    a.innerHTML='<span class="t cur"></span>';const t=a.querySelector('.t');
+    reduce?t.textContent=s.a:await type(t,s.a);
+    if(s.code){const c=document.createElement('code');c.textContent=s.code;a.appendChild(c)}
+    t.classList.remove('cur');
+    await sleep(3800);
+  }
+}
+run();
+</script>
+</body>
+</html>

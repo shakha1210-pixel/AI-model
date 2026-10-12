@@ -23,7 +23,7 @@ from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -1167,4 +1167,16 @@ if ENABLE_GOOGLE_DOCS_TOOL:
 # "yutib" qo'yishi mumkin.
 FRONTEND_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend")
 if os.path.isdir(FRONTEND_DIR):
+    LANDING_FILE = os.path.join(FRONTEND_DIR, "landing.html")
+
+    # Domenga (/) kirganda landing sahifa ko'rsatiladi. Chat ilovasi
+    # /index.html'da qoladi (manifest.json start_url ham shu yerga qaragan),
+    # kirgan foydalanuvchini landing.html o'zi chatga yo'naltiradi.
+    # Bu yo'l mount'dan OLDIN turishi shart — aks holda mount "/" ni yutadi.
+    if os.path.isfile(LANDING_FILE):
+
+        @app.get("/", include_in_schema=False)
+        async def landing_page():
+            return FileResponse(LANDING_FILE, media_type="text/html")
+
     app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="frontend")

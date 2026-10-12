@@ -37,6 +37,7 @@ agent-project/
 ├── tests/test_main.py
 ├── .github/workflows/deploy.yml
 └── frontend/
+    ├── landing.html  (/ — landing sahifa; chat /index.html'da)
     ├── index.html / style.css / chat.js / voice.js
     ├── login.html / register.html
     ├── history.html / projects.html

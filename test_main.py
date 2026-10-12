@@ -57,6 +57,18 @@ def test_health():
     assert response.json() == {"status": "ok"}
 
 
+def test_root_serves_landing_and_chat_stays_at_index():
+    root = client.get("/")
+    assert root.status_code == 200
+    assert "text/html" in root.headers["content-type"]
+    assert "Apeiron" in root.text and "login.html" in root.text
+
+    # Chat ilovasi eski joyida (manifest start_url shu yerga qaragan)
+    chat = client.get("/index.html")
+    assert chat.status_code == 200
+    assert "chat.js" in chat.text
+
+
 def test_classify_intent_code():
     assert classify_intent("Bu Python funksiyasida xato bor, tuzatib bering") == "code"
 
