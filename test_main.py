@@ -62,6 +62,8 @@ def test_root_serves_landing_and_chat_stays_at_index():
     assert root.status_code == 200
     assert "text/html" in root.headers["content-type"]
     assert "Apeiron" in root.text and "login.html" in root.text
+    # 3 tilli almashtirgich (UZ/RU/EN)
+    assert all(f'data-l="{l}"' in root.text for l in ("uz", "ru", "en"))
 
     # Chat ilovasi eski joyida (manifest start_url shu yerga qaragan)
     chat = client.get("/index.html")

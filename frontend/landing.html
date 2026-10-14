@@ -57,6 +57,13 @@ nav.s{background:rgba(10,12,17,.75);backdrop-filter:blur(14px);border-bottom:1px
 @keyframes shift{50%{background-position:100% 50%}}
 .btn.lg{padding:15px 30px;font-size:16px;border-radius:14px}
 
+.nr{display:flex;align-items:center;gap:12px}
+.lang{display:flex;padding:3px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.04)}
+.lang button{all:unset;cursor:pointer;padding:6px 10px;border-radius:7px;font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--mut);transition:.2s}
+.lang button:hover{color:#fff}
+.lang button.on{background:var(--grad);color:#fff}
+.lang button:focus-visible{outline:2px solid var(--b);outline-offset:1px}
+
 /* hero */
 .hero{min-height:100vh;display:flex;align-items:center;padding:130px 0 70px}
 .hg{display:grid;grid-template-columns:1.05fr .95fr;gap:50px;align-items:center}
@@ -133,7 +140,7 @@ footer{border-top:1px solid var(--line);padding:34px 0;color:var(--mut);font-siz
   .grid{grid-template-columns:repeat(2,1fr)}.steps{grid-template-columns:1fr}
   .links{display:none}
 }
-@media(max-width:540px){.grid{grid-template-columns:1fr}.hero{padding-top:110px}.btn.lg{width:100%;justify-content:center}}
+@media(max-width:540px){.nr{gap:8px}.lang button{padding:6px 7px}nav .btn{padding:9px 14px}.grid{grid-template-columns:1fr}.hero{padding-top:110px}.btn.lg{width:100%;justify-content:center}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.rv{opacity:1;transform:none}}
 </style>
 </head>
@@ -143,23 +150,26 @@ footer{border-top:1px solid var(--line);padding:34px 0;color:var(--mut);font-siz
 
 <nav id="nav"><div class="wrap nv">
   <a href="#" class="logo"><i></i>Apeiron</a>
-  <div class="links"><a href="#imkoniyat">Imkoniyatlar</a><a href="#qanday">Qanday ishlaydi</a><a href="#boshlash">Boshlash</a></div>
-  <a href="/login.html" class="btn p">Kirish</a>
+  <div class="links"><a href="#imkoniyat" data-i18n="nav.features">Imkoniyatlar</a><a href="#qanday" data-i18n="nav.how">Qanday ishlaydi</a><a href="#boshlash" data-i18n="nav.start">Boshlash</a></div>
+  <div class="nr">
+    <div class="lang" role="group" aria-label="Language"><button type="button" data-l="uz">UZ</button><button type="button" data-l="ru">RU</button><button type="button" data-l="en">EN</button></div>
+    <a href="/login.html" class="btn p" data-i18n="nav.login">Kirish</a>
+  </div>
 </div></nav>
 
 <header class="hero"><div class="wrap hg">
   <div>
-    <div class="pill rv"><b></b> O'zbek tilida AI yordamchi</div>
-    <h1 class="rv d1">Bugun nimani <span class="gt">hal qilamiz?</span></h1>
-    <p class="lead rv d2">Apeiron — kod yozish, g'oyalar yaratish, rasm chizish va hujjatlarni chuqur tahlil qilish uchun bitta aqlli suhbat oynasi.</p>
+    <div class="pill rv"><b></b> <span data-i18n="hero.pill">O'zbek tilida AI yordamchi</span></div>
+    <h1 class="rv d1" data-i18n-html="hero.title">Bugun nimani <span class="gt">hal qilamiz?</span></h1>
+    <p class="lead rv d2" data-i18n="hero.lead">Apeiron — kod yozish, g'oyalar yaratish, rasm chizish va hujjatlarni chuqur tahlil qilish uchun bitta aqlli suhbat oynasi.</p>
     <div class="cta rv d3">
-      <a href="/login.html" class="btn p lg">Bepul boshlash →</a>
-      <a href="/index.html" class="btn lg">Mehmon sifatida kirish</a>
+      <a href="/login.html" class="btn p lg" data-i18n="hero.cta1">Bepul boshlash →</a>
+      <a href="/index.html" class="btn lg" data-i18n="hero.cta2">Mehmon sifatida kirish</a>
     </div>
-    <div class="chips rv d3"><span>⚡ Tezkor javoblar</span><span>🗂 Loyihalar</span><span>🎨 Rasm generatsiya</span></div>
+    <div class="chips rv d3"><span data-i18n="chip.1">⚡ Tezkor javoblar</span><span data-i18n="chip.2">🗂 Loyihalar</span><span data-i18n="chip.3">🎨 Rasm generatsiya</span></div>
   </div>
   <div class="demo rv d2">
-    <div class="dh"><i></i><i></i><i></i><em>Apeiron — yangi suhbat</em></div>
+    <div class="dh"><i></i><i></i><i></i><em data-i18n="demo.title">Apeiron — yangi suhbat</em></div>
     <div class="dm" id="dm"></div>
   </div>
 </div></header>
@@ -168,31 +178,31 @@ footer{border-top:1px solid var(--line);padding:34px 0;color:var(--mut);font-siz
 
 <main>
 <section id="imkoniyat"><div class="wrap">
-  <div class="sh rv"><small>Imkoniyatlar</small><h2>Barcha vazifalar uchun bitta joy</h2><p>Murakkab ishlarni sodda suhbatga aylantiring.</p></div>
+  <div class="sh rv"><small data-i18n="feat.small">Imkoniyatlar</small><h2 data-i18n="feat.h">Barcha vazifalar uchun bitta joy</h2><p data-i18n="feat.p">Murakkab ishlarni sodda suhbatga aylantiring.</p></div>
   <div class="grid">
-    <div class="card rv"><div class="ic">💻</div><h3>Kod yozish</h3><p>Dastur yozish, xatolarni topib tuzatish va loyihani noldan qurishda yordam beradi.</p></div>
-    <div class="card rv d1"><div class="ic">💡</div><h3>G'oya</h3><p>Erkin suhbat, tushuntirish va brainstorm — fikrlaringizni tartibga soling.</p></div>
-    <div class="card rv d2"><div class="ic">🎨</div><h3>Rasm chizish</h3><p>Matn tavsifidan rasm va illyustratsiyalarni bir necha soniyada yarating.</p></div>
-    <div class="card rv d3"><div class="ic">📊</div><h3>Tahlil</h3><p>Hujjat va mavzularni chuqur tahlil qilib, asosiy xulosalarni ajratib beradi.</p></div>
+    <div class="card rv"><div class="ic">💻</div><h3 data-i18n="c1.h">Kod yozish</h3><p data-i18n="c1.p">Dastur yozish, xatolarni topib tuzatish va loyihani noldan qurishda yordam beradi.</p></div>
+    <div class="card rv d1"><div class="ic">💡</div><h3 data-i18n="c2.h">G'oya</h3><p data-i18n="c2.p">Erkin suhbat, tushuntirish va brainstorm — fikrlaringizni tartibga soling.</p></div>
+    <div class="card rv d2"><div class="ic">🎨</div><h3 data-i18n="c3.h">Rasm chizish</h3><p data-i18n="c3.p">Matn tavsifidan rasm va illyustratsiyalarni bir necha soniyada yarating.</p></div>
+    <div class="card rv d3"><div class="ic">📊</div><h3 data-i18n="c4.h">Tahlil</h3><p data-i18n="c4.p">Hujjat va mavzularni chuqur tahlil qilib, asosiy xulosalarni ajratib beradi.</p></div>
   </div>
 </div></section>
 
 <section id="qanday" style="background:linear-gradient(180deg,transparent,rgba(15,18,25,.7),transparent)"><div class="wrap">
-  <div class="sh rv"><small>Qanday ishlaydi</small><h2>Uch qadamda natijaga</h2></div>
+  <div class="sh rv"><small data-i18n="how.small">Qanday ishlaydi</small><h2 data-i18n="how.h">Uch qadamda natijaga</h2></div>
   <div class="steps">
-    <div class="step rv"><h3>Savolingizni yozing</h3><p>Nimani hal qilmoqchi ekaningizni o'zingiz gapirgandek yozing.</p></div>
-    <div class="step rv d1"><h3>Apeiron o'ylaydi</h3><p>Vazifani tahlil qilib, aniq va tushunarli javob tayyorlaydi.</p></div>
-    <div class="step rv d2"><h3>Loyihada davom eting</h3><p>Suhbatlaringizni loyihalarda saqlang va istalgan payt qaytib keling.</p></div>
+    <div class="step rv"><h3 data-i18n="s1.h">Savolingizni yozing</h3><p data-i18n="s1.p">Nimani hal qilmoqchi ekaningizni o'zingiz gapirgandek yozing.</p></div>
+    <div class="step rv d1"><h3 data-i18n="s2.h">Apeiron o'ylaydi</h3><p data-i18n="s2.p">Vazifani tahlil qilib, aniq va tushunarli javob tayyorlaydi.</p></div>
+    <div class="step rv d2"><h3 data-i18n="s3.h">Loyihada davom eting</h3><p data-i18n="s3.p">Suhbatlaringizni loyihalarda saqlang va istalgan payt qaytib keling.</p></div>
   </div>
 </div></section>
 
 <section id="boshlash"><div class="wrap">
   <div class="box rv">
-    <h2>Hoziroq <span class="gt">Apeiron</span> bilan boshlang</h2>
-    <p>Ro'yxatdan o'ting yoki mehmon sifatida sinab ko'ring.</p>
+    <h2 data-i18n-html="cta.h">Hoziroq <span class="gt">Apeiron</span> bilan boshlang</h2>
+    <p data-i18n="cta.p">Ro'yxatdan o'ting yoki mehmon sifatida sinab ko'ring.</p>
     <div class="cta" style="justify-content:center">
-      <a href="/login.html" class="btn p lg">Kirish / Ro'yxatdan o'tish</a>
-      <a href="/index.html" class="btn lg">Mehmon sessiya</a>
+      <a href="/login.html" class="btn p lg" data-i18n="cta.b1">Kirish / Ro'yxatdan o'tish</a>
+      <a href="/index.html" class="btn lg" data-i18n="cta.b2">Mehmon sessiya</a>
     </div>
   </div>
 </div></section>
@@ -200,8 +210,8 @@ footer{border-top:1px solid var(--line);padding:34px 0;color:var(--mut);font-siz
 
 <footer><div class="wrap ft">
   <a href="#" class="logo"><i></i>Apeiron</a>
-  <div class="fl"><a href="/index.html">Suhbat</a><a href="/projects.html">Loyihalar</a><a href="/settings.html">Sozlamalar</a></div>
-  <span>© <span id="yr"></span> Apeiron. Barcha huquqlar himoyalangan.</span>
+  <div class="fl"><a href="/index.html" data-i18n="ft.chat">Suhbat</a><a href="/projects.html" data-i18n="ft.projects">Loyihalar</a><a href="/settings.html" data-i18n="ft.settings">Sozlamalar</a></div>
+  <span>© <span id="yr"></span> <span data-i18n="ft.rights">Apeiron. Barcha huquqlar himoyalangan.</span></span>
 </div></footer>
 
 <script>
@@ -213,10 +223,7 @@ addEventListener('scroll',()=>nav.classList.toggle('s',scrollY>20),{passive:true
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('on');io.unobserve(e.target)}}),{threshold:.15});
 document.querySelectorAll('.rv').forEach(el=>io.observe(el));
 
-// marquee
-const words=['Kod yozish','G\'oya','Rasm chizish','Tahlil','Loyihalar','Brainstorm','Xatolarni tuzatish','Illyustratsiya'];
 const tr=document.getElementById('track');
-tr.innerHTML=[...words,...words].map(w=>`<span>${w}</span><span>✦</span>`).join('');
 
 // card spotlight
 document.querySelectorAll('.card').forEach(c=>c.addEventListener('pointermove',e=>{
@@ -244,32 +251,140 @@ if(!matchMedia('(prefers-reduced-motion:reduce)').matches)(function draw(){
   requestAnimationFrame(draw);
 })();
 
-// chat demo typing loop
+// ===== i18n (UZ / RU / EN) — til ilova bilan bir xil "language" kalitida saqlanadi =====
+const I18N={
+uz:{
+ title:`Apeiron — Sun'iy intellekt yordamchingiz`,
+ desc:`Apeiron — kod yozish, g'oyalar, rasm yaratish va chuqur tahlil uchun o'zbek tilidagi sun'iy intellekt yordamchisi.`,
+ words:[`Kod yozish`,`G'oya`,`Rasm chizish`,`Tahlil`,`Loyihalar`,`Brainstorm`,`Xatolarni tuzatish`,`Illyustratsiya`],
+ 'nav.features':`Imkoniyatlar`,'nav.how':`Qanday ishlaydi`,'nav.start':`Boshlash`,'nav.login':`Kirish`,
+ 'hero.pill':`O'zbek tilida AI yordamchi`,
+ 'hero.title':`Bugun nimani <span class="gt">hal qilamiz?</span>`,
+ 'hero.lead':`Apeiron — kod yozish, g'oyalar yaratish, rasm chizish va hujjatlarni chuqur tahlil qilish uchun bitta aqlli suhbat oynasi.`,
+ 'hero.cta1':`Bepul boshlash →`,'hero.cta2':`Mehmon sifatida kirish`,
+ 'chip.1':`⚡ Tezkor javoblar`,'chip.2':`🗂 Loyihalar`,'chip.3':`🎨 Rasm generatsiya`,
+ 'demo.title':`Apeiron — yangi suhbat`,
+ 'feat.small':`Imkoniyatlar`,'feat.h':`Barcha vazifalar uchun bitta joy`,'feat.p':`Murakkab ishlarni sodda suhbatga aylantiring.`,
+ 'c1.h':`Kod yozish`,'c1.p':`Dastur yozish, xatolarni topib tuzatish va loyihani noldan qurishda yordam beradi.`,
+ 'c2.h':`G'oya`,'c2.p':`Erkin suhbat, tushuntirish va brainstorm — fikrlaringizni tartibga soling.`,
+ 'c3.h':`Rasm chizish`,'c3.p':`Matn tavsifidan rasm va illyustratsiyalarni bir necha soniyada yarating.`,
+ 'c4.h':`Tahlil`,'c4.p':`Hujjat va mavzularni chuqur tahlil qilib, asosiy xulosalarni ajratib beradi.`,
+ 'how.small':`Qanday ishlaydi`,'how.h':`Uch qadamda natijaga`,
+ 's1.h':`Savolingizni yozing`,'s1.p':`Nimani hal qilmoqchi ekaningizni o'zingiz gapirgandek yozing.`,
+ 's2.h':`Apeiron o'ylaydi`,'s2.p':`Vazifani tahlil qilib, aniq va tushunarli javob tayyorlaydi.`,
+ 's3.h':`Loyihada davom eting`,'s3.p':`Suhbatlaringizni loyihalarda saqlang va istalgan payt qaytib keling.`,
+ 'cta.h':`Hoziroq <span class="gt">Apeiron</span> bilan boshlang`,'cta.p':`Ro'yxatdan o'ting yoki mehmon sifatida sinab ko'ring.`,
+ 'cta.b1':`Kirish / Ro'yxatdan o'tish`,'cta.b2':`Mehmon sessiya`,
+ 'ft.chat':`Suhbat`,'ft.projects':`Loyihalar`,'ft.settings':`Sozlamalar`,'ft.rights':`Apeiron. Barcha huquqlar himoyalangan.`,
+ demo:[
+  {u:`Python'da ro'yxatni tartiblovchi funksiya yozib ber`,a:`Albatta! Mana oddiy variant:`,code:`def sort_list(items):\n    return sorted(items)`},
+  {u:`Yangi kafe uchun logotip g'oyasi ber`,a:`Qahva donasi va bug' shaklini birlashtirgan minimalistik logotip — iliq jigarrang va krem ranglarda. Rasmini chizib beraymi? 🎨`},
+  {u:`Bu hujjatni qisqacha tahlil qil`,a:`Hujjatdagi 3 ta asosiy g'oyani ajratdim va har biriga qisqa xulosa tayyorladim. 📊`}
+ ]
+},
+ru:{
+ title:`Apeiron — ваш помощник на базе ИИ`,
+ desc:`Apeiron — ИИ-помощник для написания кода, генерации идей, создания изображений и глубокого анализа документов.`,
+ words:[`Написание кода`,`Идеи`,`Генерация изображений`,`Анализ`,`Проекты`,`Брейншторм`,`Исправление ошибок`,`Иллюстрации`],
+ 'nav.features':`Возможности`,'nav.how':`Как это работает`,'nav.start':`Начать`,'nav.login':`Войти`,
+ 'hero.pill':`ИИ-помощник нового поколения`,
+ 'hero.title':`Что решим <span class="gt">сегодня?</span>`,
+ 'hero.lead':`Apeiron — единое умное окно чата для написания кода, генерации идей, создания изображений и глубокого анализа документов.`,
+ 'hero.cta1':`Начать бесплатно →`,'hero.cta2':`Войти как гость`,
+ 'chip.1':`⚡ Быстрые ответы`,'chip.2':`🗂 Проекты`,'chip.3':`🎨 Генерация изображений`,
+ 'demo.title':`Apeiron — новый чат`,
+ 'feat.small':`Возможности`,'feat.h':`Одно место для всех задач`,'feat.p':`Превращайте сложную работу в простой диалог.`,
+ 'c1.h':`Написание кода`,'c1.p':`Помогает писать программы, находить и исправлять ошибки и строить проект с нуля.`,
+ 'c2.h':`Идеи`,'c2.p':`Свободное общение, объяснения и брейншторм — приведите мысли в порядок.`,
+ 'c3.h':`Создание изображений`,'c3.p':`Создавайте картинки и иллюстрации по текстовому описанию за считаные секунды.`,
+ 'c4.h':`Анализ`,'c4.p':`Глубоко анализирует документы и темы и выделяет главные выводы.`,
+ 'how.small':`Как это работает`,'how.h':`Результат за три шага`,
+ 's1.h':`Напишите вопрос`,'s1.p':`Опишите, что хотите решить, так, как сказали бы вслух.`,
+ 's2.h':`Apeiron думает`,'s2.p':`Анализирует задачу и готовит точный и понятный ответ.`,
+ 's3.h':`Продолжайте в проекте`,'s3.p':`Сохраняйте диалоги в проектах и возвращайтесь в любой момент.`,
+ 'cta.h':`Начните с <span class="gt">Apeiron</span> прямо сейчас`,'cta.p':`Зарегистрируйтесь или попробуйте как гость.`,
+ 'cta.b1':`Войти / Регистрация`,'cta.b2':`Гостевая сессия`,
+ 'ft.chat':`Чат`,'ft.projects':`Проекты`,'ft.settings':`Настройки`,'ft.rights':`Apeiron. Все права защищены.`,
+ demo:[
+  {u:`Напиши функцию на Python для сортировки списка`,a:`Конечно! Вот простой вариант:`,code:`def sort_list(items):\n    return sorted(items)`},
+  {u:`Предложи идею логотипа для новой кофейни`,a:`Минималистичный логотип, сочетающий кофейное зерно и пар, в тёплых коричневых и кремовых тонах. Нарисовать его? 🎨`},
+  {u:`Кратко проанализируй этот документ`,a:`Я выделил 3 главные идеи и подготовил краткий вывод по каждой. 📊`}
+ ]
+},
+en:{
+ title:`Apeiron — Your AI Assistant`,
+ desc:`Apeiron is an AI assistant for writing code, generating ideas, creating images and analyzing documents in depth.`,
+ words:[`Coding`,`Ideas`,`Image creation`,`Analysis`,`Projects`,`Brainstorming`,`Bug fixing`,`Illustrations`],
+ 'nav.features':`Features`,'nav.how':`How it works`,'nav.start':`Get started`,'nav.login':`Sign in`,
+ 'hero.pill':`Next-generation AI assistant`,
+ 'hero.title':`What shall we <span class="gt">solve today?</span>`,
+ 'hero.lead':`Apeiron is one smart chat window for writing code, generating ideas, creating images and analyzing documents in depth.`,
+ 'hero.cta1':`Start for free →`,'hero.cta2':`Continue as guest`,
+ 'chip.1':`⚡ Fast answers`,'chip.2':`🗂 Projects`,'chip.3':`🎨 Image generation`,
+ 'demo.title':`Apeiron — new chat`,
+ 'feat.small':`Features`,'feat.h':`One place for every task`,'feat.p':`Turn complex work into a simple conversation.`,
+ 'c1.h':`Writing code`,'c1.p':`Helps write programs, find and fix bugs and build a project from scratch.`,
+ 'c2.h':`Ideas`,'c2.p':`Free-form chat, explanations and brainstorming — organize your thoughts.`,
+ 'c3.h':`Image creation`,'c3.p':`Create images and illustrations from a text description in seconds.`,
+ 'c4.h':`Analysis`,'c4.p':`Analyzes documents and topics in depth and pulls out the key takeaways.`,
+ 'how.small':`How it works`,'how.h':`Results in three steps`,
+ 's1.h':`Write your question`,'s1.p':`Describe what you want to solve the way you'd say it out loud.`,
+ 's2.h':`Apeiron thinks`,'s2.p':`Analyzes the task and prepares a clear, accurate answer.`,
+ 's3.h':`Continue in a project`,'s3.p':`Save your chats in projects and come back any time.`,
+ 'cta.h':`Get started with <span class="gt">Apeiron</span> today`,'cta.p':`Sign up or try it as a guest.`,
+ 'cta.b1':`Sign in / Sign up`,'cta.b2':`Guest session`,
+ 'ft.chat':`Chat`,'ft.projects':`Projects`,'ft.settings':`Settings`,'ft.rights':`Apeiron. All rights reserved.`,
+ demo:[
+  {u:`Write a Python function that sorts a list`,a:`Sure! Here's a simple version:`,code:`def sort_list(items):\n    return sorted(items)`},
+  {u:`Give me a logo idea for a new café`,a:`A minimalist logo combining a coffee bean and steam, in warm brown and cream tones. Want me to draw it? 🎨`},
+  {u:`Briefly analyze this document`,a:`I pulled out the 3 key ideas and wrote a short takeaway for each. 📊`}
+ ]
+}};
+const LANGS=['uz','ru','en'];
+let lang='uz';
+try{const st=localStorage.getItem('language');if(LANGS.includes(st))lang=st}catch(e){}
+
+function applyLang(l,save){
+  lang=l;const d=I18N[l];
+  document.documentElement.lang=l;
+  document.title=d.title;
+  document.querySelector('meta[name=description]').setAttribute('content',d.desc);
+  document.querySelectorAll('[data-i18n]').forEach(el=>{const v=d[el.dataset.i18n];if(v!=null)el.textContent=v});
+  document.querySelectorAll('[data-i18n-html]').forEach(el=>{const v=d[el.dataset.i18nHtml];if(v!=null)el.innerHTML=v});
+  document.querySelectorAll('.lang button').forEach(b=>{const on=b.dataset.l===l;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
+  tr.innerHTML=[...d.words,...d.words].map(w=>`<span>${w}</span><span>✦</span>`).join('');
+  if(save){try{localStorage.setItem('language',l)}catch(e){}}
+  restartDemo();
+}
+document.querySelectorAll('.lang button').forEach(b=>b.addEventListener('click',()=>applyLang(b.dataset.l,true)));
+
+// ===== chat demo typing loop (til almashganda qayta boshlanadi) =====
 const dm=document.getElementById('dm');
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-const script=[
-  {u:"Python'da ro'yxatni tartiblovchi funksiya yozib ber",a:"Albatta! Mana oddiy variant:",code:"def sort_list(items):\n    return sorted(items)"},
-  {u:"Yangi kafe uchun logotip g'oyasi ber",a:"Qahva donasi va bug' shaklini birlashtirgan minimalistik logotip — iliq jigarrang va krem ranglarda. Rasmini chizib beraymi? 🎨"},
-  {u:"Bu hujjatni qisqacha tahlil qil",a:"Hujjatdagi 3 ta asosiy g'oyani ajratdim va har biriga qisqa xulosa tayyorladim. 📊"}
-];
-async function type(el,text){for(const ch of text){el.textContent+=ch;await sleep(18+Math.random()*22)}}
-async function run(){
+let runId=0;
+async function type(el,text,id){for(const ch of text){if(id!==runId)return;el.textContent+=ch;await sleep(18+Math.random()*22)}}
+async function run(id){
   const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  const script=I18N[lang].demo;
   for(let i=0;;i=(i+1)%script.length){
     const s=script[i];dm.innerHTML='';
     const u=document.createElement('div');u.className='msg u';dm.appendChild(u);
-    reduce?u.textContent=s.u:await type(u,s.u);
-    await sleep(350);
+    if(reduce)u.textContent=s.u;else await type(u,s.u,id);
+    if(id!==runId)return;
+    await sleep(350);if(id!==runId)return;
     const a=document.createElement('div');a.className='msg a';a.innerHTML='<span class="dots"><i></i><i></i><i></i></span>';dm.appendChild(a);
-    await sleep(900);
+    await sleep(900);if(id!==runId)return;
     a.innerHTML='<span class="t cur"></span>';const t=a.querySelector('.t');
-    reduce?t.textContent=s.a:await type(t,s.a);
+    if(reduce)t.textContent=s.a;else await type(t,s.a,id);
+    if(id!==runId)return;
     if(s.code){const c=document.createElement('code');c.textContent=s.code;a.appendChild(c)}
     t.classList.remove('cur');
-    await sleep(3800);
+    await sleep(3800);if(id!==runId)return;
   }
 }
-run();
+function restartDemo(){run(++runId)}
+
+applyLang(lang,false);
 </script>
 </body>
 </html>
