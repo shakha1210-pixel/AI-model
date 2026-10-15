@@ -1959,3 +1959,15 @@ button {
 .legal-table td:first-child { color: var(--text); font-weight: 600; width: 38%; }
 .legal-doc a { color: var(--accent-strong); }
 .legal-doc h2[id] { scroll-margin-top: 20px; }
+
+/* Tor ekranlar (320–360px): formalar, limit belgisi va tablar sig'ishi uchun */
+.history-toolbar input,
+.projects-create-form input { min-width: 0; }
+.history-toolbar .btn,
+.projects-create-form .btn { flex: none; }
+.projects-create-form { min-width: 0; }
+.projects-toolbar { flex-wrap: wrap; }
+/* Tablar sig'masa qatorda gorizontal aylantiriladi (chiziq statik qoladi) */
+.settings-tabs { overflow-x: auto; scrollbar-width: none; border-bottom: 0; box-shadow: inset 0 -1px 0 var(--border); }
+.settings-tabs::-webkit-scrollbar { display: none; }
+.settings-tab { flex: none; white-space: nowrap; margin-bottom: 0; }
