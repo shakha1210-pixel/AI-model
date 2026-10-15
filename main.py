@@ -1161,6 +1161,58 @@ if ENABLE_GOOGLE_DOCS_TOOL:
 
 
 # ---------------------------------------------------------------------------
+# FOYDALANISH VA LIMITLAR — frontend "Limitlar" sahifasi (limits.html) uchun.
+# Faqat O'QISH: hech qanday limitni o'zgartirmaydi va yangisini kiritmaydi,
+# mavjud chegaralarning joriy holatini bitta javobda jamlab qaytaradi.
+# Har bir bo'limdagi "enabled" — shu cheklov hozir serverda faolmi (masalan
+# ENABLE_RATE_LIMIT=false bo'lsa so'rov tezligi cheklovi yo'q).
+# ---------------------------------------------------------------------------
+@app.get("/usage")
+async def usage_endpoint(
+    request: Request, user_id: str | None = Depends(current_user_id)
+) -> dict:
+    # Sessiya chegarasi faqat ENABLE_AUTH yoqilgan va foydalanuvchi aniqlangan
+    # bo'lsa amal qiladi (_check_session_limit bilan bir xil shart).
+    sessions_enabled = ENABLE_AUTH and user_id is not None
+    data: dict = {
+        "sessions": {
+            "enabled": sessions_enabled,
+            "used": count_sessions(user_id) if sessions_enabled else 0,
+            "limit": MAX_SESSIONS_PER_USER,
+        },
+        "projects": {"enabled": False, "used": 0, "limit": 0, "files_limit": 0, "items": []},
+        "requests": {"enabled": False, "used": 0, "limit": 0, "remaining": 0, "window_seconds": 0},
+        "uploads": {"max_bytes": MAX_UPLOAD_SIZE_BYTES},
+    }
+
+    if ENABLE_PROJECTS and user_id is not None:
+        projects = list_projects(user_id)
+        data["projects"] = {
+            "enabled": True,
+            "used": len(projects),
+            "limit": MAX_PROJECTS_PER_USER,
+            "files_limit": MAX_PROJECT_FILES,
+            "items": [
+                {"id": p["id"], "name": p["name"], "files": count_project_files(p["id"])}
+                for p in projects
+            ],
+        }
+
+    if ENABLE_RATE_LIMIT:
+        # /rate-limit/status bilan bir xil kalit (mijoz IP manzili).
+        status = get_status(request.client.host if request.client else "unknown")
+        data["requests"] = {
+            "enabled": True,
+            "used": status["max_requests"] - status["remaining"],
+            "limit": status["max_requests"],
+            "remaining": status["remaining"],
+            "window_seconds": status["window_seconds"],
+        }
+
+    return data
+
+
+# ---------------------------------------------------------------------------
 # FRONTENDNI XIZMAT KO'RSATISH (qulaylik uchun, ixtiyoriy)
 # ---------------------------------------------------------------------------
 # Bu qator ENG OXIRIDA turishi SHART — aks holda yuqoridagi API yo'llarini

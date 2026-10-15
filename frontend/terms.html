@@ -13,13 +13,13 @@
       document.documentElement.setAttribute("data-font", localStorage.getItem("font") || "sans");
     })();
   </script>
-  <script src="i18n.js?v=11"></script>
+  <script src="i18n.js?v=12"></script>
   <link rel="icon" type="image/jpeg" href="app_logo.jfif" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
   <meta name="theme-color" content="#0a0c11" />
   <script src="register-sw.js?v=11"></script>
-  <link rel="stylesheet" href="style.css?v=11" />
+  <link rel="stylesheet" href="style.css?v=12" />
 </head>
 <body>
 
@@ -35,7 +35,7 @@
     <main class="page-body">
       <div class="legal-doc">
         <h1>Foydalanish shartlari</h1>
-        <p class="legal-doc__updated">Oxirgi yangilanish: 2026-yil</p>
+        <p class="legal-doc__updated">Oxirgi yangilanish: 2026-yil 15-oktabr</p>
 
         <p>
           Apeiron — bir nechta sun'iy intellekt modellarini (kod yozish, matn/g'oya
@@ -75,22 +75,81 @@
           aniqligi kafolatlanmaydi.
         </p>
 
-        <h2>4. Cheklovlar (kvota)</h2>
+        <h2>4. Uchinchi tomon sun'iy intellekt xizmatlari</h2>
         <p>
-          Serverni ortiqcha yuklanishdan va suiiste'moldan himoya qilish uchun
-          har bir foydalanuvchi uchun sessiya, loyiha va fayl sonига cheklovlar
-          qo'yilgan. Cheklovga yetganda tizim yangi resurs yaratishni bloklaydi;
-          mavjud resurslardan birini o'chirish orqali joy bo'shatishingiz mumkin.
+          So'rovlaringizni qayta ishlash uchun Apeiron uchinchi tomon xizmatlaridan
+          foydalanadi: kod va tahlil uchun Anthropic (Claude), matn, g'oya va qidiruv
+          uchun Google (Gemini), rasm generatsiyasi uchun Leonardo AI. Javob
+          tayyorlash maqsadida xabaringiz, biriktirgan fayllaringiz mazmuni va
+          (zarur bo'lsa) oldingi xabarlar tegishli xizmatga yuboriladi. Shuning
+          uchun parol, bank kartasi raqami va boshqa maxfiy ma'lumotlarni suhbatga
+          yozmang. Har bir xizmatning o'z foydalanish shartlari va maxfiylik
+          siyosati amal qiladi.
         </p>
 
-        <h2>5. Ma'lumotlarni saqlash</h2>
+        <h2 id="cheklovlar">5. Cheklovlar (kvota)</h2>
         <p>
-          Suhbat tarixi, yuklangan fayllar va profil ma'lumotlari xizmat
-          ko'rsatish maqsadida serverda saqlanadi. Hisobingizni o'chirishni
-          so'rash uchun administrator bilan bog'laning.
+          Serverni ortiqcha yuklanishdan va suiiste'moldan himoya qilish uchun har
+          bir foydalanuvchiga quyidagi standart chegaralar qo'llanadi:
+        </p>
+        <div class="legal-table-wrap">
+          <table class="legal-table">
+            <thead>
+              <tr><th scope="col">Resurs</th><th scope="col">Standart chegara</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Suhbatlar (saqlanadigan sessiyalar)</td><td>30 ta</td></tr>
+              <tr><td>Loyihalar</td><td>5 ta</td></tr>
+              <tr><td>Bitta loyihadagi fayllar</td><td>10 ta</td></tr>
+              <tr><td>Biriktiriladigan fayl hajmi</td><td>Matn va kod fayllari &mdash; 256 KB gacha; Word va Excel (.docx, .xlsx) &mdash; 5 MB gacha</td></tr>
+              <tr><td>Xabar yuborish tezligi</td><td>60 soniyada 20 ta so'rov (cheklov yoqilgan bo'lsa)</td></tr>
+              <tr><td>Kirish va ro'yxatdan o'tish urinishlari</td><td>5 daqiqada 8 ta</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          Cheklovga yetganda tizim yangi resurs yaratishni bloklaydi; mavjud
+          resurslardan birini o'chirish orqali joy bo'shatishingiz mumkin.
+          Administrator bu qiymatlarni o'zgartirishi mumkin, shuning uchun hisobingiz
+          uchun amaldagi chegaralarni va joriy foydalanish holatini
+          <a href="limits.html">Limitlar</a> sahifasida ko'rishingiz mumkin.
         </p>
 
-        <h2>6. Shartlarning o'zgarishi</h2>
+        <h2>6. Xavfsizlik va hisob himoyasi</h2>
+        <ul>
+          <li>Parollar asl holida saqlanmaydi &mdash; faqat bcrypt yordamida xeshlangan ko'rinishda.</li>
+          <li>Kirish sessiyasi 1 kun amal qiladi, undan keyin qayta kirish talab etiladi.</li>
+          <li>Parolni tiklash havolasi 1 soat amal qiladi va faqat bir marta ishlatiladi.</li>
+          <li>Kirish urinishlari tezligi cheklangan (5-bandga qarang), bu parolni taxmin qilib topishga urinishlardan himoya qiladi.</li>
+          <li>Kirish tokeni hamda til va mavzu sozlamalari brauzeringizning lokal xotirasida saqlanadi. Umumiy qurilmada ishlatgandan so'ng hisobdan chiqing.</li>
+          <li>Hisobingizga ruxsatsiz kirilganidan shubhalansangiz, parolni darhol almashtiring yoki administrator bilan bog'laning.</li>
+        </ul>
+
+        <h2>7. Ma'lumotlarni saqlash va maxfiylik</h2>
+        <p>
+          Xizmat ko'rsatish maqsadida serverda quyidagilar saqlanadi: ismingiz,
+          email manzilingiz, parol xeshi (Google orqali kirgan bo'lsangiz &mdash; Google
+          identifikatori), shartlarga rozilik vaqti, suhbat tarixi (xabarlar va
+          yaratilgan rasm havolalari), loyihalaringiz va ularga yuklangan fayllar.
+          Har bir hisobning ma'lumotlari alohida saqlanadi va boshqa
+          foydalanuvchilarga ko'rsatilmaydi.
+        </p>
+
+        <h2>8. Integratsiyalar</h2>
+        <p>
+          Google Docs kabi integratsiyani ulaganingizda agent faqat siz ruxsat
+          bergan hujjatlar bilan ishlaydi. Ulash joriy suhbat sessiyangiz bilan
+          cheklangan &mdash; boshqa qurilma yoki brauzerda qayta ulash kerak bo'ladi.
+        </p>
+
+        <h2>9. Ma'lumotlarni o'chirish</h2>
+        <p>
+          Alohida suhbatlar, loyihalar va fayllarni istalgan vaqtda ilova ichida
+          o'chirishingiz mumkin. Hisobingizni to'liq o'chirishni so'rash uchun
+          administrator bilan bog'laning.
+        </p>
+
+        <h2>10. Shartlarning o'zgarishi</h2>
         <p>
           Ushbu shartlar vaqti-vaqti bilan yangilanishi mumkin. Muhim
           o'zgarishlar haqida xizmat ichida xabar beriladi.

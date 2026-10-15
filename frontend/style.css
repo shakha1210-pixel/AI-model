@@ -1799,3 +1799,163 @@ button {
   .message--assistant.is-streaming .message__content--raw::after,
   .mic-button--active { animation: none !important; }
 }
+
+/* =========================================================================
+   LIMITLAR SAHIFASI (limits.html) — foydalanish va chegaralar
+   ========================================================================= */
+
+:root { --limit-warn: #f59e0b; --limit-warn-soft: rgba(245, 158, 11, 0.14); }
+:root[data-theme="light"] { --limit-warn: #d97706; --limit-warn-soft: rgba(217, 119, 6, 0.1); }
+
+.page--wide { max-width: 980px; }
+
+.limits-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px 24px;
+  flex-wrap: wrap;
+}
+.limits-head__title h1 { font-size: 24px; margin: 0 0 6px; letter-spacing: -0.01em; }
+.limits-head__title p { margin: 0; color: var(--text-muted); font-size: 13.5px; line-height: 1.5; max-width: 58ch; }
+.limits-head__actions { display: flex; align-items: center; gap: 12px; color: var(--text-faint); font-size: 12.5px; }
+
+.limits-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+
+.limit-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  padding: 18px 20px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(22px) saturate(1.6);
+  -webkit-backdrop-filter: blur(22px) saturate(1.6);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.limit-card:hover { border-color: var(--border-strong); }
+.limit-card--wide { grid-column: 1 / -1; }
+
+.limit-card__head { display: flex; align-items: flex-start; gap: 12px; }
+.limit-card__icon {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.limit-card__icon svg { width: 18px; height: 18px; }
+.limit-card__heading { flex: 1; min-width: 0; }
+.limit-card__title { margin: 0; font-size: 15px; font-weight: 600; }
+.limit-card__desc { margin: 3px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--text-muted); }
+
+.limit-badge {
+  flex: none;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.limit-badge[data-state="warn"] { color: var(--limit-warn); background: var(--limit-warn-soft); }
+.limit-badge[data-state="full"] { color: var(--danger); background: var(--danger-soft); }
+.limit-badge[data-state="off"] { color: var(--text-muted); background: var(--surface-2); }
+
+.limit-card__value { display: flex; align-items: baseline; gap: 6px; font-variant-numeric: tabular-nums; }
+.limit-card__value strong { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
+.limit-card__value span { font-size: 15px; color: var(--text-muted); }
+
+.meter { height: 8px; border-radius: 999px; background: var(--surface-3); overflow: hidden; }
+.meter--sm { height: 6px; }
+.meter__fill {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: width 0.6s cubic-bezier(0.2, 0.7, 0.2, 1), background-color 0.2s ease;
+}
+.meter[data-state="warn"] .meter__fill { background: var(--limit-warn); }
+.meter[data-state="full"] .meter__fill { background: var(--danger); }
+.meter[data-state="off"] .meter__fill { background: var(--text-faint); }
+
+.limit-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  flex-wrap: wrap;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+.limit-card__foot a { color: var(--accent-strong); font-weight: 500; }
+.limit-card__foot a:hover { text-decoration: underline; }
+
+.limit-rows { display: flex; flex-direction: column; gap: 14px; }
+.limit-row { display: flex; flex-direction: column; gap: 7px; }
+.limit-row__top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; font-size: 13.5px; }
+.limit-row__name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.limit-row__val { flex: none; color: var(--text-muted); font-variant-numeric: tabular-nums; font-size: 12.5px; }
+.limit-empty { margin: 0; font-size: 13px; color: var(--text-muted); }
+
+.limits-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  color: var(--danger);
+  background: var(--danger-soft);
+  border: 1px solid var(--danger-soft);
+}
+.limits-foot { margin: 0; font-size: 12.5px; color: var(--text-faint); line-height: 1.6; }
+.limits-foot a { color: var(--accent-strong); }
+
+.limit-card.is-skeleton { pointer-events: none; }
+.skel {
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--surface-2), var(--surface-3), var(--surface-2));
+  background-size: 200% 100%;
+  animation: skel-shimmer 1.3s ease-in-out infinite;
+}
+@keyframes skel-shimmer { to { background-position: -200% 0; } }
+
+.btn--sm { padding: 7px 12px; font-size: 12.5px; }
+.btn .spin { display: inline-block; }
+.btn.is-loading .spin { animation: limit-spin 0.9s linear infinite; }
+@keyframes limit-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 700px) {
+  .limits-grid { grid-template-columns: 1fr; }
+  .limits-head__actions { width: 100%; justify-content: space-between; }
+  .limit-card { padding: 16px; }
+  .limit-card__value strong { font-size: 27px; }
+}
+
+/* Ko'p havolali yuqori navigatsiya telefonda sig'masa, qatorga o'raladi */
+@media (max-width: 600px) {
+  .page-header { flex-wrap: wrap; gap: 10px 16px; }
+  .page-nav { flex-wrap: wrap; gap: 8px 16px; }
+}
+
+/* Foydalanish shartlari: chegaralar jadvali */
+.legal-table-wrap { margin: 12px 0 8px; border: 1px solid var(--border); border-radius: 12px; overflow-x: auto; }
+.legal-table { width: 100%; border-collapse: collapse; font-size: 13.5px; line-height: 1.5; }
+.legal-table th, .legal-table td { padding: 10px 14px; text-align: start; vertical-align: top; border-bottom: 1px solid var(--border); }
+.legal-table thead th { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); background: var(--surface-2); }
+.legal-table tbody tr:last-child td { border-bottom: 0; }
+.legal-table td { color: var(--text-muted); }
+.legal-table td:first-child { color: var(--text); font-weight: 600; width: 38%; }
+.legal-doc a { color: var(--accent-strong); }
+.legal-doc h2[id] { scroll-margin-top: 20px; }

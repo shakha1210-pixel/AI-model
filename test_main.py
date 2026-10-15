@@ -854,6 +854,49 @@ def test_session_limit_enforced(monkeypatch):
     assert response.json()["detail"]["code"] == "session_limit_reached"
 
 
+def test_usage_requires_auth_when_enabled():
+    if not main.ENABLE_AUTH:
+        assert client.get("/usage").status_code == 200  # mehmon/lokal rejim
+        return
+    assert client.get("/usage").status_code == 401
+
+
+def test_usage_reports_limits_and_uploads():
+    data = client.get("/usage", headers=AUTH_HEADERS).json()
+    assert data["sessions"]["limit"] == main.MAX_SESSIONS_PER_USER
+    assert data["sessions"]["enabled"] == main.ENABLE_AUTH
+    assert data["uploads"]["max_bytes"] == main.MAX_UPLOAD_SIZE_BYTES == 5 * 1024 * 1024
+    # So'rov tezligi bo'limi faqat ENABLE_RATE_LIMIT yoqilganda faol
+    assert data["requests"]["enabled"] == main.ENABLE_RATE_LIMIT
+    if main.ENABLE_RATE_LIMIT:
+        assert data["requests"]["used"] + data["requests"]["remaining"] == data["requests"]["limit"]
+
+
+def test_usage_counts_projects_and_files_per_user():
+    if not main.ENABLE_PROJECTS:
+        assert client.get("/usage", headers=AUTH_HEADERS).json()["projects"]["enabled"] is False
+        return
+    project = client.post("/projects", json={"name": "Usage sinovi"}, headers=AUTH_HEADERS).json()
+    client.post(
+        f"/projects/{project['id']}/files",
+        files={"file": ("a.txt", b"matn", "text/plain")},
+        headers=AUTH_HEADERS,
+    )
+    try:
+        mine = client.get("/usage", headers=AUTH_HEADERS).json()["projects"]
+        assert mine["enabled"] is True
+        assert mine["limit"] == main.MAX_PROJECTS_PER_USER
+        assert mine["files_limit"] == main.MAX_PROJECT_FILES
+        item = next(p for p in mine["items"] if p["id"] == project["id"])
+        assert item["files"] == 1 and mine["used"] == len(mine["items"])
+
+        # Boshqa foydalanuvchi bu loyihani ko'ra olmasligi shart (izolyatsiya)
+        other = client.get("/usage", headers=OTHER_AUTH_HEADERS).json()["projects"]
+        assert all(p["id"] != project["id"] for p in other["items"])
+    finally:
+        client.delete(f"/projects/{project['id']}", headers=AUTH_HEADERS)  # tozalash
+
+
 def test_project_tool_requires_linked_project():
     if not main.ENABLE_PROJECTS:
         return

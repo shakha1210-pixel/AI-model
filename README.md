@@ -41,6 +41,7 @@ agent-project/
     ├── index.html / style.css / chat.js / voice.js
     ├── login.html / register.html
     ├── history.html / projects.html
+    ├── limits.html  (foydalanish va limitlar; backend: GET /usage)
     └── settings.html
 
 Bosqichma-bosqich reja

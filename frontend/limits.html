@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Limitlar — Apeiron</title>
+  <script>
+    (function () {
+      var t = localStorage.getItem("theme");
+      if (!t) t = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", t);
+      document.documentElement.setAttribute("data-accent", localStorage.getItem("accent") || "teal");
+      document.documentElement.setAttribute("data-font", localStorage.getItem("font") || "sans");
+    })();
+  </script>
+  <script>
+    try {
+      if (!localStorage.getItem("access_token")) {
+        window.location.href = "login.html";
+      }
+    } catch (e) {
+      window.location.href = "login.html";
+    }
+  </script>
+  <script src="i18n.js?v=12"></script>
+  <link rel="icon" type="image/jpeg" href="app_logo.jfif" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <meta name="theme-color" content="#0a0c11" />
+  <script src="register-sw.js?v=11"></script>
+  <link rel="stylesheet" href="style.css?v=12" />
+</head>
+<body>
+
+  <div class="page page--wide">
+    <header class="page-header">
+      <a class="brand" href="index.html">Apeiron</a>
+      <nav class="page-nav">
+        <a href="index.html" data-i18n="nav.chat">Suhbat</a>
+        <a href="projects.html" data-i18n="nav.projects">Loyihalar</a>
+        <a href="history.html" data-i18n="nav.history">Tarix</a>
+        <a href="limits.html" class="is-active" aria-current="page" data-i18n="nav.limits">Limitlar</a>
+        <a href="settings.html" data-i18n="nav.settings">Sozlamalar</a>
+      </nav>
+    </header>
+
+    <main class="page-body">
+      <div class="limits-head">
+        <div class="limits-head__title">
+          <h1 data-i18n="limits.title">Limitlar</h1>
+          <p data-i18n="limits.subtitle">Hisobingiz uchun amaldagi chegaralar va ulardan qancha foydalanganingiz.</p>
+        </div>
+        <div class="limits-head__actions">
+          <span id="limits-updated" aria-live="polite"></span>
+          <button type="button" id="limits-refresh" class="btn btn--ghost btn--sm">
+            <svg class="spin" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            <span data-i18n="limits.refresh">Yangilash</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="limits-error" class="limits-error" role="alert" hidden>
+        <span data-i18n="limits.error">Ma'lumotlarni yuklab bo'lmadi.</span>
+        <button type="button" id="limits-retry" class="btn btn--ghost btn--sm" data-i18n="limits.retry">Qayta urinish</button>
+      </div>
+
+      <div id="limits-grid" class="limits-grid" aria-busy="true">
+        <div class="limit-card is-skeleton" aria-hidden="true"><div class="skel" style="width:45%"></div><div class="skel" style="height:28px;width:30%"></div><div class="skel" style="height:8px"></div></div>
+        <div class="limit-card is-skeleton" aria-hidden="true"><div class="skel" style="width:45%"></div><div class="skel" style="height:28px;width:30%"></div><div class="skel" style="height:8px"></div></div>
+        <div class="limit-card is-skeleton" aria-hidden="true"><div class="skel" style="width:45%"></div><div class="skel" style="height:28px;width:30%"></div><div class="skel" style="height:8px"></div></div>
+        <div class="limit-card is-skeleton" aria-hidden="true"><div class="skel" style="width:45%"></div><div class="skel" style="height:28px;width:30%"></div><div class="skel" style="height:8px"></div></div>
+      </div>
+
+      <p class="limits-foot">
+        <span data-i18n="limits.foot">Limitlar serverni ortiqcha yuklanishdan himoya qiladi. Batafsil:</span>
+        <a href="terms.html#cheklovlar" data-i18n="nav.terms">Foydalanish shartlari</a>
+      </p>
+    </main>
+  </div>
+
+  <script src="auth-fetch.js?v=11"></script>
+  <script src="ascii-bg.js?v=11"></script>
+  <script src="theme.js?v=11"></script>
+  <script>
+    (function () {
+      const authFetch = window.AuthFetch.authFetch;
+      const REFRESH_MS = 30000;
+      // Matnli fayllar uchun chegara frontend'da (chat.js: MAX_FILE_SIZE) — shu yerda ko'zgu
+      const TEXT_FILE_MAX_BYTES = 256 * 1024;
+
+      const grid = document.getElementById("limits-grid");
+      const errorBox = document.getElementById("limits-error");
+      const updatedEl = document.getElementById("limits-updated");
+      const refreshBtn = document.getElementById("limits-refresh");
+
+      const t = (key, vars) => {
+        let s = window.I18N.t(key);
+        if (vars) for (const k in vars) s = s.split("{" + k + "}").join(vars[k]);
+        return s;
+      };
+      const lang = () => window.I18N.currentLang();
+      const num = (n) => new Intl.NumberFormat(lang()).format(n);
+
+      function formatBytes(bytes) {
+        const mb = bytes / (1024 * 1024);
+        if (mb >= 1) return num(Math.round(mb * 10) / 10) + " MB";
+        return num(Math.round(bytes / 1024)) + " KB";
+      }
+
+      const ICONS = {
+        sessions: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+        projects: '<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>',
+        requests: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
+        files: '<path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/>',
+        uploads: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',
+      };
+
+      // Matnni har doim textContent orqali qo'yamiz (loyiha nomlari foydalanuvchi kiritgan).
+      function el(tag, className, text) {
+        const node = document.createElement(tag);
+        if (className) node.className = className;
+        if (text != null) node.textContent = text;
+        return node;
+      }
+
+      function stateOf(used, limit, enabled) {
+        if (!enabled) return "off";
+        if (limit > 0 && used >= limit) return "full";
+        if (limit > 0 && used / limit >= 0.8) return "warn";
+        return "ok";
+      }
+
+      function meter(used, limit, state, label, small) {
+        const m = el("div", "meter" + (small ? " meter--sm" : ""));
+        m.dataset.state = state;
+        m.setAttribute("role", "progressbar");
+        m.setAttribute("aria-label", label);
+        m.setAttribute("aria-valuemin", "0");
+        m.setAttribute("aria-valuemax", String(limit));
+        m.setAttribute("aria-valuenow", String(Math.min(used, limit)));
+        const fill = el("span", "meter__fill");
+        const pct = limit > 0 ? Math.min(100, (used / limit) * 100) : 0;
+        // Birinchi chizishda 0'dan o'sib chiqadi (animatsiya)
+        requestAnimationFrame(() => requestAnimationFrame(() => { fill.style.width = pct + "%"; }));
+        m.appendChild(fill);
+        return m;
+      }
+
+      function cardShell(key, title, desc, state, wide) {
+        const card = el("article", "limit-card" + (wide ? " limit-card--wide" : ""));
+        card.dataset.limit = key;
+        const head = el("header", "limit-card__head");
+        const icon = el("span", "limit-card__icon");
+        icon.innerHTML =
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+          ICONS[key] + "</svg>";
+        const heading = el("div", "limit-card__heading");
+        heading.append(el("h2", "limit-card__title", title), el("p", "limit-card__desc", desc));
+        head.append(icon, heading);
+        if (state) {
+          const badge = el("span", "limit-badge", t("limits.state." + state));
+          badge.dataset.state = state;
+          head.appendChild(badge);
+        }
+        card.appendChild(head);
+        return card;
+      }
+
+      function usageCard({ key, title, desc, used, limit, enabled, leftText, manage }) {
+        const state = stateOf(used, limit, enabled);
+        const card = cardShell(key, title, desc, state, false);
+        const value = el("div", "limit-card__value");
+        value.append(el("strong", null, enabled ? num(used) : "—"), el("span", null, "/ " + (enabled ? num(limit) : "—")));
+        card.append(value, meter(enabled ? used : 0, limit, state, title));
+        const foot = el("div", "limit-card__foot");
+        foot.appendChild(el("span", null, enabled ? leftText : t("limits.state.off")));
+        if (manage && enabled) {
+          const a = el("a", null, manage.label + " →");
+          a.href = manage.href;
+          foot.appendChild(a);
+        }
+        card.appendChild(foot);
+        return card;
+      }
+
+      function render(data) {
+        const s = data.sessions, p = data.projects, r = data.requests, u = data.uploads;
+        const cards = [];
+
+        cards.push(usageCard({
+          key: "sessions",
+          title: t("limits.sessions.title"),
+          desc: t("limits.sessions.desc"),
+          used: s.used, limit: s.limit, enabled: s.enabled,
+          leftText: t("limits.left", { n: num(Math.max(0, s.limit - s.used)) }),
+          manage: { label: t("limits.manage.chats"), href: "index.html" },
+        }));
+
+        cards.push(usageCard({
+          key: "projects",
+          title: t("limits.projects.title"),
+          desc: t("limits.projects.desc"),
+          used: p.used, limit: p.limit, enabled: p.enabled,
+          leftText: t("limits.left", { n: num(Math.max(0, p.limit - p.used)) }),
+          manage: { label: t("limits.manage.projects"), href: "projects.html" },
+        }));
+
+        cards.push(usageCard({
+          key: "requests",
+          title: t("limits.requests.title"),
+          desc: t("limits.requests.desc", { limit: num(r.limit), window: num(r.window_seconds) }),
+          used: r.used, limit: r.limit, enabled: r.enabled,
+          leftText: t("limits.requests.left", { n: num(r.remaining) }),
+        }));
+
+        // Yuklash hajmi — doim amal qiladi, shuning uchun "state" nishonisiz
+        const up = cardShell("uploads", t("limits.uploads.title"), t("limits.uploads.desc"), null, false);
+        const rows = el("div", "limit-rows");
+        [[t("limits.uploads.text"), TEXT_FILE_MAX_BYTES], [t("limits.uploads.doc"), u.max_bytes]].forEach(([name, bytes]) => {
+          const row = el("div", "limit-row");
+          const top = el("div", "limit-row__top");
+          const size = el("strong", null, formatBytes(bytes));
+          size.dir = "ltr"; // RTL tillarda "256 KB" teskari chiqmasligi uchun
+          top.append(el("span", "limit-row__name", name), size);
+          row.appendChild(top);
+          rows.appendChild(row);
+        });
+        up.appendChild(rows);
+        cards.push(up);
+
+        // Har bir loyihadagi fayllar
+        const fstate = p.enabled ? "ok" : "off";
+        const files = cardShell("files", t("limits.files.title"), t("limits.files.desc", { limit: num(p.files_limit) }), p.enabled ? null : fstate, true);
+        if (p.enabled && p.items.length) {
+          const list = el("div", "limit-rows");
+          p.items.forEach((item) => {
+            const st = stateOf(item.files, p.files_limit, true);
+            const row = el("div", "limit-row");
+            const top = el("div", "limit-row__top");
+            const name = el("span", "limit-row__name", item.name);
+            name.title = item.name;
+            name.dir = "auto"; // nom yo'nalishi o'z tiliga qarab (RTL'da lotincha nom to'g'ri kesiladi)
+            top.append(name, el("span", "limit-row__val", t("limits.files.count", { used: num(item.files), limit: num(p.files_limit) })));
+            row.append(top, meter(item.files, p.files_limit, st, item.name, true));
+            list.appendChild(row);
+          });
+          files.appendChild(list);
+        } else if (p.enabled) {
+          files.appendChild(el("p", "limit-empty", t("limits.files.empty")));
+        }
+        cards.push(files);
+
+        grid.replaceChildren(...cards);
+        grid.setAttribute("aria-busy", "false");
+      }
+
+      let loading = false;
+      async function load() {
+        if (loading) return;
+        loading = true;
+        refreshBtn.classList.add("is-loading");
+        try {
+          const res = await authFetch("/usage");
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          render(await res.json());
+          errorBox.hidden = true;
+          const time = new Date().toLocaleTimeString(lang(), { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+          updatedEl.textContent = t("limits.updated", { time });
+        } catch (e) {
+          errorBox.hidden = false;
+          grid.setAttribute("aria-busy", "false");
+          // Hech qachon muvaffaqiyatli yuklanmagan bo'lsa, skeletonlarni olib tashlaymiz
+          if (grid.querySelector(".is-skeleton")) grid.replaceChildren();
+        } finally {
+          loading = false;
+          refreshBtn.classList.remove("is-loading");
+        }
+      }
+
+      document.title = t("nav.limits") + " — Apeiron";
+      refreshBtn.addEventListener("click", load);
+      document.getElementById("limits-retry").addEventListener("click", load);
+
+      // Sahifa ko'rinib turganda har 30 soniyada, qayta ochilganda darhol yangilanadi
+      setInterval(() => { if (!document.hidden) load(); }, REFRESH_MS);
+      document.addEventListener("visibilitychange", () => { if (!document.hidden) load(); });
+
+      load();
+    })();
+  </script>
+</body>
+</html>

@@ -14,7 +14,7 @@
 
 const CACHE_NAME = "apeiron-static-v1";
 
-const API_PATH_RE = /^\/(chat|auth|history|sessions|files|projects|google-docs|rate-limit|health)(\/|$)/;
+const API_PATH_RE = /^\/(chat|auth|history|sessions|files|projects|google-docs|rate-limit|usage|health)(\/|$)/;
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
