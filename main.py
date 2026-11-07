@@ -33,6 +33,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("agent")
 
 from safety import REFUSAL_MESSAGE, SUPPORT_MESSAGE, check_input, check_output  # noqa: E402
+from contact import router as contact_router  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # BOSQICHLARNI YOQISH/O'CHIRISH
@@ -665,6 +666,7 @@ class ChatResponse(BaseModel):
 
 
 app = FastAPI(title="Kod Yozish Agenti API")
+app.include_router(contact_router, tags=["contact"])
 
 # ALLOWED_ORIGINS: vergul bilan ajratilgan domenlar ro'yxati, masalan:
 # ALLOWED_ORIGINS=https://mening-domenim.uz,https://www.mening-domenim.uz

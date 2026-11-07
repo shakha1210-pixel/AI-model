@@ -1,5 +1,6 @@
 # Muhit va maxfiy fayllar
 .env
+*.env
 *.env.local
 
 # Android imzolash kaliti — BU FAYL HECH QACHON commit qilinmasligi kerak!

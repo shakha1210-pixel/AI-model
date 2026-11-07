@@ -17,6 +17,14 @@ Serverni ishga tushiring:
 uvicorn main:app --reload
 
 Brauzerda http://localhost:8000 manzilini oching.
+
+Landing sahifadagi aloqa formasi `/contact` endpointiga ulanadi. Xabarlar
+Telegramga yuborilishi uchun `.env` faylida `TELEGRAM_BOT_TOKEN` va
+`TELEGRAM_CHAT_ID` ni kiriting. Email orqali yuborish uchun yuqoridagi SMTP
+sozlamalarini to'ldiring; kerak bo'lsa `CONTACT_EMAIL_TO` bilan qabul
+qiluvchini belgilang. Hech bir kanal sozlanmagan bo'lsa, forma email
+dasturini zaxira sifatida ochadi.
+
 Docker bilan ishga tushirish
 docker compose up --build
 
