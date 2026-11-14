@@ -2017,3 +2017,5 @@ button {
   .provider-connection-card__actions { display: grid; grid-template-columns: 1fr 1fr; }
   .provider-connection-card__actions .btn { width: 100%; }
 }
+
+.provider-manager__field[hidden] { display: none; }
