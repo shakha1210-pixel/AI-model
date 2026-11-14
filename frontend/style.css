@@ -2019,3 +2019,8 @@ button {
 }
 
 .provider-manager__field[hidden] { display: none; }
+
+.provider-connection-card__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+@media (max-width: 680px) {
+  .provider-connection-card__actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
