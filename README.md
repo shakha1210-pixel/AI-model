@@ -1,163 +1,195 @@
-# Apeiron — AI Workspace
+<!-- Apeiron repository landing page -->
+<p align="center">
+  <img src="frontend/app_logo.jfif" alt="Apeiron logo" width="112" />
+</p>
 
-**O'zbekcha | English below**
+<h1 align="center">Apeiron — AI Workspace</h1>
 
-Apeiron foydalanuvchi o'z AI providerlarini ulaydigan, agentlar yaratadigan va loyihalar ustida ular bilan ishlaydigan AI Workspace'ga aylanmoqda. Hozir loyiha chat-first ilovadan workspace arxitekturasiga bosqichma-bosqich migratsiya qilinmoqda.
+<p align="center">
+  <strong>One workspace. Your models. Your agents. Your projects.</strong>
+</p>
 
-> **Holat:** faol ishlab chiqilmoqda. Migratsiya tugamagan; mavjud chat ilovasi saqlanadi.
+<p align="center">
+  Build a personal AI workspace with configurable agents and multiple model providers.
+  <br />
+  Ko'p providerli AI agentlar va loyihalar uchun yagona ish muhiti.
+</p>
 
-## Maqsad
+<p align="center">
+  <a href="https://github.com/shakha1210-pixel/AI-model/actions/workflows/tests.yml"><img src="https://github.com/shakha1210-pixel/AI-model/actions/workflows/tests.yml/badge.svg?branch=feat/agent-workspace" alt="Tests" /></a>
+  <img src="https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white" alt="Python 3.10+" />
+  <img src="https://img.shields.io/badge/Backend-FastAPI-009688?logo=fastapi&logoColor=white" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/Frontend-Vanilla%20JS-F7DF1E?logo=javascript&logoColor=111" alt="Vanilla JavaScript" />
+  <img src="https://img.shields.io/badge/Status-Active%20Development-orange" alt="Active development" />
+</p>
 
-- Multi-provider: OpenAI, Anthropic, Google Gemini, OpenRouter va boshqa OpenAI-compatible endpointlar.
-- API Manager: foydalanuvchi o'z API kalitini ulaydi; serverda shifrlangan holda saqlanadi.
-- Agent Builder: foydalanuvchi agent yaratadi va provider, model, system prompt hamda vositalarni belgilaydi.
-- Workspace: loyihalar, fayllar, editor, agentlar, tasklar va natijalar.
-- Orchestration: agentlar vazifalarni rejalashtiradi va kerak bo'lsa bir-biriga topshiradi.
-- Desktop, planshet va telefon uchun responsive UI.
-
-**Arxitektura, reja, status, bajarilgan va qolgan ishlar uchun yagona doimiy hujjat:** [docs/WORKSPACE_ARCHITECTURE.md](docs/WORKSPACE_ARCHITECTURE.md). Har bir muhim o'zgarishdan keyin aynan shu fayl yangilanadi.
-
-## Providerlar
-
-| Provider | Hozirgi holat |
-|---|---|
-| OpenAI | Registry qo'shilgan |
-| Anthropic | Registry qo'shilgan |
-| Google Gemini | Registry qo'shilgan |
-| OpenRouter | Registry qo'shilgan |
-| Custom OpenAI-compatible | Registry qo'shilgan |
-
-Muhim: hozircha bu provider metadata registri. API kalitini ulash, model discovery va real API adapterlari hali tayyor emas.
-
-## Texnologiyalar
-
-- Backend: Python, FastAPI
-- Frontend: HTML, CSS, Vanilla JavaScript
-- Tests: pytest
-
-Migratsiyada mavjud backend va frontendni birdaniga almashtirmaymiz. Yangi workspace imkoniyatlari bosqichma-bosqich qo'shiladi.
-
-## Tezkor boshlash
-
-Talablar: Python 3.10+, Git.
-
-```bash
-git clone https://github.com/shakha1210-pixel/AI-model.git
-cd AI-model
-python -m venv .venv
-# Linux/macOS:
-source .venv/bin/activate
-# Windows PowerShell:
-.venv/Scripts/Activate.ps1
-pip install -r requirements.txt
-```
-
-`.env.example` faylidan `.env` yarating va kerakli qiymatlarni kiriting. API kalitlarini Git'ga commit qilmang.
-
-```bash
-uvicorn main:app --reload
-```
-
-Brauzer: http://localhost:8000
-
-Docker: `docker compose up --build`
-
-Testlar: `pytest -v`
-
-## Muhim fayllar
-
-- `main.py` — FastAPI ilovasi va legacy chat endpointlari.
-- `workspace/providers.py` — provider metadata registri.
-- `docs/WORKSPACE_ARCHITECTURE.md` — doimiy arxitektura va loyiha holati.
-- `tests/test_workspace_providers.py` — provider registry testlari.
-- `frontend/` — mavjud HTML/CSS/JS interfeysi.
-
-## Ishlash qoidalari
-
-1. Ishni kichik, tushunarli commitlarga ajratamiz.
-2. `docs/WORKSPACE_ARCHITECTURE.md` — arxitektura va statusning yagona manbasi.
-3. Test bajarilmagan bo'lsa, o'tdi deb yozmaymiz.
-4. API kalitlari frontend storage, log yoki API response ichiga chiqmasligi kerak.
-5. Legacy endpointlar yangi oqim tayyor bo'lmaguncha o'chirilmaydi.
+<p align="center">
+  <a href="#ozbekcha">O'zbekcha</a> · <a href="#english">English</a> ·
+  <a href="docs/WORKSPACE_ARCHITECTURE.md">Architecture & roadmap</a> ·
+  <a href="CONTRIBUTING.md">Contributing</a> ·
+  <a href="SECURITY.md">Security</a>
+</p>
 
 ---
 
-# English
+## O'zbekcha
 
-Apeiron is evolving into an AI Workspace where users connect their own AI providers, build configurable agents, and collaborate with them inside projects. The repository is migrating incrementally from a chat-first application to a workspace architecture.
+### Apeiron nima?
 
-> **Status:** under active development. The migration is not complete; the existing chat application remains available.
+Apeiron — foydalanuvchi o'z AI providerlarini ulashi, o'z agentlarini yaratishi va ularni loyihalar ustida ishlatishi uchun mo'ljallangan AI Workspace. Loyiha mavjud chat ilovasidan agentlar, fayllar, vazifalar va natijalarni bir joyda boshqaradigan ish muhitiga bosqichma-bosqich o'tmoqda.
 
-## Product direction
+> **Hozirgi holat:** faol ishlab chiqilmoqda. Workspace migratsiyasi tugamagan. Mavjud chat funksiyasi saqlanadi; yangi imkoniyatlar kichik bosqichlarda qo'shiladi.
 
-- Multi-provider support: OpenAI, Anthropic, Google Gemini, OpenRouter, and other OpenAI-compatible endpoints.
-- API Manager: users connect their own API keys; secrets are encrypted server-side.
-- Agent Builder: users configure agents, providers, models, system prompts, and tools.
-- Workspace: projects, files, editor, agents, tasks, and artifacts.
-- Orchestration: agents plan tasks and hand work to other agents when appropriate.
-- Responsive desktop, tablet, and mobile UI.
+### Mahsulot yo'nalishi
 
-**Canonical living architecture, roadmap, status, completed work, and open tasks:** [docs/WORKSPACE_ARCHITECTURE.md](docs/WORKSPACE_ARCHITECTURE.md). Keep that exact file updated after every meaningful change.
-
-## Providers
-
-| Provider | Current status |
+| Yo'nalish | Maqsad |
 |---|---|
-| OpenAI | Registry added |
-| Anthropic | Registry added |
-| Google Gemini | Registry added |
-| OpenRouter | Registry added |
-| Custom OpenAI-compatible | Registry added |
+| **Multi-provider** | OpenAI, Anthropic, Gemini, OpenRouter va OpenAI-compatible API'lar |
+| **API Manager** | Foydalanuvchining API kalitlarini serverda shifrlab saqlash |
+| **Agent Builder** | Provider, model, system prompt va ruxsatlarni foydalanuvchi belgilaydigan agentlar |
+| **Workspace** | Loyihalar, fayllar, editor, agentlar va tasklar |
+| **Orchestration** | Vazifalarni rejalashtirish, agentlararo topshirish va kuzatiladigan run'lar |
+| **Cross-platform UI** | Desktop, planshet va mobil ekranlarga mos interfeys |
 
-Note: this is currently provider metadata only. API key connections, model discovery, and live API adapters are not implemented yet.
+### Providerlar holati
 
-## Technology
+| Provider | Registry | API adapter |
+|---|---:|---:|
+| OpenAI | Mavjud | Rejada |
+| Anthropic | Mavjud | Rejada |
+| Google Gemini | Mavjud | Rejada |
+| OpenRouter | Mavjud | Rejada |
+| Custom OpenAI-compatible | Mavjud | Rejada |
 
-- Backend: Python, FastAPI
-- Frontend: HTML, CSS, Vanilla JavaScript
-- Tests: pytest
+**Eslatma:** registry — provider metadata ro'yxati, ishlaydigan integratsiya degani emas. API kalitini ulash, model discovery va real provider so'rovlari hali yakunlanmagan.
 
-The migration is incremental. Existing backend and frontend functionality will not be replaced in a big-bang rewrite.
+### Texnologiyalar
 
-## Quick start
+- **Backend:** Python, FastAPI, SQLAlchemy, Pydantic, HTTPX
+- **Frontend:** HTML, CSS, Vanilla JavaScript
+- **Database:** SQLite (default) / PostgreSQL orqali SQLAlchemy
+- **Tests:** pytest, pytest-asyncio
+
+### Tezkor boshlash
+
+Talablar: Python 3.10+, Git.
+
+<pre><code>git clone https://github.com/shakha1210-pixel/AI-model.git
+cd AI-model
+python -m venv .venv
+
+# Linux / macOS
+source .venv/bin/activate
+
+# Windows PowerShell
+.venv\Scripts\Activate.ps1
+
+pip install -r requirements.txt
+uvicorn main:app --reload</code></pre>
+
+Brauzerda http://localhost:8000 manzilini oching. Kerakli integratsiyalar uchun muhit o'zgaruvchilarini lokal .env faylida sozlang; maxfiy kalitlarni hech qachon Git'ga qo'shmang.
+
+Testlarni ishga tushirish:
+
+<pre><code>python -m pytest -v</code></pre>
+
+### Muhim hujjatlar
+
+- [Workspace arxitekturasi, roadmap va jonli status](docs/WORKSPACE_ARCHITECTURE.md) — loyiha holatining yagona manbasi.
+- [Hissa qo'shish qoidalari](CONTRIBUTING.md)
+- [Xavfsizlik siyosati](SECURITY.md)
+
+### Muhim tamoyillar
+
+1. Mavjud chat yo'llari yangi oqim tekshirilmaguncha saqlanadi.
+2. Providerga xos kod adapter ichida qoladi.
+3. API kalitlari browser storage, log yoki API javobiga chiqmaydi.
+4. Har bir foydalanuvchi resursi egalik tekshiruvi bilan himoyalanadi.
+5. Custom endpointlar SSRF hujumlariga qarshi tekshiriladi.
+6. Agent kodini ishga tushirish haqiqiy izolyatsiyalangan sandbox talab qiladi.
+7. Test o'tkazilmagan bo'lsa, muvaffaqiyatli deb belgilanmaydi.
+
+---
+
+## English
+
+### What is Apeiron?
+
+Apeiron is evolving into a personal AI Workspace where users connect their own model providers, build configurable agents, and work with them across projects. The goal is to bring agents, files, tasks, and outputs into one coherent environment while preserving the existing chat application during the migration.
+
+> **Current status:** under active development. The Workspace migration is not complete. Existing chat functionality remains available while new capabilities are introduced incrementally.
+
+### Product direction
+
+| Area | Goal |
+|---|---|
+| **Multi-provider** | OpenAI, Anthropic, Gemini, OpenRouter, and OpenAI-compatible APIs |
+| **API Manager** | Encrypt and store user-owned API credentials server-side |
+| **Agent Builder** | User-configured provider, model, instructions, and permissions |
+| **Workspace** | Projects, files, editor, agents, and tasks |
+| **Orchestration** | Task planning, agent handoffs, and observable runs |
+| **Cross-platform UI** | Responsive desktop, tablet, and mobile experience |
+
+### Provider status
+
+| Provider | Registry | API adapter |
+|---|---:|---:|
+| OpenAI | Added | Planned |
+| Anthropic | Added | Planned |
+| Google Gemini | Added | Planned |
+| OpenRouter | Added | Planned |
+| Custom OpenAI-compatible | Added | Planned |
+
+**Important:** the registry contains public provider metadata only. It does not mean live integrations are available yet. Credential connections, model discovery, and real provider requests are still being implemented.
+
+### Tech stack
+
+- **Backend:** Python, FastAPI, SQLAlchemy, Pydantic, HTTPX
+- **Frontend:** HTML, CSS, Vanilla JavaScript
+- **Database:** SQLite by default / PostgreSQL via SQLAlchemy
+- **Tests:** pytest, pytest-asyncio
+
+### Quick start
 
 Requirements: Python 3.10+, Git.
 
-```bash
-git clone https://github.com/shakha1210-pixel/AI-model.git
+<pre><code>git clone https://github.com/shakha1210-pixel/AI-model.git
 cd AI-model
 python -m venv .venv
-# Linux/macOS:
+
+# Linux / macOS
 source .venv/bin/activate
-# Windows PowerShell:
-.venv/Scripts/Activate.ps1
+
+# Windows PowerShell
+.venv\Scripts\Activate.ps1
+
 pip install -r requirements.txt
-```
+uvicorn main:app --reload</code></pre>
 
-Copy `.env.example` to `.env` and configure the required values. Never commit API keys.
+Open http://localhost:8000. Configure required integrations through environment variables in a local .env file. Never commit secrets.
 
-```bash
-uvicorn main:app --reload
-```
+Run tests:
 
-Open http://localhost:8000
+<pre><code>python -m pytest -v</code></pre>
 
-Docker: `docker compose up --build`
+### Project documentation
 
-Tests: `pytest -v`
+- [Architecture, roadmap, and living implementation status](docs/WORKSPACE_ARCHITECTURE.md) — the single source of truth for project status.
+- [Contribution guidelines](CONTRIBUTING.md)
+- [Security policy](SECURITY.md)
 
-## Key files
+### Engineering principles
 
-- `main.py` — FastAPI application and legacy chat endpoints.
-- `workspace/providers.py` — provider metadata registry.
-- `docs/WORKSPACE_ARCHITECTURE.md` — canonical living architecture and status.
-- `tests/test_workspace_providers.py` — provider registry tests.
-- `frontend/` — current HTML/CSS/JS client.
+1. Preserve legacy chat routes until replacement paths are verified.
+2. Keep provider-specific behavior inside adapters.
+3. Never expose API keys in browser storage, logs, or API responses.
+4. Enforce ownership checks for every user-owned resource.
+5. Protect custom endpoints against SSRF.
+6. Run agent code only in a genuinely isolated sandbox.
+7. Never report tests as passing unless they were actually run.
 
-## Engineering rules
+---
 
-1. Work in small, clearly scoped commits.
-2. `docs/WORKSPACE_ARCHITECTURE.md` is the single source of truth for architecture and status.
-3. Never report tests as passing unless they have actually been run.
-4. API keys must never leak into frontend storage, logs, or API responses.
-5. Keep legacy endpoints until their replacements are implemented and verified.
+<p align="center">
+  <sub>Built incrementally · Security first · Provider independent</sub>
+</p>
