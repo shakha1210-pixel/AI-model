@@ -12,6 +12,9 @@ permissions:
 jobs:
   pytest:
     runs-on: ubuntu-latest
+    env:
+      # Non-production key used only to import auth.py during tests.
+      JWT_SECRET: ci-only-test-secret-not-for-production-000000000000000000000000
     strategy:
       fail-fast: false
       matrix:
