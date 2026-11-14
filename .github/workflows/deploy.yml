@@ -7,14 +7,14 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      # Non-production key used only to import auth.py during tests.
+      JWT_SECRET: ci-only-test-secret-not-for-production-000000000000000000000000
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      env:
-        # Non-production key used only to import auth.py during tests.
-        JWT_SECRET: ci-only-test-secret-not-for-production-000000000000000000000000
       - name: Kutubxonalarni o'rnatish
         run: pip install -r requirements.txt
       - name: Testlarni ishga tushirish
