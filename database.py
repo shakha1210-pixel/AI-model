@@ -11,7 +11,7 @@ import datetime
 import os
 import uuid
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text, create_engine, inspect, text
+from sqlalchemy import JSON, Column, DateTime, ForeignKey, Integer, String, Text, create_engine, inspect, text
 from sqlalchemy.orm import DeclarativeBase, relationship, sessionmaker
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./app.db")
@@ -45,6 +45,7 @@ class User(Base):
     provider_connections = relationship(
         "ProviderConnection", back_populates="user", cascade="all, delete-orphan"
     )
+    agents = relationship("Agent", back_populates="user", cascade="all, delete-orphan")
 
 
 class ChatSession(Base):
@@ -131,6 +132,33 @@ class ProviderConnection(Base):
         nullable=False,
     )
     user = relationship("User", back_populates="provider_connections")
+    agents = relationship("Agent", back_populates="provider_connection")
+
+
+class Agent(Base):
+    """User-owned agent configuration bound to one of the user's connections."""
+
+    __tablename__ = "workspace_agents"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    provider_connection_id = Column(
+        String, ForeignKey("provider_connections.id", ondelete="RESTRICT"), nullable=False, index=True
+    )
+    name = Column(String(80), nullable=False)
+    description = Column(String(500), nullable=False, default="")
+    system_prompt = Column(Text, nullable=False)
+    model_id = Column(String(160), nullable=False)
+    temperature = Column(Integer, nullable=False, default=7)
+    max_tokens = Column(Integer, nullable=False, default=2048)
+    permissions = Column(JSON, nullable=False, default=list)
+    is_active = Column(Integer, nullable=False, default=1)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+    updated_at = Column(
+        DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow, nullable=False
+    )
+    user = relationship("User", back_populates="agents")
+    provider_connection = relationship("ProviderConnection", back_populates="agents")
 
 
 def init_db() -> None:
