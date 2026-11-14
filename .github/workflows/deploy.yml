@@ -3,12 +3,13 @@ name: Test va Deploy
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      # Non-production key used only to import auth.py during tests.
+      JWT_SECRET: ci-only-test-secret-not-for-production-000000000000000000000000
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

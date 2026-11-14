@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Architecture and roadmap
+    url: https://github.com/shakha1210-pixel/AI-model/blob/feat/agent-workspace/docs/WORKSPACE_ARCHITECTURE.md
+    about: Review the current design, implementation status, and roadmap before opening an issue.
+  - name: Security vulnerability
+    url: https://github.com/shakha1210-pixel/AI-model/security/advisories/new
+    about: Report security vulnerabilities privately. Do not post secrets in public issues.
