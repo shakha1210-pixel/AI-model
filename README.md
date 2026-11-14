@@ -60,7 +60,7 @@ Apeiron — foydalanuvchi o'z AI providerlarini ulashi, o'z agentlarini yaratish
 | OpenAI-compatible katalog | Mistral, Groq, DeepSeek, xAI, Together AI, Fireworks AI, Cerebras, Perplexity, SambaNova, Hugging Face, NVIDIA NIM, DeepInfra, Moonshot AI, Qwen/DashScope, Novita, Nebius, MiniMax, Z.AI/GLM, AI21 Labs, Baseten |
 | Custom | Istalgan public HTTPS OpenAI-compatible endpoint |
 
-**Eslatma:** 25 ta provider ID registry'da mavjud. Provider adapterlari, shifrlangan API ulash oynasi, model discovery va Agent Builder CRUD backend API'si mavjud. Agent Builder UI, tool runtime va to'liq Workspace UI keyingi bosqichlarda qo'shiladi.
+**Eslatma:** 25 ta provider ID registry'da mavjud. Provider adapterlari, shifrlangan API ulash oynasi, model discovery va Agent Builder CRUD backend API'si va sozlamalardagi agent yaratish/tahrirlash UI'si mavjud. Tool runtime va to'liq Workspace UI keyingi bosqichlarda qo'shiladi.
 
 ### Texnologiyalar
 
@@ -119,7 +119,7 @@ Mavjud endpointlar: `POST /api/workspace/connections`,
 `DELETE /api/workspace/connections/{id}` va
 `POST /api/workspace/connections/{id}/test`.
 
-Agent Builder API: `POST/GET /api/workspace/agents`, `GET/PATCH/DELETE /api/workspace/agents/{id}`. Agentlar faqat o'z egasining provider connection'iga bog'lanadi; ruxsatlar default holatda bo'sh (deny-by-default). Hozircha bu ruxsatlar konfiguratsiyada saqlanadi, tool execution/approval runtime'iga hali ulanmagan. Agent ishlatayotgan connection'ni agent o'chirilmaguncha yoki boshqa connection'ga ko'chirilmaguncha o'chirib bo'lmaydi.
+Agent Builder UI **Sozlamalar → Integratsiyalar** bo'limida joylashgan. Agent Builder API: `POST/GET /api/workspace/agents`, `GET/PATCH/DELETE /api/workspace/agents/{id}`. Agentlar faqat o'z egasining provider connection'iga bog'lanadi; ruxsatlar default holatda bo'sh (deny-by-default). Hozircha bu ruxsatlar konfiguratsiyada saqlanadi, tool execution/approval runtime'iga hali ulanmagan. Agent ishlatayotgan connection'ni agent o'chirilmaguncha yoki boshqa connection'ga ko'chirilmaguncha o'chirib bo'lmaydi.
 
 API kaliti serverda shifrlanadi va javoblarda qaytarilmaydi. Connection test
 tanlangan model bilan qisqa generation so'rovini yuboradi va provider tarifiga
