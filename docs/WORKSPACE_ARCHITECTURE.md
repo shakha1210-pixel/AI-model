@@ -4,7 +4,7 @@
 > architecture or implementation change. Do not create competing status files.
 
 - Project: Apeiron / AI-model
-- Working branch: `feat/agent-builder-api`
+- Working branch: `feat/agent-builder-ui`
 - Last updated: 2026-11-14
 - Status: Living RFC + implementation tracker
 
@@ -155,6 +155,7 @@ TODO = not started.
 | API Manager UI | ADDED / NOT VERIFIED | Localized responsive form, list, model discovery, test/delete actions; syntax CI only, manual device review pending |
 | Model discovery | DONE | OpenAI-compatible, Anthropic, and Gemini catalogs; manual fallback for unsupported providers; first-page pagination |
 | Agent CRUD | DONE | Authenticated create/list/read/update/delete API; same-user provider binding; CI run #43608288861 passed |
+| Agent Builder UI | ADDED / NOT VERIFIED | Responsive create/edit/list/delete panel in Settings → Integrations; localized in six languages; CI syntax/static checks only, browser review pending |
 | Tool permissions | IN PROGRESS | Deny-by-default allow-list validation/storage; runtime enforcement and approvals not yet wired |
 | Workspace UI shell | TODO | Responsive panel layout |
 | File tree/editor | TODO | Project file operations |
@@ -168,6 +169,15 @@ TODO = not started.
 | Deployment workflow | MANUAL ONLY | No hosting target is configured; tests.yml is the automatic CI workflow |
 
 ## 8. Change log
+
+### 2026-11-14 — Agent Builder UI
+
+- Added an Agent Builder panel under Settings → Integrations with create, edit, list, and delete flows.
+- The UI loads the signed-in user's provider connections and binds each agent to one of them; model IDs remain manually editable.
+- Added system prompt, description, temperature, output token limit, active toggle, and six allow-list permission toggles.
+- Added responsive single-column mobile layout and translations for Uzbek, Russian, English, Turkish, Arabic, and Karakalpak.
+- Added UI wiring/localization tests and Node syntax checking for `agent-manager.js`. Actual browser/device visual verification remains pending.
+
 
 ### 2026-11-14 — Agent Builder API foundation
 
@@ -287,7 +297,7 @@ TODO = not started.
 - [ ] Deployment, backup, and encryption-key rotation documentation.
 - [ ] Deprecate legacy paths only after feature parity.
 
-**Next concrete task:** finish CI verification for the null-update regression test, then add the responsive Agent Builder UI and manually verify desktop/mobile behavior.
+**Next concrete task:** run CI for Agent Builder UI, then perform manual desktop/mobile browser verification; after that, connect approved agent configuration to a safe execution/run lifecycle.
 
 ## 10. Definition of done
 
