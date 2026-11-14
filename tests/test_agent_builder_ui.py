@@ -34,3 +34,4 @@ def test_agent_builder_translation_keys_exist_in_all_six_languages():
     assert translations.count('"settings.agents.title"') == 6
     assert translations.count('"settings.agents.runtimeNotice"') == 6
     assert translations.count('"settings.agents.runPlaceholder"') == 6
+    assert translations.count('"settings.agents.runHint"') == 6
