@@ -53,15 +53,14 @@ Apeiron — foydalanuvchi o'z AI providerlarini ulashi, o'z agentlarini yaratish
 
 ### Providerlar holati
 
-| Provider | Registry | API adapter |
-|---|---:|---:|
-| OpenAI | Mavjud | **Mavjud** — Chat Completions + streaming |
-| Anthropic | Mavjud | **Mavjud** — Messages + SSE streaming |
-| Google Gemini | Mavjud | **Mavjud** — GenerateContent + SSE streaming |
-| OpenRouter | Mavjud | **Mavjud** — shared OpenAI-compatible adapter |
-| Custom OpenAI-compatible | Mavjud | **Mavjud** — custom base URL |
+| Provider oilasi | Qo'llab-quvvatlash |
+|---|---|
+| Native API'lar | OpenAI, Anthropic, Google Gemini |
+| Model gateway | OpenRouter |
+| OpenAI-compatible katalog | Mistral, Groq, DeepSeek, xAI, Together AI, Fireworks AI, Cerebras, Perplexity, SambaNova, Hugging Face, NVIDIA NIM, DeepInfra, Moonshot AI, Qwen/DashScope, Novita, Nebius, MiniMax, Z.AI/GLM, AI21 Labs, Baseten |
+| Custom | Istalgan public HTTPS OpenAI-compatible endpoint |
 
-**Eslatma:** OpenAI, OpenRouter va OpenAI-compatible endpointlar uchun adapter mavjud; API kalitlarini xavfsiz ulash/saqlash, model discovery va UI integratsiyasi hali yakunlanmagan. Anthropic va Gemini adapterlari navbatdagi bosqich.
+**Eslatma:** 25 ta provider ID registry'da mavjud. Provider adapterlari va shifrlangan API ulash oynasi tayyor. Model discovery, Agent Builder va to'liq Workspace UI keyingi bosqichlarda qo'shiladi.
 
 ### Texnologiyalar
 
@@ -163,15 +162,14 @@ Apeiron is evolving into a personal AI Workspace where users connect their own m
 
 ### Provider status
 
-| Provider | Registry | API adapter |
-|---|---:|---:|
-| OpenAI | Added | **Implemented** — Chat Completions + streaming |
-| Anthropic | Added | **Implemented** — Messages + SSE streaming |
-| Google Gemini | Added | **Implemented** — GenerateContent + SSE streaming |
-| OpenRouter | Added | **Implemented** — shared OpenAI-compatible adapter |
-| Custom OpenAI-compatible | Added | **Implemented** — custom base URL |
+| Provider family | Supported providers |
+|---|---|
+| Native APIs | OpenAI, Anthropic, Google Gemini |
+| Model gateway | OpenRouter |
+| OpenAI-compatible catalog | Mistral, Groq, DeepSeek, xAI, Together AI, Fireworks AI, Cerebras, Perplexity, SambaNova, Hugging Face, NVIDIA NIM, DeepInfra, Moonshot AI, Qwen/DashScope, Novita, Nebius, MiniMax, Z.AI/GLM, AI21 Labs, Baseten |
+| Custom | Any public HTTPS OpenAI-compatible endpoint |
 
-**Important:** OpenAI, OpenRouter, and custom OpenAI-compatible request/stream adapters are implemented and mocked-HTTP tested. Secure credential connections, model discovery, and UI integration are still pending.
+**Important:** 25 provider IDs are registered. Provider adapters and the encrypted API connection manager UI are implemented. Model discovery, Agent Builder, and the full Workspace UI are the next milestones.
 
 ### Tech stack
 
