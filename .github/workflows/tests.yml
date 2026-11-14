@@ -45,4 +45,5 @@ jobs:
       - name: Check frontend JavaScript syntax
         run: |
           node --check frontend/provider-manager.js
+          node --check frontend/agent-manager.js
           node --check frontend/i18n.js
