@@ -4,7 +4,7 @@
 > architecture or implementation change. Do not create competing status files.
 
 - Project: Apeiron / AI-model
-- Working branch: `feat/agent-run-ui`
+- Working branch: `main`
 - Last updated: 2026-11-14
 - Status: Living RFC + implementation tracker
 
@@ -316,7 +316,7 @@ TODO = not started.
 - [ ] Deployment, backup, and encryption-key rotation documentation.
 - [ ] Deprecate legacy paths only after feature parity.
 
-**Next concrete task:** perform manual desktop/mobile browser verification of Provider Manager, Agent Builder, and Agent run panel; then add persistent run history and observable task lifecycle.
+**Next concrete task:** review the user's local test results and manually verify Provider Manager, Agent Builder, and Agent run panel on desktop/mobile; then add persistent run history and observable task lifecycle.
 
 ## 10. Definition of done
 
