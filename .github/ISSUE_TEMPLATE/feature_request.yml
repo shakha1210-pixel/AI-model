@@ -1,0 +1,36 @@
+name: Feature request
+description: Propose an improvement or new capability.
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: What user problem or workflow is currently difficult?
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: Describe the behavior you would like to see.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Workspace UI / UX
+        - Provider integrations
+        - Agent Builder
+        - Projects and files
+        - Orchestration and tools
+        - Security
+        - Documentation
+        - Other
