@@ -2142,3 +2142,29 @@ button {
     flex-direction: column;
   }
 }
+
+
+.agent-card__run {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+.agent-card__run textarea {
+  width: 100%;
+  min-height: 64px;
+  resize: vertical;
+}
+.agent-card__output {
+  max-height: 360px;
+  overflow: auto;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--border-color, rgba(128, 128, 128, .25));
+  border-radius: 10px;
+  background: var(--surface-base, rgba(0, 0, 0, .08));
+  color: inherit;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: inherit;
+  font-size: .9rem;
+}
