@@ -159,7 +159,7 @@ TODO = not started.
 | Tool permissions | IN PROGRESS | Deny-by-default allow-list validation/storage; runtime enforcement and approvals not yet wired |
 | Workspace UI shell | TODO | Responsive panel layout |
 | File tree/editor | TODO | Project file operations |
-| Agent text execution | IN PROGRESS | Authenticated one-turn generation through configured provider/model; tools intentionally not executed |
+| Agent text execution | DONE | Authenticated one-turn generation through configured provider/model; CI run #43608889817 passed; tools intentionally not executed |
 | Orchestrator | TODO | Task graph, handoffs, run lifecycle |
 | Run event stream | TODO | SSE initially |
 | Isolated execution | TODO | Production-grade sandbox |
@@ -177,7 +177,7 @@ TODO = not started.
 - Agent ownership and connection ownership are checked before decrypting credentials; credentials remain server-side and are not included in responses.
 - Inactive agents cannot run. Custom provider URLs are revalidated before outbound requests.
 - Tool permissions are deliberately NOT executed by this endpoint. Tool calls remain blocked until an isolated execution and approval system is implemented.
-- Added mocked adapter tests for request configuration, secret non-disclosure, and inactive-agent rejection. CI verification pending.
+- Added mocked adapter tests for request configuration, secret non-disclosure, and inactive-agent rejection. CI run #43608889817 passed on Python 3.10–3.12 with 156 tests per version; frontend smoke check also passed.
 
 
 ### 2026-11-14 — Agent Builder UI
@@ -307,7 +307,7 @@ TODO = not started.
 - [ ] Deployment, backup, and encryption-key rotation documentation.
 - [ ] Deprecate legacy paths only after feature parity.
 
-**Next concrete task:** run CI for the safe agent execution endpoint, then add a simple run panel with output display; preserve the no-tools execution boundary until sandbox and approval controls exist.
+**Next concrete task:** add a simple Agent run panel with output display; preserve the no-tools execution boundary until sandbox and approval controls exist, then manually verify the full UI on desktop/mobile.
 
 ## 10. Definition of done
 
