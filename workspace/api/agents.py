@@ -5,7 +5,7 @@ import datetime
 from typing import Generator
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from sqlalchemy.orm import Session
 
 from auth import get_current_user
@@ -83,6 +83,12 @@ class AgentUpdate(BaseModel):
         if len(value) != len(set(value)) or any(item not in ALLOWED_PERMISSIONS for item in value):
             raise ValueError("Unsupported or duplicate permission")
         return value
+
+    @model_validator(mode="after")
+    def reject_explicit_nulls(self):
+        if any(getattr(self, field) is None for field in self.model_fields_set):
+            raise ValueError("Fields cannot be null; omit fields that should remain unchanged")
+        return self
 
 
 def get_db() -> Generator[Session, None, None]:
