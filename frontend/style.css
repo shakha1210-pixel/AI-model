@@ -1971,3 +1971,51 @@ button {
 .settings-tabs { overflow-x: auto; scrollbar-width: none; border-bottom: 0; box-shadow: inset 0 -1px 0 var(--border); }
 .settings-tabs::-webkit-scrollbar { display: none; }
 .settings-tab { flex: none; white-space: nowrap; margin-bottom: 0; }
+
+
+/* Provider API Manager — responsive settings panel */
+.provider-manager__intro { display: flex; flex-direction: column; gap: 10px; }
+.provider-manager__description { color: var(--text-muted); font-size: 13px; line-height: 1.6; max-width: 760px; margin: 0; }
+.provider-manager__form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; padding: 18px; border: 1px solid var(--border); border-radius: 14px; background: var(--glass-bg); }
+.provider-manager__field { display: flex; flex-direction: column; gap: 7px; min-width: 0; color: var(--text-muted); font-size: 12.5px; font-weight: 600; }
+.provider-manager__field--wide { grid-column: 1 / -1; }
+.provider-manager__field input,
+.provider-manager__field select,
+.provider-manager__model-field input { width: 100%; min-width: 0; box-sizing: border-box; padding: 10px 12px; border-radius: 9px; border: 1px solid var(--border-strong); background: var(--surface-2); color: var(--text); font: inherit; font-size: 13px; }
+.provider-manager__field input:focus,
+.provider-manager__field select:focus,
+.provider-manager__model-field input:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
+.provider-manager__field small { color: var(--text-faint); font-size: 11.5px; font-weight: 400; line-height: 1.5; }
+.provider-manager__submit { grid-column: 1 / -1; display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+.provider-manager__form-status { color: var(--text-muted); font-size: 12px; }
+.provider-manager__form-status[data-state="success"],
+.provider-connection-card__status[data-state="success"] { color: var(--success); }
+.provider-manager__form-status[data-state="error"],
+.provider-connection-card__status[data-state="error"] { color: var(--danger); }
+.provider-manager__hint { margin: 0; }
+.provider-manager__list-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 8px; }
+.provider-manager__list { display: flex; flex-direction: column; gap: 10px; }
+.provider-connection-card { display: flex; flex-direction: column; gap: 14px; padding: 16px; border: 1px solid var(--border); border-radius: 14px; background: var(--glass-bg); }
+.provider-connection-card__top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.provider-connection-card__identity { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.provider-connection-card__identity strong { color: var(--text); font-size: 14px; }
+.provider-connection-card__identity span,
+.provider-connection-card__url { color: var(--text-muted); font-size: 11.5px; overflow-wrap: anywhere; }
+.provider-connection-card__url { max-width: 48%; white-space: normal; }
+.provider-connection-card__controls { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; }
+.provider-manager__model-field { display: flex; flex: 1; flex-direction: column; gap: 6px; max-width: 360px; color: var(--text-muted); font-size: 11.5px; }
+.provider-connection-card__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.provider-connection-card__status { min-height: 0; margin: 0; color: var(--text-muted); font-size: 12px; }
+.provider-connection-card__status:empty { display: none; }
+.btn--small { padding: 8px 12px; font-size: 12px; border-radius: 8px; }
+@media (max-width: 680px) {
+  .provider-manager__form { grid-template-columns: minmax(0, 1fr); padding: 14px; }
+  .provider-manager__field--wide, .provider-manager__submit { grid-column: auto; }
+  .provider-connection-card__top, .provider-connection-card__controls { flex-direction: column; align-items: stretch; }
+  .provider-connection-card__url { max-width: none; }
+  .provider-manager__model-field { max-width: none; }
+  .provider-connection-card__actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .provider-connection-card__actions .btn { width: 100%; }
+}
+
+.provider-manager__field[hidden] { display: none; }

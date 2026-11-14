@@ -152,7 +152,7 @@ TODO = not started.
 | Connection create/list/delete API | DONE | Authenticated, owner-scoped, no key disclosure |
 | Connection test API | DONE | Short generation test, safe diagnostics |
 | Custom endpoint validation | HARDENING REQUIRED | HTTPS + DNS/IP checks; production egress firewall still required |
-| API Manager UI | TODO | Add/list/test/delete connection screens |
+| API Manager UI | ADDED / NOT VERIFIED | Settings → Integrations panel; localized form, list, test/delete actions, responsive styles; syntax CI only, manual device review pending |
 | Model discovery | TODO | Provider catalogs + manual model IDs |
 | Agent CRUD | TODO | User-created configurable agents |
 | Tool permissions | TODO | Capability validation and approval |
@@ -163,10 +163,18 @@ TODO = not started.
 | Isolated execution | TODO | Production-grade sandbox |
 | Preview/artifacts | TODO | Output and generated files |
 | Mobile/tablet polish | TODO | Breakpoint and touch testing |
-| Regression/CI | IN PROGRESS | Latest provider API Manager run is being rechecked after ORM cascade update |
+| Regression/CI | IN PROGRESS | Python 3.10–3.12 and Node syntax checks are running for the current UI branch head |
 | GitHub project presentation | DONE | Bilingual README, templates, contribution/security/community docs |
 
 ## 8. Change log
+
+### 2026-11-14 — Provider API Manager UI
+
+- Added a provider connection form to Settings → Integrations for all five provider IDs.
+- Added connection list, manual model ID, short connection test, and delete actions.
+- API keys are entered in a password field, sent only in the authenticated POST body, and cleared from the form after submission; they are never written to browser storage.
+- Added responsive layout styles and translations for Uzbek, Russian, English, Turkish, Arabic, and Karakalpak.
+- Added a Node.js syntax-check job for the provider manager and i18n scripts. Manual visual checks on desktop and mobile remain outstanding.
 
 ### 2026-11-14 — Provider API Manager foundation
 
@@ -226,7 +234,7 @@ TODO = not started.
 - [x] Connection test endpoint with safe diagnostics.
 - [x] Custom HTTPS endpoint validation.
 - [ ] Production outbound network/egress restrictions.
-- [ ] Responsive API Manager UI.
+- [x] Responsive API Manager UI implementation (manual visual verification pending).
 
 ### Milestone 3 — Model discovery and Agent Builder
 - [ ] Fetch provider model lists where supported.
@@ -251,9 +259,7 @@ TODO = not started.
 - [ ] Deployment, backup, and encryption-key rotation documentation.
 - [ ] Deprecate legacy paths only after feature parity.
 
-**Next concrete task:** complete the latest CI matrix after the ORM cascade update,
-then open a PR. After merge, build the responsive API Manager UI for connecting,
-testing, listing, and deleting provider credentials.
+**Next concrete task:** complete the current Python + frontend syntax CI matrix, open a PR, and merge only when green. After merge, implement provider model discovery so users can select models instead of entering IDs manually.
 
 ## 10. Definition of done
 
