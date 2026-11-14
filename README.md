@@ -69,6 +69,7 @@ Apeiron — foydalanuvchi o'z AI providerlarini ulashi, o'z agentlarini yaratish
 - **Frontend:** HTML, CSS, Vanilla JavaScript
 - **Database:** SQLite (default) / PostgreSQL orqali SQLAlchemy
 - **Tests:** pytest, pytest-asyncio
+- **Credential security:** cryptography / Fernet
 
 ### Tezkor boshlash
 
@@ -92,6 +93,34 @@ Brauzerda http://localhost:8000 manzilini oching. Kerakli integratsiyalar uchun 
 Testlarni ishga tushirish:
 
 <pre><code>python -m pytest -v</code></pre>
+
+### Provider API Manager
+
+Provider ulash API'si faqat autentifikatsiya va ma'lumotlar bazasi yoqilganda
+mavjud bo'ladi. Lokal `.env` faylida quyidagilarni sozlang:
+
+```env
+ENABLE_AUTH=true
+ENABLE_DATABASE=true
+JWT_SECRET=<kamida-32-belgili-tasodifiy-kalit>
+PROVIDER_CREDENTIALS_ENCRYPTION_KEY=<fernet-kaliti>
+```
+
+Fernet kalitini yaratish:
+
+```bash
+python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+```
+
+Mavjud endpointlar: `POST /api/workspace/connections`,
+`GET /api/workspace/connections`,
+`DELETE /api/workspace/connections/{id}` va
+`POST /api/workspace/connections/{id}/test`.
+
+API kaliti serverda shifrlanadi va javoblarda qaytarilmaydi. Connection test
+tanlangan model bilan qisqa generation so'rovini yuboradi va provider tarifiga
+ko'ra oz miqdorda xarajat qilishi mumkin. Custom endpointlar public HTTPS bo'lishi
+kerak; production'da qo'shimcha outbound network/egress himoyasi ham zarur.
 
 ### Muhim hujjatlar
 

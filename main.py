@@ -1156,6 +1156,13 @@ if ENABLE_AUTH:
 
     app.include_router(auth_router, prefix="/auth", tags=["auth"])
 
+# Provider credentials are tenant-scoped and require both persistent storage
+# and authenticated ownership. The API is intentionally absent in guest mode.
+if ENABLE_AUTH and ENABLE_DATABASE:
+    from workspace.api.connections import router as provider_connections_router
+
+    app.include_router(provider_connections_router)
+
 if ENABLE_GOOGLE_DOCS_TOOL:
     from google_docs_tool import router as google_docs_router
 

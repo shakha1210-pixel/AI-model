@@ -42,6 +42,9 @@ class User(Base):
     terms_accepted_at = Column(DateTime, nullable=True)
 
     sessions = relationship("ChatSession", back_populates="user")
+    provider_connections = relationship(
+        "ProviderConnection", back_populates="user", cascade="all, delete-orphan"
+    )
 
 
 class ChatSession(Base):
@@ -106,6 +109,28 @@ class ChatMessage(Base):
     vaqt = Column(DateTime, default=datetime.datetime.utcnow)
 
     session = relationship("ChatSession", back_populates="messages")
+
+
+class ProviderConnection(Base):
+    """Per-user provider connection; API key ciphertext is never serialized."""
+
+    __tablename__ = "provider_connections"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    provider_id = Column(String, nullable=False, index=True)
+    display_name = Column(String, nullable=False)
+    encrypted_api_key = Column(Text, nullable=False)
+    base_url = Column(String, nullable=True)
+    encryption_key_version = Column(String, nullable=False, default="v1")
+    created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+    updated_at = Column(
+        DateTime,
+        default=datetime.datetime.utcnow,
+        onupdate=datetime.datetime.utcnow,
+        nullable=False,
+    )
+    user = relationship("User", back_populates="provider_connections")
 
 
 def init_db() -> None:
