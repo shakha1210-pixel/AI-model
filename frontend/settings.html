@@ -22,13 +22,13 @@
       window.location.href = "login.html";
     }
   </script>
-  <script src="i18n.js?v=12"></script>
+  <script src="i18n.js?v=13"></script>
   <link rel="icon" type="image/jpeg" href="app_logo.jfif" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
   <meta name="theme-color" content="#0a0c11" />
   <script src="register-sw.js?v=11"></script>
-  <link rel="stylesheet" href="style.css?v=13" />
+  <link rel="stylesheet" href="style.css?v=14" />
 </head>
 <body>
   
@@ -159,6 +159,57 @@
       </section>
 
       <section class="settings-panel" data-settings-panel="integratsiyalar" hidden>
+        <section class="settings-group provider-manager" aria-labelledby="provider-manager-title">
+          <div class="provider-manager__intro">
+            <p class="section-label" id="provider-manager-title" data-i18n="settings.providers.title">AI providerlar</p>
+            <p class="provider-manager__description" data-i18n="settings.providers.desc">O'zingizning model provayderingizni ulang. API kaliti shifrlanib serverda saqlanadi.</p>
+          </div>
+
+          <form id="provider-connection-form" class="provider-manager__form">
+            <label class="provider-manager__field">
+              <span data-i18n="settings.providers.provider">Provider</span>
+              <select id="provider-id" name="provider_id" required>
+                <option value="openai">OpenAI</option>
+                <option value="anthropic">Anthropic</option>
+                <option value="google">Google Gemini</option>
+                <option value="openrouter">OpenRouter</option>
+                <option value="custom_openai">Custom OpenAI-compatible</option>
+              </select>
+            </label>
+
+            <label class="provider-manager__field">
+              <span data-i18n="settings.providers.displayName">Ulanma nomi</span>
+              <input id="provider-display-name" name="display_name" type="text" maxlength="80" required placeholder="Masalan: Shaxsiy OpenAI" />
+            </label>
+
+            <label class="provider-manager__field provider-manager__field--wide">
+              <span data-i18n="settings.providers.apiKey">API kaliti</span>
+              <input id="provider-api-key" name="api_key" type="password" autocomplete="new-password" required placeholder="API kalitingizni kiriting" />
+            </label>
+
+            <label class="provider-manager__field provider-manager__field--wide" id="provider-base-url-wrap" hidden>
+              <span data-i18n="settings.providers.baseUrl">API base URL</span>
+              <input id="provider-base-url" name="base_url" type="url" autocomplete="url" placeholder="https://api.example.com/v1" />
+              <small data-i18n="settings.providers.baseUrlHelp">Faqat ommaviy HTTPS manzil; localhost va private IP manzillar qo'llab-quvvatlanmaydi.</small>
+            </label>
+
+            <div class="provider-manager__submit">
+              <button type="submit" class="btn btn--primary" id="provider-save-btn" data-i18n="settings.providers.add">Provider ulash</button>
+              <span class="provider-manager__form-status" id="provider-form-status" role="status" aria-live="polite"></span>
+            </div>
+          </form>
+
+          <p class="auth-note provider-manager__hint" data-i18n="settings.providers.testHint">Ulanishni tekshirish qisqa model so'rovini yuboradi va oz miqdorda token sarflashi mumkin.</p>
+
+          <div class="provider-manager__list-header">
+            <span class="section-label" data-i18n="settings.providers.saved">Saqlangan ulanmalar</span>
+            <button type="button" class="btn btn--ghost btn--small" id="provider-refresh-btn" data-i18n="settings.providers.refresh">Yangilash</button>
+          </div>
+          <div id="provider-connection-list" class="provider-manager__list" aria-live="polite">
+            <p class="auth-note" data-i18n="settings.providers.loading">Ulanmalar yuklanmoqda...</p>
+          </div>
+        </section>
+
         <section class="settings-group">
           <p class="section-label" data-i18n="settings.integrations.sectionTitle">Tashqi xizmatlar</p>
 
@@ -183,6 +234,7 @@
   </div>
 
   <script src="auth-fetch.js?v=11"></script>
+  <script src="provider-manager.js?v=1"></script>
   <script src="ascii-bg.js?v=11"></script>
   <script src="theme.js?v=11"></script>
   <script>
