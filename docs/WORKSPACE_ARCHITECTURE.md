@@ -155,7 +155,7 @@ TODO = not started.
 | API Manager UI | ADDED / NOT VERIFIED | Localized responsive form, list, model discovery, test/delete actions; syntax CI only, manual device review pending |
 | Model discovery | DONE | OpenAI-compatible, Anthropic, and Gemini catalogs; manual fallback for unsupported providers; first-page pagination |
 | Agent CRUD | DONE | Authenticated create/list/read/update/delete API; same-user provider binding; CI run #43608288861 passed |
-| Agent Builder UI | ADDED / NOT VERIFIED | Responsive create/edit/list/delete panel in Settings → Integrations; localized in six languages; CI syntax/static checks only, browser review pending |
+| Agent Builder UI | ADDED / NOT VERIFIED | Responsive create/edit/list/delete panel in Settings → Integrations; localized in six languages; CI run #43608673434 passed; syntax/static checks only, browser review pending |
 | Tool permissions | IN PROGRESS | Deny-by-default allow-list validation/storage; runtime enforcement and approvals not yet wired |
 | Workspace UI shell | TODO | Responsive panel layout |
 | File tree/editor | TODO | Project file operations |
@@ -176,7 +176,7 @@ TODO = not started.
 - The UI loads the signed-in user's provider connections and binds each agent to one of them; model IDs remain manually editable.
 - Added system prompt, description, temperature, output token limit, active toggle, and six allow-list permission toggles.
 - Added responsive single-column mobile layout and translations for Uzbek, Russian, English, Turkish, Arabic, and Karakalpak.
-- Added UI wiring/localization tests and Node syntax checking for `agent-manager.js`. Actual browser/device visual verification remains pending.
+- Added UI wiring/localization tests and Node syntax checking for `agent-manager.js`. CI run #43608673434 passed Python 3.10–3.12 with 154 tests per version and the frontend syntax smoke checks. Actual browser/device visual verification remains pending.
 
 
 ### 2026-11-14 — Agent Builder API foundation
@@ -297,7 +297,7 @@ TODO = not started.
 - [ ] Deployment, backup, and encryption-key rotation documentation.
 - [ ] Deprecate legacy paths only after feature parity.
 
-**Next concrete task:** run CI for Agent Builder UI, then perform manual desktop/mobile browser verification; after that, connect approved agent configuration to a safe execution/run lifecycle.
+**Next concrete task:** perform manual desktop/mobile browser verification of Provider Manager and Agent Builder; after that, connect approved agent configuration to a safe execution/run lifecycle.
 
 ## 10. Definition of done
 
