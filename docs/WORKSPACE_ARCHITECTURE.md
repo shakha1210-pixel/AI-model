@@ -166,7 +166,7 @@ but not yet tested; IN PROGRESS = currently being worked on; TODO = not started.
 | Isolated execution | TODO | Production-grade sandbox |
 | Preview/artifacts | TODO | Output and generated files |
 | Mobile/tablet polish | TODO | Breakpoint and touch testing |
-| Regression/CI | ADDED / NOT VERIFIED | GitHub Actions pytest workflow for Python 3.10–3.12; run not yet observed |
+| Regression/CI | FIX IN PROGRESS | First live CI exposed missing test-only `JWT_SECRET`; workflow now injects a non-production test value. Awaiting rerun. |
 | GitHub project presentation | ADDED | Contribution/security/community docs, issue and PR templates |
 
 ## 8. Change log — what changed?
@@ -176,6 +176,7 @@ but not yet tested; IN PROGRESS = currently being worked on; TODO = not started.
 - Added normalized provider adapter contracts for one-shot generation, streaming events, usage, and safe provider errors.
 - Added contract tests; execution has not yet been verified.
 - Added GitHub Actions test workflow for Python 3.10, 3.11, and 3.12.
+- First live CI run failed during `test_main.py` collection because `auth.py` requires a 32+ character `JWT_SECRET`; fixed by injecting a test-only, non-production value in CI. Removed PR trigger from the legacy deploy workflow to avoid duplicate PR test runs; deployment remains main-only.
 - Added contribution, security, and community guidance; issue and pull request templates.
 - Added a GitHub issue intake configuration to direct users to the right reporting path.
 - Reworked README as a bilingual project landing page with product direction, provider status, setup, and project links.
