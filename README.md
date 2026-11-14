@@ -60,7 +60,7 @@ Apeiron — foydalanuvchi o'z AI providerlarini ulashi, o'z agentlarini yaratish
 | OpenAI-compatible katalog | Mistral, Groq, DeepSeek, xAI, Together AI, Fireworks AI, Cerebras, Perplexity, SambaNova, Hugging Face, NVIDIA NIM, DeepInfra, Moonshot AI, Qwen/DashScope, Novita, Nebius, MiniMax, Z.AI/GLM, AI21 Labs, Baseten |
 | Custom | Istalgan public HTTPS OpenAI-compatible endpoint |
 
-**Eslatma:** OpenAI, OpenRouter va OpenAI-compatible endpointlar uchun adapter mavjud; API kalitlarini xavfsiz ulash/saqlash, model discovery va UI integratsiyasi hali yakunlanmagan. Anthropic va Gemini adapterlari navbatdagi bosqich.
+**Eslatma:** 25 ta provider ID registry'da mavjud. Provider adapterlari va shifrlangan API ulash oynasi tayyor. Model discovery, Agent Builder va to'liq Workspace UI keyingi bosqichlarda qo'shiladi.
 
 ### Texnologiyalar
 
@@ -169,7 +169,7 @@ Apeiron is evolving into a personal AI Workspace where users connect their own m
 | OpenAI-compatible catalog | Mistral, Groq, DeepSeek, xAI, Together AI, Fireworks AI, Cerebras, Perplexity, SambaNova, Hugging Face, NVIDIA NIM, DeepInfra, Moonshot AI, Qwen/DashScope, Novita, Nebius, MiniMax, Z.AI/GLM, AI21 Labs, Baseten |
 | Custom | Any public HTTPS OpenAI-compatible endpoint |
 
-**Important:** OpenAI, OpenRouter, 20 additional OpenAI-compatible vendors, and custom OpenAI-compatible request/stream adapters are implemented and mocked-HTTP tested. Secure credential connections, model discovery, and UI integration are still pending.
+**Important:** 25 provider IDs are registered. Provider adapters and the encrypted API connection manager UI are implemented. Model discovery, Agent Builder, and the full Workspace UI are the next milestones.
 
 ### Tech stack
 
