@@ -157,6 +157,66 @@ def test_agent_rejects_invalid_configuration(agent_context, overrides):
     assert response.status_code == 422
 
 
+def test_agent_run_uses_configured_connection_and_never_exposes_credentials(agent_context, monkeypatch):
+    from workspace.adapters.base import GenerationResult, Usage
+
+    client, _, _, _, _ = agent_context
+    created = client.post("/api/workspace/agents", json=_agent_payload())
+    agent_id = created.json()["id"]
+    captured = {}
+
+    monkeypatch.setattr(agents_api, "decrypt_api_key", lambda ciphertext: "private-provider-key")
+
+    class FakeAdapter:
+        async def generate(self, request, *, api_key, base_url=None):
+            captured["request"] = request
+            captured["api_key"] = api_key
+            captured["base_url"] = base_url
+            return GenerationResult(
+                text="Hello from the agent",
+                model=request.model,
+                provider="openai",
+                finish_reason="stop",
+                usage=Usage(input_tokens=5, output_tokens=4, total_tokens=9),
+            )
+
+    monkeypatch.setattr(agents_api, "get_provider_adapter", lambda provider_id: FakeAdapter())
+    response = client.post(
+        f"/api/workspace/agents/{agent_id}/run",
+        json={"message": "Say hello"},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["text"] == "Hello from the agent"
+    assert payload["usage"]["total_tokens"] == 9
+    assert captured["api_key"] == "private-provider-key"
+    assert captured["request"].model == "gpt-test-model"
+    assert captured["request"].system == "You are a careful research assistant."
+    assert captured["request"].temperature == 0.4
+    assert captured["request"].max_tokens == 4096
+    assert "private-provider-key" not in response.text
+    assert "ciphertext-never-exposed" not in response.text
+
+
+def test_inactive_agent_cannot_be_run(agent_context, monkeypatch):
+    client, _, _, _, _ = agent_context
+    created = client.post(
+        "/api/workspace/agents",
+        json=_agent_payload(is_active=False),
+    )
+    agent_id = created.json()["id"]
+    monkeypatch.setattr(
+        agents_api, "get_provider_adapter",
+        lambda provider_id: pytest.fail("Inactive agents must not call providers"),
+    )
+    response = client.post(
+        f"/api/workspace/agents/{agent_id}/run",
+        json={"message": "Do not execute"},
+    )
+    assert response.status_code == 409
+
+
 def test_agent_update_rejects_explicit_null_values(agent_context):
     client, _, _, _, _ = agent_context
     created = client.post("/api/workspace/agents", json=_agent_payload())
