@@ -126,7 +126,7 @@ The API Manager routes are mounted only when both `ENABLE_AUTH=true` and
 - Legacy routing still contains fixed Claude/Gemini/Leonardo paths; the new
   provider gateway is implemented separately and is not yet wired into legacy
   chat routing.
-- Provider registry (25 IDs), adapter contract, expanded OpenAI-compatible vendor catalog, adapter factory,
+- Provider registry (25 IDs), adapter contract, expanded OpenAI-compatible vendor catalog, adapter factory, model catalog discovery,
   encrypted credential persistence, owner-scoped connection CRUD, and
   connection testing are implemented.
 - Custom endpoint DNS validation is implemented; production egress controls
@@ -152,8 +152,8 @@ TODO = not started.
 | Connection create/list/delete API | DONE | Authenticated, owner-scoped, no key disclosure |
 | Connection test API | DONE | Short generation test, safe diagnostics |
 | Custom endpoint validation | HARDENING REQUIRED | HTTPS + DNS/IP checks; production egress firewall still required |
-| API Manager UI | ADDED / NOT VERIFIED | Settings → Integrations panel; localized form, list, test/delete actions, responsive styles; syntax CI only, manual device review pending |
-| Model discovery | TODO | Provider catalogs + manual model IDs |
+| API Manager UI | ADDED / NOT VERIFIED | Localized responsive form, list, model discovery, test/delete actions; syntax CI only, manual device review pending |
+| Model discovery | ADDED / NOT VERIFIED | OpenAI-compatible, Anthropic, and Gemini catalogs; manual fallback for unsupported providers |
 | Agent CRUD | TODO | User-created configurable agents |
 | Tool permissions | TODO | Capability validation and approval |
 | Workspace UI shell | TODO | Responsive panel layout |
@@ -168,6 +168,15 @@ TODO = not started.
 | Deployment workflow | MANUAL ONLY | No hosting target is configured; tests.yml is the automatic CI workflow |
 
 ## 8. Change log
+
+### 2026-11-14 — Provider model discovery
+
+- Added normalized model catalog discovery for OpenAI-compatible vendors, Anthropic, and Google Gemini.
+- Added owner-scoped `GET /api/workspace/connections/{id}/models`; API keys are decrypted only server-side and never returned.
+- Gemini catalog filters out non-generation models; model names are normalized into IDs and display names.
+- Providers without a catalog endpoint (currently Perplexity) return a manual-entry fallback rather than failing the connection.
+- Added model discovery actions and datalist suggestions to the Provider Manager UI.
+- Added mocked HTTP, ownership, and manual-fallback tests. Final CI verification is pending.
 
 ### 2026-11-14 — Expanded provider catalog
 
@@ -267,7 +276,7 @@ TODO = not started.
 - [ ] Deployment, backup, and encryption-key rotation documentation.
 - [ ] Deprecate legacy paths only after feature parity.
 
-**Next concrete task:** complete the current Python + frontend syntax CI matrix, open a PR, and merge only when green. After merge, implement provider model discovery so users can select models instead of entering IDs manually.
+**Next concrete task:** complete the current Python + frontend syntax CI matrix, open a PR, and merge only when green. After merge, begin Agent Builder CRUD and bind agents to a selected provider connection/model.
 
 ## 10. Definition of done
 
