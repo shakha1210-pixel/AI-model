@@ -121,7 +121,28 @@
       remove.textContent = t("settings.agents.delete");
       remove.dataset.deleteAgent = agent.id;
       actions.append(edit, remove);
-      card.append(top, description, prompt, permissions, actions);
+      const runPanel = document.createElement("div");
+      runPanel.className = "agent-card__run";
+      const runInput = document.createElement("textarea");
+      runInput.rows = 2;
+      runInput.maxLength = 12000;
+      runInput.placeholder = t("settings.agents.runPlaceholder");
+      runInput.setAttribute("aria-label", t("settings.agents.runPlaceholder"));
+      const runButton = document.createElement("button");
+      runButton.type = "button";
+      runButton.className = "btn btn--primary btn--small";
+      runButton.textContent = t("settings.agents.run");
+      runButton.dataset.runAgent = agent.id;
+      const runStatus = document.createElement("p");
+      runStatus.className = "agent-card__status";
+      runStatus.setAttribute("role", "status");
+      runStatus.setAttribute("aria-live", "polite");
+      const runOutput = document.createElement("pre");
+      runOutput.className = "agent-card__output";
+      runOutput.hidden = true;
+      runPanel.append(runInput, runButton, runStatus, runOutput);
+
+      card.append(top, description, prompt, permissions, runPanel, actions);
       agentList.appendChild(card);
     });
   }
@@ -220,8 +241,49 @@
   });
 
   agentList.addEventListener("click", async (event) => {
+    const runButton = event.target.closest("[data-run-agent]");
     const editButton = event.target.closest("[data-edit-agent]");
     const deleteButton = event.target.closest("[data-delete-agent]");
+    if (runButton) {
+      const card = runButton.closest(".agent-card");
+      const runInput = card.querySelector(".agent-card__run textarea");
+      const runStatus = card.querySelector(".agent-card__status");
+      const runOutput = card.querySelector(".agent-card__output");
+      const message = runInput.value.trim();
+      if (!message) {
+        setStatus(runStatus, t("settings.agents.runMessageRequired"), "error");
+        runInput.focus();
+        return;
+      }
+      runButton.disabled = true;
+      runOutput.hidden = true;
+      setStatus(runStatus, t("settings.agents.running"), "");
+      try {
+        const response = await authFetch(
+          agentsPath + "/" + encodeURIComponent(runButton.dataset.runAgent) + "/run",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message }),
+          }
+        );
+        if (!response.ok) throw new Error(await readError(response));
+        const data = await response.json();
+        runOutput.textContent = data.text || "";
+        runOutput.hidden = false;
+        const total = data.usage && data.usage.total_tokens;
+        setStatus(
+          runStatus,
+          data.provider + " · " + data.model + (total ? " · " + total + " tokens" : ""),
+          "success"
+        );
+      } catch (error) {
+        setStatus(runStatus, error.message || t("settings.agents.runFailed"), "error");
+      } finally {
+        runButton.disabled = false;
+      }
+      return;
+    }
     if (!editButton && !deleteButton) return;
     const id = (editButton || deleteButton).dataset.editAgent ||
       (editButton || deleteButton).dataset.deleteAgent;
