@@ -108,6 +108,27 @@ class ChatMessage(Base):
     session = relationship("ChatSession", back_populates="messages")
 
 
+class ProviderConnection(Base):
+    """Per-user provider connection; API key ciphertext is never serialized."""
+
+    __tablename__ = "provider_connections"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    provider_id = Column(String, nullable=False, index=True)
+    display_name = Column(String, nullable=False)
+    encrypted_api_key = Column(Text, nullable=False)
+    base_url = Column(String, nullable=True)
+    encryption_key_version = Column(String, nullable=False, default="v1")
+    created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+    updated_at = Column(
+        DateTime,
+        default=datetime.datetime.utcnow,
+        onupdate=datetime.datetime.utcnow,
+        nullable=False,
+    )
+
+
 def init_db() -> None:
     Base.metadata.create_all(bind=engine)
     _migrate_add_missing_columns()
