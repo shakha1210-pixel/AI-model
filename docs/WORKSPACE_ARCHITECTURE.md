@@ -163,8 +163,9 @@ TODO = not started.
 | Isolated execution | TODO | Production-grade sandbox |
 | Preview/artifacts | TODO | Output and generated files |
 | Mobile/tablet polish | TODO | Breakpoint and touch testing |
-| Regression/CI | IN PROGRESS | Python 3.10–3.12 and Node syntax checks are running for the current UI branch head |
+| Regression/CI | VERIFIED | Provider Manager UI PR run #43605971375 passed Python 3.10–3.12 and frontend JavaScript syntax checks. |
 | GitHub project presentation | DONE | Bilingual README, templates, contribution/security/community docs |
+| Deployment workflow | MANUAL ONLY | No hosting target is configured; tests.yml is the automatic CI workflow |
 
 ## 8. Change log
 
@@ -175,6 +176,7 @@ TODO = not started.
 - API keys are entered in a password field, sent only in the authenticated POST body, and cleared from the form after submission; they are never written to browser storage.
 - Added responsive layout styles and translations for Uzbek, Russian, English, Turkish, Arabic, and Karakalpak.
 - Added a Node.js syntax-check job for the provider manager and i18n scripts. Manual visual checks on desktop and mobile remain outstanding.
+- Automatic deployment was disabled until a hosting target is selected; the separate test workflow remains automatic on pushes and pull requests.
 
 ### 2026-11-14 — Provider API Manager foundation
 
