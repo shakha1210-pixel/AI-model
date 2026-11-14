@@ -157,6 +157,17 @@ def test_agent_rejects_invalid_configuration(agent_context, overrides):
     assert response.status_code == 422
 
 
+def test_agent_update_rejects_explicit_null_values(agent_context):
+    client, _, _, _, _ = agent_context
+    created = client.post("/api/workspace/agents", json=_agent_payload())
+    agent_id = created.json()["id"]
+    response = client.patch(
+        f"/api/workspace/agents/{agent_id}",
+        json={"name": None, "provider_connection_id": None},
+    )
+    assert response.status_code == 422
+
+
 def test_provider_connection_cannot_be_deleted_while_agent_uses_it(agent_context):
     client, _, _, _, _ = agent_context
     created = client.post("/api/workspace/agents", json=_agent_payload())
