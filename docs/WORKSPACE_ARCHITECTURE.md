@@ -4,7 +4,7 @@
 > architecture or implementation change. Do not create competing status files.
 
 - Project: Apeiron / AI-model
-- Working branch: `feat/agent-builder-ui`
+- Working branch: `feat/agent-run-api`
 - Last updated: 2026-11-14
 - Status: Living RFC + implementation tracker
 
@@ -159,6 +159,7 @@ TODO = not started.
 | Tool permissions | IN PROGRESS | Deny-by-default allow-list validation/storage; runtime enforcement and approvals not yet wired |
 | Workspace UI shell | TODO | Responsive panel layout |
 | File tree/editor | TODO | Project file operations |
+| Agent text execution | IN PROGRESS | Authenticated one-turn generation through configured provider/model; tools intentionally not executed |
 | Orchestrator | TODO | Task graph, handoffs, run lifecycle |
 | Run event stream | TODO | SSE initially |
 | Isolated execution | TODO | Production-grade sandbox |
@@ -169,6 +170,15 @@ TODO = not started.
 | Deployment workflow | MANUAL ONLY | No hosting target is configured; tests.yml is the automatic CI workflow |
 
 ## 8. Change log
+
+### 2026-11-14 — Safe single-turn Agent execution API
+
+- Added `POST /api/workspace/agents/{id}/run` for one-turn text generation using the agent's configured provider connection, model, system prompt, temperature, and token limit.
+- Agent ownership and connection ownership are checked before decrypting credentials; credentials remain server-side and are not included in responses.
+- Inactive agents cannot run. Custom provider URLs are revalidated before outbound requests.
+- Tool permissions are deliberately NOT executed by this endpoint. Tool calls remain blocked until an isolated execution and approval system is implemented.
+- Added mocked adapter tests for request configuration, secret non-disclosure, and inactive-agent rejection. CI verification pending.
+
 
 ### 2026-11-14 — Agent Builder UI
 
@@ -297,7 +307,7 @@ TODO = not started.
 - [ ] Deployment, backup, and encryption-key rotation documentation.
 - [ ] Deprecate legacy paths only after feature parity.
 
-**Next concrete task:** perform manual desktop/mobile browser verification of Provider Manager and Agent Builder; after that, connect approved agent configuration to a safe execution/run lifecycle.
+**Next concrete task:** run CI for the safe agent execution endpoint, then add a simple run panel with output display; preserve the no-tools execution boundary until sandbox and approval controls exist.
 
 ## 10. Definition of done
 
