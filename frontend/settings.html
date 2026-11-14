@@ -236,6 +236,66 @@
           </div>
         </section>
 
+        <section class="settings-group agent-builder" aria-labelledby="agent-builder-title">
+          <div class="provider-manager__intro">
+            <p class="section-label" id="agent-builder-title" data-i18n="settings.agents.title">Agent Builder</p>
+            <p class="provider-manager__description" data-i18n="settings.agents.desc">O'z agentingizni yarating va model, prompt hamda ruxsatlarni sozlang.</p>
+          </div>
+
+          <form id="agent-form" class="agent-builder__form">
+            <label class="provider-manager__field">
+              <span data-i18n="settings.agents.name">Agent nomi</span>
+              <input id="agent-name" type="text" maxlength="80" required />
+            </label>
+            <label class="provider-manager__field">
+              <span data-i18n="settings.agents.description">Qisqa tavsif</span>
+              <input id="agent-description" type="text" maxlength="500" />
+            </label>
+            <label class="provider-manager__field">
+              <span data-i18n="settings.agents.connection">Provider ulanishi</span>
+              <select id="agent-connection" required></select>
+            </label>
+            <label class="provider-manager__field">
+              <span data-i18n="settings.agents.model">Model ID</span>
+              <input id="agent-model" type="text" maxlength="160" required placeholder="gpt-4.1-mini" />
+            </label>
+            <label class="provider-manager__field">
+              <span data-i18n="settings.agents.temperature">Temperature (0–2)</span>
+              <input id="agent-temperature" type="number" min="0" max="2" step="0.1" value="0.7" required />
+            </label>
+            <label class="provider-manager__field">
+              <span data-i18n="settings.agents.maxTokens">Max output tokens</span>
+              <input id="agent-max-tokens" type="number" min="1" max="32768" step="1" value="2048" required />
+            </label>
+            <label class="provider-manager__field agent-builder__prompt">
+              <span data-i18n="settings.agents.prompt">System prompt</span>
+              <textarea id="agent-prompt" rows="5" maxlength="12000" required></textarea>
+            </label>
+            <fieldset class="agent-builder__permissions">
+              <legend data-i18n="settings.agents.permissions">Ruxsatlar (standart: yopiq)</legend>
+              <label><input type="checkbox" value="project_files.read" /> <span data-i18n="settings.agents.readFiles">Loyiha fayllarini o'qish</span></label>
+              <label><input type="checkbox" value="project_files.write" /> <span data-i18n="settings.agents.writeFiles">Loyiha fayllarini yozish</span></label>
+              <label><input type="checkbox" value="web.search" /> <span data-i18n="settings.agents.webSearch">Web qidiruv</span></label>
+              <label><input type="checkbox" value="git.read" /> <span data-i18n="settings.agents.gitRead">Git o'qish</span></label>
+              <label><input type="checkbox" value="git.write" /> <span data-i18n="settings.agents.gitWrite">Git yozish</span></label>
+              <label><input type="checkbox" value="code.execute" /> <span data-i18n="settings.agents.codeExecute">Kod ijrosi (sandbox talab qiladi)</span></label>
+            </fieldset>
+            <label class="agent-builder__active"><input id="agent-active" type="checkbox" checked /> <span data-i18n="settings.agents.active">Agent faol</span></label>
+            <div class="provider-manager__submit">
+              <button type="submit" class="btn btn--primary" id="agent-save-btn" data-i18n="settings.agents.create">Agent yaratish</button>
+              <button type="button" class="btn btn--ghost" id="agent-cancel-btn" hidden data-i18n="settings.agents.cancel">Bekor qilish</button>
+              <span id="agent-form-status" class="provider-manager__form-status" role="status" aria-live="polite"></span>
+            </div>
+          </form>
+
+          <p class="auth-note" data-i18n="settings.agents.runtimeNotice">Ruxsatlar hozircha konfiguratsiya sifatida saqlanadi; tool'larning real bajarilishi va tasdiqlash oqimi keyingi bosqichda ulanadi.</p>
+          <div class="provider-manager__list-header">
+            <span class="section-label" data-i18n="settings.agents.saved">Sizning agentlaringiz</span>
+            <button type="button" class="btn btn--ghost btn--small" id="agent-refresh-btn" data-i18n="settings.providers.refresh">Yangilash</button>
+          </div>
+          <div id="agent-list" class="agent-builder__list" aria-live="polite"></div>
+        </section>
+
         <section class="settings-group">
           <p class="section-label" data-i18n="settings.integrations.sectionTitle">Tashqi xizmatlar</p>
 
@@ -261,6 +321,7 @@
 
   <script src="auth-fetch.js?v=11"></script>
   <script src="provider-manager.js?v=1"></script>
+  <script src="agent-manager.js?v=1"></script>
   <script src="ascii-bg.js?v=11"></script>
   <script src="theme.js?v=11"></script>
   <script>
