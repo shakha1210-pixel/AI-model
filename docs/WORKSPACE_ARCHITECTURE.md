@@ -160,7 +160,7 @@ TODO = not started.
 | Workspace UI shell | TODO | Responsive panel layout |
 | File tree/editor | TODO | Project file operations |
 | Agent text execution | DONE | Authenticated one-turn generation through configured provider/model; CI run #43608889817 passed; tools intentionally not executed |
-| Agent run UI | IN PROGRESS | Per-agent prompt/run/output panel; provider usage notice; CI pending |
+| Agent run UI | DONE | Per-agent prompt/run/output panel; provider usage notice; CI run #43609153008 passed; manual browser review pending |
 | Orchestrator | TODO | Task graph, handoffs, run lifecycle |
 | Run event stream | TODO | SSE initially |
 | Isolated execution | TODO | Production-grade sandbox |
@@ -177,7 +177,7 @@ TODO = not started.
 - Added a per-agent text prompt, Run action, and response output panel to Agent Builder.
 - The UI calls the authenticated single-turn run endpoint and renders model output with `textContent` (no HTML interpretation).
 - Added provider usage/possible charge notice. Tool execution remains disabled; permission flags do not authorize runtime actions yet.
-- Added localized run controls and usage notice in six languages. CI verification pending.
+- Added localized run controls and usage notice in six languages. CI run #43609153008 passed on Python 3.10–3.12 with 156 tests per version; frontend smoke check also passed.
 
 
 ### 2026-11-14 — Safe single-turn Agent execution API
@@ -316,7 +316,7 @@ TODO = not started.
 - [ ] Deployment, backup, and encryption-key rotation documentation.
 - [ ] Deprecate legacy paths only after feature parity.
 
-**Next concrete task:** run CI for the Agent run panel, then perform manual desktop/mobile browser verification; after that add persistent run history and observable task lifecycle.
+**Next concrete task:** perform manual desktop/mobile browser verification of Provider Manager, Agent Builder, and Agent run panel; then add persistent run history and observable task lifecycle.
 
 ## 10. Definition of done
 
