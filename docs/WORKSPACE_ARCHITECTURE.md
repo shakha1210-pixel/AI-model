@@ -178,7 +178,8 @@ but not yet tested; IN PROGRESS = currently being worked on; TODO = not started.
 - Implemented Anthropic Messages generation and SSE text streaming, including usage and stop-reason normalization.
 - Implemented Google Gemini GenerateContent and `streamGenerateContent` SSE, using `x-goog-api-key` rather than putting credentials in URLs.
 - Added provider adapter factory mapping OpenAI/OpenRouter/custom-compatible, Anthropic, and Google IDs to concrete adapters.
-- Added mocked HTTP tests for both providers and factory resolution; final Python matrix is running.
+- Added mocked HTTP tests for both providers and factory resolution.
+- GitHub Actions PR run #43604811384 passed on Python 3.10, 3.11, and 3.12; Python 3.11 reported 91 passed.
 
 ### 2026-11-14 — OpenAI-compatible adapter and live CI
 
@@ -256,7 +257,7 @@ but not yet tested; IN PROGRESS = currently being worked on; TODO = not started.
 4. Document deployment, backups, and encryption key rotation.
 5. Deprecate legacy paths only after feature parity.
 
-**Next concrete task:** finish CI verification for the Anthropic/Gemini adapters, merge the provider gateway milestone, then implement the API Manager: encrypted per-user credentials, ownership-checked connection endpoints, connection tests, and SSRF-safe custom endpoint validation.
+**Next concrete task:** merge the verified provider gateway milestone, then implement the API Manager: encrypted per-user credentials, ownership-checked connection endpoints, connection tests, and SSRF-safe custom endpoint validation.
 
 ## 10. Definition of done
 
