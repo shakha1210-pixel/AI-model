@@ -215,7 +215,7 @@
     } catch (error) {
       setStatus(statusEl, error.message || t("settings.agents.saveFailed"), "error");
     } finally {
-      saveButton.disabled = connectionSelect.options.length === 0;
+      saveButton.disabled = !connectionSelect.value;
     }
   });
 
