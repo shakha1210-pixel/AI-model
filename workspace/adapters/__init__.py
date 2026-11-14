@@ -1,5 +1,4 @@
-"""Provider adapter implementations."""
+"""Provider adapter package.
 
-from workspace.adapters.openai_compatible import OpenAICompatibleAdapter
-
-__all__ = ["OpenAICompatibleAdapter"]
+Import concrete adapters from their modules or use workspace.adapters.factory.
+"""

@@ -56,8 +56,8 @@ Apeiron — foydalanuvchi o'z AI providerlarini ulashi, o'z agentlarini yaratish
 | Provider | Registry | API adapter |
 |---|---:|---:|
 | OpenAI | Mavjud | **Mavjud** — Chat Completions + streaming |
-| Anthropic | Mavjud | Rejada |
-| Google Gemini | Mavjud | Rejada |
+| Anthropic | Mavjud | **Mavjud** — Messages + SSE streaming |
+| Google Gemini | Mavjud | **Mavjud** — GenerateContent + SSE streaming |
 | OpenRouter | Mavjud | **Mavjud** — shared OpenAI-compatible adapter |
 | Custom OpenAI-compatible | Mavjud | **Mavjud** — custom base URL |
 
@@ -135,12 +135,12 @@ Apeiron is evolving into a personal AI Workspace where users connect their own m
 | Provider | Registry | API adapter |
 |---|---:|---:|
 | OpenAI | Added | **Implemented** — Chat Completions + streaming |
-| Anthropic | Added | Planned |
-| Google Gemini | Added | Planned |
+| Anthropic | Added | **Implemented** — Messages + SSE streaming |
+| Google Gemini | Added | **Implemented** — GenerateContent + SSE streaming |
 | OpenRouter | Added | **Implemented** — shared OpenAI-compatible adapter |
 | Custom OpenAI-compatible | Added | **Implemented** — custom base URL |
 
-**Important:** OpenAI, OpenRouter, and custom OpenAI-compatible request/stream adapters are implemented and mocked-HTTP tested. Secure credential connections, model discovery, and UI integration are still pending. Anthropic and Gemini adapters are next.
+**Important:** OpenAI, OpenRouter, and custom OpenAI-compatible request/stream adapters are implemented and mocked-HTTP tested. Secure credential connections, model discovery, and UI integration are still pending.
 
 ### Tech stack
 
