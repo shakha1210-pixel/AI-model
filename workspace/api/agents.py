@@ -10,6 +10,10 @@ from sqlalchemy.orm import Session
 
 from auth import get_current_user
 from database import Agent, ProviderConnection, SessionLocal, User
+from workspace.adapters.base import GenerationRequest, ModelMessage, ProviderAdapterError
+from workspace.adapters.factory import get_provider_adapter
+from workspace.credentials.encryption import CredentialEncryptionError, decrypt_api_key
+from workspace.credentials.endpoint import ProviderEndpointError, validate_public_https_base_url
 
 router = APIRouter(prefix="/api/workspace/agents", tags=["workspace-agents"])
 
@@ -49,6 +53,20 @@ class AgentCreate(BaseModel):
     def validate_permissions(cls, value: list[str]) -> list[str]:
         if len(value) != len(set(value)) or any(item not in ALLOWED_PERMISSIONS for item in value):
             raise ValueError("Unsupported or duplicate permission")
+        return value
+
+
+class AgentRunRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    message: str = Field(min_length=1, max_length=12000)
+
+    @field_validator("message")
+    @classmethod
+    def require_nonblank_message(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("Message must not be blank")
         return value
 
 
@@ -217,3 +235,75 @@ def delete_agent(
     db.delete(agent)
     db.commit()
     return {"status": "deleted"}
+
+
+@router.post("/{agent_id}/run")
+async def run_agent(
+    agent_id: str,
+    payload: AgentRunRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Run a single text generation using the agent's configured model.
+
+    This endpoint intentionally does not execute tools, even when the agent
+    has permission flags saved. Tool execution requires the future isolated
+    execution and approval layer.
+    """
+    agent = _owned_agent(db, agent_id, current_user.id)
+    if not agent.is_active:
+        raise HTTPException(status_code=409, detail="Agent is inactive")
+
+    connection = agent.provider_connection
+    if connection is None or connection.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Provider connection not found")
+
+    try:
+        api_key = decrypt_api_key(connection.encrypted_api_key)
+    except CredentialEncryptionError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from None
+
+    base_url = connection.base_url
+    if connection.provider_id == "custom_openai":
+        try:
+            base_url = validate_public_https_base_url(base_url or "")
+        except ProviderEndpointError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from None
+
+    request = GenerationRequest(
+        model=agent.model_id,
+        messages=[ModelMessage(role="user", content=payload.message)],
+        system=agent.system_prompt,
+        temperature=agent.temperature,
+        max_tokens=agent.max_tokens,
+    )
+    try:
+        result = await get_provider_adapter(connection.provider_id).generate(
+            request, api_key=api_key, base_url=base_url
+        )
+    except ProviderAdapterError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail={
+                "message": str(exc),
+                "provider": exc.provider,
+                "status_code": exc.status_code,
+                "retryable": exc.retryable,
+            },
+        ) from None
+
+    usage = None
+    if result.usage is not None:
+        usage = {
+            "input_tokens": result.usage.input_tokens,
+            "output_tokens": result.usage.output_tokens,
+            "total_tokens": result.usage.total_tokens,
+        }
+    return {
+        "agent_id": agent.id,
+        "text": result.text,
+        "model": result.model,
+        "provider": result.provider,
+        "finish_reason": result.finish_reason,
+        "usage": usage,
+    }
