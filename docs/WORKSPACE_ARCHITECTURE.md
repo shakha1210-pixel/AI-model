@@ -154,7 +154,7 @@ TODO = not started.
 | Custom endpoint validation | HARDENING REQUIRED | HTTPS + DNS/IP checks; production egress firewall still required |
 | API Manager UI | ADDED / NOT VERIFIED | Localized responsive form, list, model discovery, test/delete actions; syntax CI only, manual device review pending |
 | Model discovery | DONE | OpenAI-compatible, Anthropic, and Gemini catalogs; manual fallback for unsupported providers; first-page pagination |
-| Agent CRUD | DONE | Authenticated create/list/read/update/delete API; same-user provider binding; CI run #43608200036 passed |
+| Agent CRUD | DONE | Authenticated create/list/read/update/delete API; same-user provider binding; CI run #43608288861 passed |
 | Tool permissions | IN PROGRESS | Deny-by-default allow-list validation/storage; runtime enforcement and approvals not yet wired |
 | Workspace UI shell | TODO | Responsive panel layout |
 | File tree/editor | TODO | Project file operations |
@@ -176,7 +176,7 @@ TODO = not started.
 - Agent creation and reassignment require a provider connection owned by the current user; foreign agent IDs return 404.
 - Capabilities are deny-by-default and restricted to a fixed allow-list. Runtime tool execution and approval enforcement are not implemented yet.
 - Provider connections referenced by agents cannot be deleted until agents are deleted or reassigned.
-- Added API tests for CRUD, validation, tenant isolation, foreign connection binding, null update rejection, and connection deletion safeguards. CI run #43608200036 passed on Python 3.10, 3.11, and 3.12; 150 tests passed on each version. The final null-update regression case is included in a follow-up test commit and will trigger another CI run.
+- Added API tests for CRUD, validation, tenant isolation, foreign connection binding, null update rejection, and connection deletion safeguards. CI run #43608288861 passed on Python 3.10, 3.11, and 3.12; 151 tests passed on each version, including explicit-null update rejection.
 
 
 ### 2026-11-14 — Provider model discovery
