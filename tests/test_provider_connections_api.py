@@ -27,7 +27,7 @@ def api_context(monkeypatch):
         poolclass=StaticPool,
     )
     Base.metadata.create_all(bind=engine)
-    TestingSession = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+    TestingSession = sessionmaker(\n        bind=engine, autoflush=False, autocommit=False, expire_on_commit=False\n    )
     user = User(id="user-1", email="user@example.test")
     with TestingSession() as db:
         db.add(user)
