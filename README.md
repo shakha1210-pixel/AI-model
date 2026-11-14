@@ -55,13 +55,13 @@ Apeiron — foydalanuvchi o'z AI providerlarini ulashi, o'z agentlarini yaratish
 
 | Provider | Registry | API adapter |
 |---|---:|---:|
-| OpenAI | Mavjud | Rejada |
+| OpenAI | Mavjud | **Mavjud** — Chat Completions + streaming |
 | Anthropic | Mavjud | Rejada |
 | Google Gemini | Mavjud | Rejada |
-| OpenRouter | Mavjud | Rejada |
-| Custom OpenAI-compatible | Mavjud | Rejada |
+| OpenRouter | Mavjud | **Mavjud** — shared OpenAI-compatible adapter |
+| Custom OpenAI-compatible | Mavjud | **Mavjud** — custom base URL |
 
-**Eslatma:** registry — provider metadata ro'yxati, ishlaydigan integratsiya degani emas. API kalitini ulash, model discovery va real provider so'rovlari hali yakunlanmagan.
+**Eslatma:** OpenAI, OpenRouter va OpenAI-compatible endpointlar uchun adapter mavjud; API kalitlarini xavfsiz ulash/saqlash, model discovery va UI integratsiyasi hali yakunlanmagan. Anthropic va Gemini adapterlari navbatdagi bosqich.
 
 ### Texnologiyalar
 
@@ -134,13 +134,13 @@ Apeiron is evolving into a personal AI Workspace where users connect their own m
 
 | Provider | Registry | API adapter |
 |---|---:|---:|
-| OpenAI | Added | Planned |
+| OpenAI | Added | **Implemented** — Chat Completions + streaming |
 | Anthropic | Added | Planned |
 | Google Gemini | Added | Planned |
-| OpenRouter | Added | Planned |
-| Custom OpenAI-compatible | Added | Planned |
+| OpenRouter | Added | **Implemented** — shared OpenAI-compatible adapter |
+| Custom OpenAI-compatible | Added | **Implemented** — custom base URL |
 
-**Important:** the registry contains public provider metadata only. It does not mean live integrations are available yet. Credential connections, model discovery, and real provider requests are still being implemented.
+**Important:** OpenAI, OpenRouter, and custom OpenAI-compatible request/stream adapters are implemented and mocked-HTTP tested. Secure credential connections, model discovery, and UI integration are still pending. Anthropic and Gemini adapters are next.
 
 ### Tech stack
 
