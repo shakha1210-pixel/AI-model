@@ -72,7 +72,8 @@ workspace/
   providers.py              # public provider metadata [ADDED]
   api/                      # versioned routes and schemas
   adapters/
-    base.py                 # shared adapter contract
+    __init__.py             # adapter package [ADDED]
+    base.py                 # shared adapter contract [ADDED]
     openai_compatible.py    # OpenAI, OpenRouter, compatible vendors
     anthropic.py
     google.py
@@ -144,9 +145,10 @@ but not yet tested; IN PROGRESS = currently being worked on; TODO = not started.
 | Migration branch | DONE | `feat/agent-workspace` created |
 | Provider registry | ADDED / NOT VERIFIED | `workspace/providers.py` |
 | Provider registry tests | ADDED / NOT VERIFIED | Test file committed; execution not confirmed |
+| Adapter contract tests | ADDED / NOT VERIFIED | `tests/test_workspace_adapter_contract.py` |
 | Architecture living document | DONE | This file |
 | Bilingual README | DONE | Uzbek + English sections |
-| Adapter protocol | TODO | Shared one-shot, streaming, tool contract |
+| Adapter protocol | ADDED / NOT VERIFIED | Normalized request/result/stream/error contract in `workspace/adapters/base.py` |
 | OpenAI adapter | TODO | Requests and streaming |
 | Anthropic adapter | TODO | Messages API and streaming |
 | Gemini adapter | TODO | GenerateContent and streaming |
@@ -164,9 +166,17 @@ but not yet tested; IN PROGRESS = currently being worked on; TODO = not started.
 | Isolated execution | TODO | Production-grade sandbox |
 | Preview/artifacts | TODO | Output and generated files |
 | Mobile/tablet polish | TODO | Breakpoint and touch testing |
-| Regression/CI | TODO | Existing + new tests |
+| Regression/CI | ADDED / NOT VERIFIED | GitHub Actions pytest workflow for Python 3.10–3.12 |
 
 ## 8. Change log — what changed?
+
+### 2026-11-14 — Repository presentation and provider contract
+
+- Added normalized provider adapter contracts for one-shot generation, streaming events, usage, and safe provider errors.
+- Added contract tests; execution has not yet been verified.
+- Added GitHub Actions test workflow for Python 3.10, 3.11, and 3.12.
+- Added contribution and security guidance, issue templates, and a pull request template.
+- Reworked README as a bilingual project landing page with product direction, provider status, setup, and project links.
 
 ### 2026-11-14 — Initial Workspace foundation
 
@@ -185,10 +195,10 @@ but not yet tested; IN PROGRESS = currently being worked on; TODO = not started.
 ## 9. Roadmap — what remains and what happens next?
 
 ### Milestone 1 — Provider gateway foundation
-1. Inspect dependency versions, DB layer, and test/runtime setup.
-2. Define a provider adapter protocol for one-shot and streaming generation.
-3. Implement OpenAI-compatible, Anthropic, and Gemini adapters.
-4. Add mocked adapter contract tests.
+1. Verify the adapter contract and GitHub Actions workflow by running the test suite.
+2. Implement OpenAI-compatible generation and streaming with mocked HTTP tests.
+3. Implement Anthropic and Gemini adapters against the same contract.
+4. Add adapter-specific error normalization and usage mapping.
 5. Keep legacy `/chat` unchanged until the new path is validated.
 
 ### Milestone 2 — API Manager
@@ -225,8 +235,7 @@ but not yet tested; IN PROGRESS = currently being worked on; TODO = not started.
 4. Document deployment, backups, and encryption key rotation.
 5. Deprecate legacy paths only after feature parity.
 
-**Next concrete task:** inspect the existing DB/dependency/test setup, then define
-and test the provider adapter contract. This is the foundation for API Manager.
+**Next concrete task:** execute the new contract and registry tests in a verified environment, fix any failures, then implement the OpenAI-compatible adapter. Database inspection confirms SQLAlchemy 2.x is already a project dependency and the existing `User` model is the likely ownership anchor for the future encrypted-credential table.
 
 ## 10. Definition of done
 
