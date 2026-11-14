@@ -154,7 +154,7 @@ TODO = not started.
 | Custom endpoint validation | HARDENING REQUIRED | HTTPS + DNS/IP checks; production egress firewall still required |
 | API Manager UI | ADDED / NOT VERIFIED | Localized responsive form, list, model discovery, test/delete actions; syntax CI only, manual device review pending |
 | Model discovery | DONE | OpenAI-compatible, Anthropic, and Gemini catalogs; manual fallback for unsupported providers; first-page pagination |
-| Agent CRUD | IN PROGRESS | Authenticated create/list/read/update/delete API; same-user provider binding; CI pending |
+| Agent CRUD | DONE | Authenticated create/list/read/update/delete API; same-user provider binding; CI run #43608200036 passed |
 | Tool permissions | IN PROGRESS | Deny-by-default allow-list validation/storage; runtime enforcement and approvals not yet wired |
 | Workspace UI shell | TODO | Responsive panel layout |
 | File tree/editor | TODO | Project file operations |
@@ -176,7 +176,7 @@ TODO = not started.
 - Agent creation and reassignment require a provider connection owned by the current user; foreign agent IDs return 404.
 - Capabilities are deny-by-default and restricted to a fixed allow-list. Runtime tool execution and approval enforcement are not implemented yet.
 - Provider connections referenced by agents cannot be deleted until agents are deleted or reassigned.
-- Added API tests for CRUD, validation, tenant isolation, foreign connection binding, and connection deletion safeguards. CI verification pending.
+- Added API tests for CRUD, validation, tenant isolation, foreign connection binding, null update rejection, and connection deletion safeguards. CI run #43608200036 passed on Python 3.10, 3.11, and 3.12; 150 tests passed on each version. The final null-update regression case is included in a follow-up test commit and will trigger another CI run.
 
 
 ### 2026-11-14 — Provider model discovery
@@ -287,7 +287,7 @@ TODO = not started.
 - [ ] Deployment, backup, and encryption-key rotation documentation.
 - [ ] Deprecate legacy paths only after feature parity.
 
-**Next concrete task:** run CI for the Agent Builder API, fix any failures, then add the responsive Agent Builder UI and manually verify desktop/mobile behavior.
+**Next concrete task:** finish CI verification for the null-update regression test, then add the responsive Agent Builder UI and manually verify desktop/mobile behavior.
 
 ## 10. Definition of done
 
