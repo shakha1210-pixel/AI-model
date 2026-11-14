@@ -84,7 +84,7 @@ async def test_stream_uses_sse_endpoint_and_normalizes_candidate():
 
     def handler(request: httpx.Request) -> httpx.Response:
         assert request.url.path.endswith("/models/gemini-test:streamGenerateContent")
-        assert request.url.query == "alt=sse"
+        assert request.url.params["alt"] == "sse"
         assert request.headers["accept"] == "text/event-stream"
         return httpx.Response(
             200,
