@@ -284,7 +284,8 @@ class AnthropicAdapter:
                                 )
                                 final_sent = final_sent or finish_reason is not None
                         elif event_type == "message_stop":
-                            yield StreamEvent(is_final=True)
+                            if not final_sent:
+                                yield StreamEvent(is_final=True)
                             final_sent = True
                             break
 
