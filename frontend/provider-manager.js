@@ -100,11 +100,15 @@
       modelInput.placeholder = t("settings.providers.modelPlaceholder");
       modelInput.value = providerDefaults[connection.provider_id] || "";
       modelInput.dataset.modelId = "";
-      modelLabel.append(modelText, modelInput);
+      const modelList = document.createElement("datalist");
+      modelList.id = "provider-models-" + connection.id;
+      modelInput.setAttribute("list", modelList.id);
+      modelLabel.append(modelText, modelInput, modelList);
 
       const actions = document.createElement("div");
       actions.className = "provider-connection-card__actions";
       actions.append(
+        makeActionButton(t("settings.providers.loadModels"), "btn btn--ghost btn--small", "loadModels", connection.id),
         makeActionButton(t("settings.providers.test"), "btn btn--ghost btn--small", "testConnection", connection.id),
         makeActionButton(t("settings.providers.delete"), "btn btn--danger btn--small", "deleteConnection", connection.id)
       );
@@ -189,14 +193,52 @@
   });
 
   list.addEventListener("click", async (event) => {
+    const loadButton = event.target.closest("[data-load-models]");
     const testButton = event.target.closest("[data-test-connection]");
     const deleteButton = event.target.closest("[data-delete-connection]");
-    if (!testButton && !deleteButton) return;
+    if (!loadButton && !testButton && !deleteButton) return;
 
-    const button = testButton || deleteButton;
+    const button = loadButton || testButton || deleteButton;
     const connectionId = button.dataset.testConnection || button.dataset.deleteConnection;
     const card = button.closest(".provider-connection-card");
     const status = card.querySelector(".provider-connection-card__status");
+
+    if (loadButton) {
+      loadButton.disabled = true;
+      setStatus(status, t("settings.providers.loadingModels"), "");
+      try {
+        const response = await authFetch(
+          apiPath + "/" + encodeURIComponent(connectionId) + "/models"
+        );
+        if (!response.ok) throw new Error(await readError(response));
+        const data = await response.json();
+        if (!data.catalog_supported) {
+          setStatus(status, data.message || t("settings.providers.modelsUnavailable"), "");
+          return;
+        }
+        const modelList = card.querySelector("datalist");
+        modelList.replaceChildren();
+        const models = Array.isArray(data.models) ? data.models : [];
+        models.forEach((model) => {
+          const option = document.createElement("option");
+          option.value = model.id;
+          option.label = model.name || model.id;
+          modelList.appendChild(option);
+        });
+        setStatus(
+          status,
+          models.length
+            ? t("settings.providers.modelsLoaded") + " " + models.length
+            : t("settings.providers.modelsEmpty"),
+          models.length ? "success" : ""
+        );
+      } catch (error) {
+        setStatus(status, error.message || t("settings.providers.modelsLoadFailed"), "error");
+      } finally {
+        loadButton.disabled = false;
+      }
+      return;
+    }
 
     if (deleteButton) {
       if (!window.confirm(t("settings.providers.deleteConfirm"))) return;
