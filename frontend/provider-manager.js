@@ -138,14 +138,22 @@
     }
   }
 
-  providerSelect.addEventListener("change", updateBaseUrlVisibility);
-  updateBaseUrlVisibility();
-  displayNameInput.value = providerSelect.options[providerSelect.selectedIndex].text;
+  let lastSuggestedName = "";
+  function updateProviderDefaults() {
+    const option = providerSelect.options[providerSelect.selectedIndex];
+    const suggestedName = option ? option.text : "";
+    if (!displayNameInput.value.trim() || displayNameInput.value === lastSuggestedName) {
+      displayNameInput.value = suggestedName;
+    }
+    lastSuggestedName = suggestedName;
+  }
 
   providerSelect.addEventListener("change", () => {
-    const option = providerSelect.options[providerSelect.selectedIndex];
-    if (!displayNameInput.value.trim()) displayNameInput.value = option.text;
+    updateBaseUrlVisibility();
+    updateProviderDefaults();
   });
+  updateBaseUrlVisibility();
+  updateProviderDefaults();
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
