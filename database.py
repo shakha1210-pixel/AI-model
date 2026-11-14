@@ -42,6 +42,9 @@ class User(Base):
     terms_accepted_at = Column(DateTime, nullable=True)
 
     sessions = relationship("ChatSession", back_populates="user")
+    provider_connections = relationship(
+        "ProviderConnection", back_populates="user", cascade="all, delete-orphan"
+    )
 
 
 class ChatSession(Base):
@@ -127,6 +130,7 @@ class ProviderConnection(Base):
         onupdate=datetime.datetime.utcnow,
         nullable=False,
     )
+    user = relationship("User", back_populates="provider_connections")
 
 
 def init_db() -> None:
