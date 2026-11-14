@@ -147,7 +147,7 @@ but not yet tested; IN PROGRESS = currently being worked on; TODO = not started.
 | Provider registry tests | ADDED / NOT VERIFIED | Test file committed; execution not confirmed |
 | Adapter contract tests | ADDED / NOT VERIFIED | `tests/test_workspace_adapter_contract.py` |
 | Architecture living document | DONE | This file |
-| Bilingual README | DONE | Uzbek + English sections |
+| Bilingual README | DONE | Professional landing page, logo, badges, setup, status, and links |
 | Adapter protocol | ADDED / NOT VERIFIED | Normalized request/result/stream/error contract in `workspace/adapters/base.py` |
 | OpenAI adapter | TODO | Requests and streaming |
 | Anthropic adapter | TODO | Messages API and streaming |
@@ -166,7 +166,8 @@ but not yet tested; IN PROGRESS = currently being worked on; TODO = not started.
 | Isolated execution | TODO | Production-grade sandbox |
 | Preview/artifacts | TODO | Output and generated files |
 | Mobile/tablet polish | TODO | Breakpoint and touch testing |
-| Regression/CI | ADDED / NOT VERIFIED | GitHub Actions pytest workflow for Python 3.10–3.12 |
+| Regression/CI | ADDED / NOT VERIFIED | GitHub Actions pytest workflow for Python 3.10–3.12; run not yet observed |
+| GitHub project presentation | ADDED | Contribution/security/community docs, issue and PR templates |
 
 ## 8. Change log — what changed?
 
@@ -175,7 +176,8 @@ but not yet tested; IN PROGRESS = currently being worked on; TODO = not started.
 - Added normalized provider adapter contracts for one-shot generation, streaming events, usage, and safe provider errors.
 - Added contract tests; execution has not yet been verified.
 - Added GitHub Actions test workflow for Python 3.10, 3.11, and 3.12.
-- Added contribution and security guidance, issue templates, and a pull request template.
+- Added contribution, security, and community guidance; issue and pull request templates.
+- Added a GitHub issue intake configuration to direct users to the right reporting path.
 - Reworked README as a bilingual project landing page with product direction, provider status, setup, and project links.
 
 ### 2026-11-14 — Initial Workspace foundation
