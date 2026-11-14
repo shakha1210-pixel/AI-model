@@ -111,10 +111,11 @@ Fernet kalitini yaratish:
 python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
 ```
 
-Sozlamalarda **Integratsiyalar → AI providerlar** bo'limidan provider qo'shish, ulanishlarni ko'rish, tekshirish va o'chirish mumkin. API kaliti brauzer xotirasida saqlanmaydi; yuborilgach forma maydoni tozalanadi.
+Sozlamalarda **Integratsiyalar → AI providerlar** bo'limidan provider qo'shish, ulanishlarni ko'rish, model ro'yxatini yuklash (provider qo'llasa), tekshirish va o'chirish mumkin. API kaliti brauzer xotirasida saqlanmaydi; yuborilgach forma maydoni tozalanadi.
 
 Mavjud endpointlar: `POST /api/workspace/connections`,
 `GET /api/workspace/connections`,
+`GET /api/workspace/connections/{id}/models`,
 `DELETE /api/workspace/connections/{id}` va
 `POST /api/workspace/connections/{id}/test`.
 

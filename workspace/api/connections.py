@@ -21,6 +21,11 @@ from workspace.credentials.endpoint import (
     ProviderEndpointError,
     validate_public_https_base_url,
 )
+from workspace.model_catalog import (
+    ModelCatalogError,
+    ModelCatalogUnsupported,
+    list_provider_models,
+)
 from workspace.providers import get_provider
 
 
@@ -150,6 +155,68 @@ def delete_connection(
     db.delete(connection)
     db.commit()
     return {"status": "deleted"}
+
+
+@router.get("/{connection_id}/models")
+async def discover_connection_models(
+    connection_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    connection = (
+        db.query(ProviderConnection)
+        .filter(
+            ProviderConnection.id == connection_id,
+            ProviderConnection.user_id == current_user.id,
+        )
+        .first()
+    )
+    if connection is None:
+        raise HTTPException(status_code=404, detail="Provider connection not found")
+
+    try:
+        api_key = decrypt_api_key(connection.encrypted_api_key)
+    except CredentialEncryptionError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from None
+
+    base_url = connection.base_url
+    if connection.provider_id == "custom_openai":
+        try:
+            base_url = validate_public_https_base_url(base_url or "")
+        except ProviderEndpointError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from None
+
+    try:
+        models = await list_provider_models(
+            connection.provider_id,
+            api_key=api_key,
+            base_url=base_url,
+        )
+    except ModelCatalogUnsupported as exc:
+        return {
+            "provider_id": connection.provider_id,
+            "catalog_supported": False,
+            "manual_entry_supported": True,
+            "message": str(exc),
+            "models": [],
+        }
+    except ModelCatalogError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail={
+                "message": str(exc),
+                "provider": exc.provider,
+                "status_code": exc.status_code,
+                "retryable": exc.retryable,
+            },
+        ) from None
+
+    return {
+        "provider_id": connection.provider_id,
+        "catalog_supported": True,
+        "manual_entry_supported": True,
+        "models": [model.public_dict() for model in models],
+    }
 
 
 @router.post("/{connection_id}/test")
