@@ -11,7 +11,7 @@ import datetime
 import os
 import uuid
 
-from sqlalchemy import JSON, Column, DateTime, ForeignKey, Integer, String, Text, create_engine, inspect, text
+from sqlalchemy import JSON, Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Text, create_engine, inspect, text
 from sqlalchemy.orm import DeclarativeBase, relationship, sessionmaker
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./app.db")
@@ -149,10 +149,10 @@ class Agent(Base):
     description = Column(String(500), nullable=False, default="")
     system_prompt = Column(Text, nullable=False)
     model_id = Column(String(160), nullable=False)
-    temperature = Column(Integer, nullable=False, default=7)
+    temperature = Column(Float, nullable=False, default=0.7)
     max_tokens = Column(Integer, nullable=False, default=2048)
     permissions = Column(JSON, nullable=False, default=list)
-    is_active = Column(Integer, nullable=False, default=1)
+    is_active = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
     updated_at = Column(
         DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow, nullable=False
