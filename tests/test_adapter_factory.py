@@ -6,20 +6,22 @@ from workspace.adapters.google import GoogleGeminiAdapter
 from workspace.adapters.openai_compatible import OpenAICompatibleAdapter
 
 
-@pytest.mark.parametrize(
-    ("provider_id", "adapter_type"),
-    [
-        ("openai", OpenAICompatibleAdapter),
-        ("openrouter", OpenAICompatibleAdapter),
-        ("custom_openai", OpenAICompatibleAdapter),
-        ("anthropic", AnthropicAdapter),
-        ("google", GoogleGeminiAdapter),
-    ],
-)
-def test_factory_resolves_every_registered_provider(provider_id, adapter_type):
-    adapter = get_provider_adapter(provider_id)
+OPENAI_COMPATIBLE_PROVIDER_IDS = [
+    "openai", "openrouter", "custom_openai", "mistral", "groq", "deepseek",
+    "xai", "together", "fireworks", "cerebras", "perplexity", "sambanova",
+    "huggingface", "nvidia", "deepinfra", "moonshot", "qwen", "novita",
+    "nebius", "minimax", "zai", "ai21", "baseten",
+]
 
-    assert isinstance(adapter, adapter_type)
+
+@pytest.mark.parametrize("provider_id", OPENAI_COMPATIBLE_PROVIDER_IDS)
+def test_factory_resolves_openai_compatible_providers(provider_id):
+    assert isinstance(get_provider_adapter(provider_id), OpenAICompatibleAdapter)
+
+
+def test_factory_resolves_native_provider_adapters():
+    assert isinstance(get_provider_adapter("anthropic"), AnthropicAdapter)
+    assert isinstance(get_provider_adapter("google"), GoogleGeminiAdapter)
 
 
 def test_factory_rejects_unknown_provider():
