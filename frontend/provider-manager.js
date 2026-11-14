@@ -105,7 +105,7 @@
       const actions = document.createElement("div");
       actions.className = "provider-connection-card__actions";
       actions.append(
-        makeActionButton(t("settings.providers.test"), "btn btn--secondary btn--small", "testConnection", connection.id),
+        makeActionButton(t("settings.providers.test"), "btn btn--ghost btn--small", "testConnection", connection.id),
         makeActionButton(t("settings.providers.delete"), "btn btn--danger btn--small", "deleteConnection", connection.id)
       );
 
@@ -140,6 +140,7 @@
 
   providerSelect.addEventListener("change", updateBaseUrlVisibility);
   updateBaseUrlVisibility();
+  displayNameInput.value = providerSelect.options[providerSelect.selectedIndex].text;
 
   providerSelect.addEventListener("change", () => {
     const option = providerSelect.options[providerSelect.selectedIndex];
@@ -174,6 +175,7 @@
     } catch (error) {
       setStatus(formStatus, error.message || t("settings.providers.saveFailed"), "error");
     } finally {
+      apiKeyInput.value = "";
       saveButton.disabled = false;
     }
   });
