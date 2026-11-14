@@ -9,7 +9,7 @@ from pydantic import BaseModel, ConfigDict, Field, SecretStr
 from sqlalchemy.orm import Session
 
 from auth import get_current_user
-from database import ProviderConnection, SessionLocal, User
+from database import Agent, ProviderConnection, SessionLocal, User
 from workspace.adapters.base import GenerationRequest, ModelMessage, ProviderAdapterError
 from workspace.adapters.factory import get_provider_adapter
 from workspace.credentials.encryption import (
@@ -152,6 +152,11 @@ def delete_connection(
     )
     if connection is None:
         raise HTTPException(status_code=404, detail="Provider connection not found")
+    if db.query(Agent).filter(Agent.provider_connection_id == connection_id).first():
+        raise HTTPException(
+            status_code=409,
+            detail="Delete or reassign agents using this connection before deleting it",
+        )
     db.delete(connection)
     db.commit()
     return {"status": "deleted"}

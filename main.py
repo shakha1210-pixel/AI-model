@@ -1160,8 +1160,10 @@ if ENABLE_AUTH:
 # and authenticated ownership. The API is intentionally absent in guest mode.
 if ENABLE_AUTH and ENABLE_DATABASE:
     from workspace.api.connections import router as provider_connections_router
+    from workspace.api.agents import router as workspace_agents_router
 
     app.include_router(provider_connections_router)
+    app.include_router(workspace_agents_router)
 
 if ENABLE_GOOGLE_DOCS_TOOL:
     from google_docs_tool import router as google_docs_router
