@@ -4,7 +4,7 @@
 > architecture or implementation change. Do not create competing status files.
 
 - Project: Apeiron / AI-model
-- Working branch: `feat/provider-api-manager`
+- Working branch: `feat/agent-builder-api`
 - Last updated: 2026-11-14
 - Status: Living RFC + implementation tracker
 
@@ -68,7 +68,7 @@ workspace/
     endpoint.py                 # public HTTPS custom endpoint validation
   api/
     connections.py              # authenticated provider connection API
-  agents/                       # planned agent domain
+    agents.py                   # tenant-scoped agent CRUD API
   orchestration/                # planned task/run orchestration
   execution/                    # planned isolated execution
 ```
@@ -127,8 +127,8 @@ The API Manager routes are mounted only when both `ENABLE_AUTH=true` and
   provider gateway is implemented separately and is not yet wired into legacy
   chat routing.
 - Provider registry (25 IDs), adapter contract, expanded OpenAI-compatible vendor catalog, adapter factory, model catalog discovery,
-  encrypted credential persistence, owner-scoped connection CRUD, and
-  connection testing are implemented.
+  encrypted credential persistence, owner-scoped connection CRUD, connection testing, and owner-scoped Agent CRUD API are implemented.
+- Agent records bind to a connection owned by the same user and store model ID, system prompt, generation limits, active state, and a deny-by-default capability allow-list. Capability execution is not yet wired to the orchestrator.
 - Custom endpoint DNS validation is implemented; production egress controls
   remain a deployment requirement.
 
@@ -154,8 +154,8 @@ TODO = not started.
 | Custom endpoint validation | HARDENING REQUIRED | HTTPS + DNS/IP checks; production egress firewall still required |
 | API Manager UI | ADDED / NOT VERIFIED | Localized responsive form, list, model discovery, test/delete actions; syntax CI only, manual device review pending |
 | Model discovery | DONE | OpenAI-compatible, Anthropic, and Gemini catalogs; manual fallback for unsupported providers; first-page pagination |
-| Agent CRUD | TODO | User-created configurable agents |
-| Tool permissions | TODO | Capability validation and approval |
+| Agent CRUD | IN PROGRESS | Authenticated create/list/read/update/delete API; same-user provider binding; CI pending |
+| Tool permissions | IN PROGRESS | Deny-by-default allow-list validation/storage; runtime enforcement and approvals not yet wired |
 | Workspace UI shell | TODO | Responsive panel layout |
 | File tree/editor | TODO | Project file operations |
 | Orchestrator | TODO | Task graph, handoffs, run lifecycle |
@@ -168,6 +168,16 @@ TODO = not started.
 | Deployment workflow | MANUAL ONLY | No hosting target is configured; tests.yml is the automatic CI workflow |
 
 ## 8. Change log
+
+### 2026-11-14 — Agent Builder API foundation
+
+- Added the `workspace_agents` table with user ownership, provider connection binding, model ID, system prompt, generation settings, active state, and JSON capability allow-list.
+- Added authenticated tenant-scoped agent create/list/read/update/delete endpoints under `/api/workspace/agents`.
+- Agent creation and reassignment require a provider connection owned by the current user; foreign agent IDs return 404.
+- Capabilities are deny-by-default and restricted to a fixed allow-list. Runtime tool execution and approval enforcement are not implemented yet.
+- Provider connections referenced by agents cannot be deleted until agents are deleted or reassigned.
+- Added API tests for CRUD, validation, tenant isolation, foreign connection binding, and connection deletion safeguards. CI verification pending.
+
 
 ### 2026-11-14 — Provider model discovery
 
@@ -277,7 +287,7 @@ TODO = not started.
 - [ ] Deployment, backup, and encryption-key rotation documentation.
 - [ ] Deprecate legacy paths only after feature parity.
 
-**Next concrete task:** merge the CI-verified model discovery PR, then implement Agent Builder CRUD and bind each agent to a selected provider connection/model.
+**Next concrete task:** run CI for the Agent Builder API, fix any failures, then add the responsive Agent Builder UI and manually verify desktop/mobile behavior.
 
 ## 10. Definition of done
 
