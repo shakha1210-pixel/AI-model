@@ -88,7 +88,7 @@ _PROVIDERS: tuple[ProviderDefinition, ...] = (
         supports_vision=True,
         supports_json_mode=True,
         accepts_custom_base_url=True,
-    ),,
+    ),
     ProviderDefinition(
         id="mistral",
         name="Mistral AI",
