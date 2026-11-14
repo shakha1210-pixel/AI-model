@@ -166,7 +166,7 @@ but not yet tested; IN PROGRESS = currently being worked on; TODO = not started.
 | Isolated execution | TODO | Production-grade sandbox |
 | Preview/artifacts | TODO | Output and generated files |
 | Mobile/tablet polish | TODO | Breakpoint and touch testing |
-| Regression/CI | FIX IN PROGRESS | First live CI exposed missing test-only `JWT_SECRET`; workflow now injects a non-production test value. Awaiting rerun. |
+| Regression/CI | VERIFIED | GitHub Actions PR run #43604180356 passed on Python 3.10, 3.11, and 3.12 after adding a CI-only JWT secret. Latest documentation/workflow-dispatch commit is awaiting its own PR run. |
 | GitHub project presentation | ADDED | Contribution/security/community docs, issue and PR templates |
 
 ## 8. Change log — what changed?
@@ -176,7 +176,9 @@ but not yet tested; IN PROGRESS = currently being worked on; TODO = not started.
 - Added normalized provider adapter contracts for one-shot generation, streaming events, usage, and safe provider errors.
 - Added contract tests; execution has not yet been verified.
 - Added GitHub Actions test workflow for Python 3.10, 3.11, and 3.12.
-- First live CI run failed during `test_main.py` collection because `auth.py` requires a 32+ character `JWT_SECRET`; fixed by injecting a test-only, non-production value in CI. Removed PR trigger from the legacy deploy workflow to avoid duplicate PR test runs; deployment remains main-only.
+- First live CI run failed during `test_main.py` collection because `auth.py` requires a 32+ character `JWT_SECRET`; fixed by injecting a test-only, non-production value in CI.
+- Verified PR CI run #43604180356: all three matrix jobs (Python 3.10, 3.11, 3.12) passed.
+- Added a manual `workflow_dispatch` trigger for maintainers. The legacy deployment workflow is now main-push-only; deployment remains a placeholder until hosting is configured.
 - Added contribution, security, and community guidance; issue and pull request templates.
 - Added a GitHub issue intake configuration to direct users to the right reporting path.
 - Reworked README as a bilingual project landing page with product direction, provider status, setup, and project links.
@@ -238,7 +240,7 @@ but not yet tested; IN PROGRESS = currently being worked on; TODO = not started.
 4. Document deployment, backups, and encryption key rotation.
 5. Deprecate legacy paths only after feature parity.
 
-**Next concrete task:** execute the new contract and registry tests in a verified environment, fix any failures, then implement the OpenAI-compatible adapter. Database inspection confirms SQLAlchemy 2.x is already a project dependency and the existing `User` model is the likely ownership anchor for the future encrypted-credential table.
+**Next concrete task:** merge this CI-verified foundation, then implement the OpenAI-compatible adapter with mocked HTTP tests. Database inspection confirms SQLAlchemy 2.x is already a project dependency and the existing `User` model is the likely ownership anchor for the future encrypted-credential table.
 
 ## 10. Definition of done
 
