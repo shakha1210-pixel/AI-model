@@ -5,7 +5,7 @@
 > status documents. README files link here.
 
 - Project: Apeiron / AI-model
-- Working branch: `feat/openai-compatible-adapter`
+- Working branch: `feat/anthropic-gemini-adapters`
 - Last updated: 2026-11-14
 - Status: Living RFC + implementation tracker
 
@@ -74,9 +74,10 @@ workspace/
   adapters/
     __init__.py             # adapter package [ADDED]
     base.py                 # shared adapter contract [ADDED]
-    openai_compatible.py    # OpenAI, OpenRouter, compatible vendors
-    anthropic.py
-    google.py
+    openai_compatible.py    # OpenAI, OpenRouter, compatible vendors [DONE]
+    anthropic.py            # Anthropic Messages [DONE]
+    google.py               # Gemini GenerateContent [DONE]
+    factory.py              # provider ID -> adapter [DONE]
   credentials/              # encrypted per-user connections
   agents/                   # agent schema, service, repository
   projects/                 # workspace and file operations
@@ -130,7 +131,7 @@ where supported and allow manual model IDs as a fallback.
 - Existing features include chat, SSE, auth, session history, projects,
   file extraction, and feature-flagged tools.
 - Legacy routing has fixed Claude/Gemini/Leonardo paths.
-- A provider-neutral adapter contract and OpenAI-compatible Chat Completions adapter are implemented; the latter supports OpenAI, OpenRouter, and compatible custom endpoints.
+- Provider-neutral contract, OpenAI-compatible adapter, Anthropic Messages adapter, Gemini adapter, and provider-ID factory are implemented with mocked HTTP coverage.
 - Responsive sidebar behavior exists, but a full workspace UI does not.
 - Working branch: `feat/openai-compatible-adapter`.
 
@@ -151,10 +152,10 @@ but not yet tested; IN PROGRESS = currently being worked on; TODO = not started.
 | Bilingual README | DONE | Professional landing page, logo, badges, setup, status, and links |
 | Adapter protocol | DONE | Normalized request/result/stream/error contract in `workspace/adapters/base.py` |
 | OpenAI-compatible adapter | DONE | Async Chat Completions, SSE streaming, normalized usage/errors; mocked HTTP tests |
-| Anthropic adapter | TODO | Messages API and streaming |
-| Gemini adapter | TODO | GenerateContent and streaming |
+| Anthropic adapter | DONE | Messages API, SSE text streaming, usage and safe errors; mocked HTTP tests |
+| Gemini adapter | DONE | GenerateContent, SSE streaming, usage and safe errors; mocked HTTP tests |
 | OpenRouter adapter | DONE | Uses shared OpenAI-compatible adapter and registry endpoint |
-| Encrypted API connections | TODO | Per-user secret persistence |
+| Adapter factory | DONE | Resolves all five registry IDs to the correct adapter family |\n| Encrypted API connections | TODO | Per-user secret persistence |
 | Connection test endpoint | TODO | Safe diagnostics, no key disclosure |
 | Model discovery | TODO | Catalogs + manual model ID |
 | Agent CRUD | TODO | User-created configurable agents |
@@ -171,6 +172,13 @@ but not yet tested; IN PROGRESS = currently being worked on; TODO = not started.
 | GitHub project presentation | ADDED | Contribution/security/community docs, issue and PR templates |
 
 ## 8. Change log — what changed?
+
+### 2026-11-14 — Anthropic, Gemini, and adapter factory
+
+- Implemented Anthropic Messages generation and SSE text streaming, including usage and stop-reason normalization.
+- Implemented Google Gemini GenerateContent and `streamGenerateContent` SSE, using `x-goog-api-key` rather than putting credentials in URLs.
+- Added provider adapter factory mapping OpenAI/OpenRouter/custom-compatible, Anthropic, and Google IDs to concrete adapters.
+- Added mocked HTTP tests for both providers and factory resolution; final Python matrix is running.
 
 ### 2026-11-14 — OpenAI-compatible adapter and live CI
 
@@ -202,7 +210,7 @@ but not yet tested; IN PROGRESS = currently being worked on; TODO = not started.
 - Added this living architecture/status document.
 - Updated README with Uzbek and English documentation.
 - No legacy chat routing has been replaced.
-- Anthropic/Gemini adapters, encrypted API key storage, model discovery, and agent runtime are not implemented yet.
+- Encrypted API key storage, model discovery, and agent runtime are not implemented yet.
 - Tests have been committed but have not yet been run in a verified environment.
 
 ## 9. Roadmap — what remains and what happens next?
@@ -248,7 +256,7 @@ but not yet tested; IN PROGRESS = currently being worked on; TODO = not started.
 4. Document deployment, backups, and encryption key rotation.
 5. Deprecate legacy paths only after feature parity.
 
-**Next concrete task:** open a PR for the OpenAI-compatible adapter, merge only after the Python matrix is green, then implement Anthropic and Gemini adapters. The API Manager remains a later milestone; SQLAlchemy 2.x and the existing `User` model are the ownership anchor for encrypted provider connections.
+**Next concrete task:** finish CI verification for the Anthropic/Gemini adapters, merge the provider gateway milestone, then implement the API Manager: encrypted per-user credentials, ownership-checked connection endpoints, connection tests, and SSRF-safe custom endpoint validation.
 
 ## 10. Definition of done
 
