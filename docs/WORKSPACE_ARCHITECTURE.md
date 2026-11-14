@@ -5,7 +5,7 @@
 > status documents. README files link here.
 
 - Project: Apeiron / AI-model
-- Working branch: `feat/agent-workspace`
+- Working branch: `feat/openai-compatible-adapter`
 - Last updated: 2026-11-14
 - Status: Living RFC + implementation tracker
 
@@ -130,8 +130,9 @@ where supported and allow manual model IDs as a fallback.
 - Existing features include chat, SSE, auth, session history, projects,
   file extraction, and feature-flagged tools.
 - Legacy routing has fixed Claude/Gemini/Leonardo paths.
+- A provider-neutral adapter contract and OpenAI-compatible Chat Completions adapter are implemented; the latter supports OpenAI, OpenRouter, and compatible custom endpoints.
 - Responsive sidebar behavior exists, but a full workspace UI does not.
-- Working branch: `feat/agent-workspace`.
+- Working branch: `feat/openai-compatible-adapter`.
 
 Do not describe planned functionality as implemented.
 
@@ -143,16 +144,16 @@ but not yet tested; IN PROGRESS = currently being worked on; TODO = not started.
 | Area | Status | Notes |
 |---|---|---|
 | Migration branch | DONE | `feat/agent-workspace` created |
-| Provider registry | ADDED / NOT VERIFIED | `workspace/providers.py` |
-| Provider registry tests | ADDED / NOT VERIFIED | Test file committed; execution not confirmed |
-| Adapter contract tests | ADDED / NOT VERIFIED | `tests/test_workspace_adapter_contract.py` |
+| Provider registry | DONE | `workspace/providers.py`; CI verified |
+| Provider registry tests | DONE | `tests/test_workspace_providers.py`; CI verified |
+| Adapter contract tests | DONE | `tests/test_workspace_adapter_contract.py`; CI verified |
 | Architecture living document | DONE | This file |
 | Bilingual README | DONE | Professional landing page, logo, badges, setup, status, and links |
-| Adapter protocol | ADDED / NOT VERIFIED | Normalized request/result/stream/error contract in `workspace/adapters/base.py` |
-| OpenAI adapter | TODO | Requests and streaming |
+| Adapter protocol | DONE | Normalized request/result/stream/error contract in `workspace/adapters/base.py` |
+| OpenAI-compatible adapter | DONE | Async Chat Completions, SSE streaming, normalized usage/errors; mocked HTTP tests |
 | Anthropic adapter | TODO | Messages API and streaming |
 | Gemini adapter | TODO | GenerateContent and streaming |
-| OpenRouter adapter | TODO | OpenAI-compatible integration |
+| OpenRouter adapter | DONE | Uses shared OpenAI-compatible adapter and registry endpoint |
 | Encrypted API connections | TODO | Per-user secret persistence |
 | Connection test endpoint | TODO | Safe diagnostics, no key disclosure |
 | Model discovery | TODO | Catalogs + manual model ID |
@@ -166,10 +167,18 @@ but not yet tested; IN PROGRESS = currently being worked on; TODO = not started.
 | Isolated execution | TODO | Production-grade sandbox |
 | Preview/artifacts | TODO | Output and generated files |
 | Mobile/tablet polish | TODO | Breakpoint and touch testing |
-| Regression/CI | VERIFIED | GitHub Actions PR run #43604180356 passed on Python 3.10, 3.11, and 3.12 after adding a CI-only JWT secret. Latest documentation/workflow-dispatch commit is awaiting its own PR run. |
+| Regression/CI | VERIFIED | Run #43604411730 passed on Python 3.10, 3.11, and 3.12; 77 tests passed on Python 3.11. |
 | GitHub project presentation | ADDED | Contribution/security/community docs, issue and PR templates |
 
 ## 8. Change log — what changed?
+
+### 2026-11-14 — OpenAI-compatible adapter and live CI
+
+- Implemented `OpenAICompatibleAdapter` for OpenAI, OpenRouter, and custom OpenAI-compatible endpoints.
+- Added async Chat Completions generation, SSE text streaming, usage/finish-reason normalization, timeout/network handling, and sanitized HTTP errors.
+- Added mocked HTTP tests for request mapping, provider defaults, custom URL requirements, safe errors, and streaming.
+- GitHub Actions run #43604411730 passed for Python 3.10, 3.11, and 3.12; Python 3.11 reported 77 passed.
+- No provider secrets are stored by the adapter; credentials are passed per call.
 
 ### 2026-11-14 — Repository presentation and provider contract
 
@@ -193,18 +202,17 @@ but not yet tested; IN PROGRESS = currently being worked on; TODO = not started.
 - Added this living architecture/status document.
 - Updated README with Uzbek and English documentation.
 - No legacy chat routing has been replaced.
-- Provider adapters, API key storage, model discovery, and agent runtime are
-  not implemented yet.
+- Anthropic/Gemini adapters, encrypted API key storage, model discovery, and agent runtime are not implemented yet.
 - Tests have been committed but have not yet been run in a verified environment.
 
 ## 9. Roadmap — what remains and what happens next?
 
 ### Milestone 1 — Provider gateway foundation
-1. Verify the adapter contract and GitHub Actions workflow by running the test suite.
-2. Implement OpenAI-compatible generation and streaming with mocked HTTP tests.
-3. Implement Anthropic and Gemini adapters against the same contract.
-4. Add adapter-specific error normalization and usage mapping.
-5. Keep legacy `/chat` unchanged until the new path is validated.
+1. Implement Anthropic Messages generation and SSE streaming with mocked HTTP tests.
+2. Implement Google Gemini GenerateContent generation and streaming with mocked HTTP tests.
+3. Add adapter-specific error normalization and usage mapping for both providers.
+4. Add an adapter factory/registry that resolves provider IDs to implementations.
+5. Keep legacy `/chat` unchanged until the new gateway path is integrated and validated.
 
 ### Milestone 2 — API Manager
 1. Select credential persistence compatible with the existing database.
@@ -240,7 +248,7 @@ but not yet tested; IN PROGRESS = currently being worked on; TODO = not started.
 4. Document deployment, backups, and encryption key rotation.
 5. Deprecate legacy paths only after feature parity.
 
-**Next concrete task:** merge this CI-verified foundation, then implement the OpenAI-compatible adapter with mocked HTTP tests. Database inspection confirms SQLAlchemy 2.x is already a project dependency and the existing `User` model is the likely ownership anchor for the future encrypted-credential table.
+**Next concrete task:** open a PR for the OpenAI-compatible adapter, merge only after the Python matrix is green, then implement Anthropic and Gemini adapters. The API Manager remains a later milestone; SQLAlchemy 2.x and the existing `User` model are the ownership anchor for encrypted provider connections.
 
 ## 10. Definition of done
 
