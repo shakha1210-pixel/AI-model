@@ -13,6 +13,7 @@ from auth import get_current_user
 from database import Base, ProviderConnection, User
 from workspace.adapters.base import GenerationResult, Usage
 from workspace.credentials.encryption import decrypt_api_key
+from workspace.model_catalog import ModelCatalogUnsupported, ModelInfo
 
 
 @pytest.fixture
@@ -158,3 +159,64 @@ def test_unknown_provider_is_rejected(api_context):
         },
     )
     assert response.status_code == 422
+
+
+
+def test_model_discovery_returns_normalized_models_without_credentials(api_context, monkeypatch):
+    client, _, _, _ = api_context
+    created = _create_openai_connection(client)
+    connection_id = created.json()["id"]
+
+    async def fake_catalog(provider_id, *, api_key, base_url=None):
+        assert provider_id == "openai"
+        assert api_key == "sk-private-test-value"
+        return [ModelInfo("gpt-test", "GPT Test", "OpenAI")]
+
+    monkeypatch.setattr(connections_api, "list_provider_models", fake_catalog)
+    response = client.get(f"/api/workspace/connections/{connection_id}/models")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["catalog_supported"] is True
+    assert payload["models"] == [
+        {"id": "gpt-test", "name": "GPT Test", "owned_by": "OpenAI"}
+    ]
+    assert "sk-private-test-value" not in response.text
+    assert "encrypted_api_key" not in response.text
+
+
+def test_model_discovery_supports_manual_fallback(api_context, monkeypatch):
+    client, _, _, _ = api_context
+    created = client.post(
+        "/api/workspace/connections",
+        json={
+            "provider_id": "perplexity",
+            "display_name": "Perplexity",
+            "api_key": "perplexity-test-key",
+        },
+    )
+    connection_id = created.json()["id"]
+
+    async def unsupported(*args, **kwargs):
+        raise ModelCatalogUnsupported("Enter a model ID manually.")
+
+    monkeypatch.setattr(connections_api, "list_provider_models", unsupported)
+    response = client.get(f"/api/workspace/connections/{connection_id}/models")
+
+    assert response.status_code == 200
+    assert response.json()["catalog_supported"] is False
+    assert response.json()["manual_entry_supported"] is True
+    assert response.json()["models"] == []
+
+
+def test_model_discovery_is_scoped_to_connection_owner(api_context):
+    client, _, _, app = api_context
+    created = _create_openai_connection(client)
+    connection_id = created.json()["id"]
+    app.dependency_overrides[get_current_user] = lambda: User(
+        id="another-user", email="another@example.test"
+    )
+
+    response = client.get(f"/api/workspace/connections/{connection_id}/models")
+
+    assert response.status_code == 404
