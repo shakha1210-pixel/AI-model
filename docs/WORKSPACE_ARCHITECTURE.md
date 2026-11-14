@@ -80,10 +80,10 @@ migration is not required and must be evaluated separately.
 
 | Provider ID | Adapter | Status |
 |---|---|---|
-| `openai` | OpenAI-compatible Chat Completions | Implemented |
+| `openai`, `openrouter` | Shared OpenAI-compatible adapter | Implemented |
 | `anthropic` | Anthropic Messages | Implemented |
 | `google` | Gemini GenerateContent | Implemented |
-| `openrouter` | Shared OpenAI-compatible adapter | Implemented |
+| 20 additional vendors | Mistral, Groq, DeepSeek, xAI, Together, Fireworks, Cerebras, Perplexity, SambaNova, Hugging Face, NVIDIA NIM, DeepInfra, Moonshot, Qwen, Novita, Nebius, MiniMax, Z.AI, AI21, Baseten | Implemented via OpenAI-compatible adapter |
 | `custom_openai` | Shared adapter + custom public HTTPS URL | Implemented |
 
 All adapters support normalized generation and streaming interfaces and have
@@ -126,7 +126,7 @@ The API Manager routes are mounted only when both `ENABLE_AUTH=true` and
 - Legacy routing still contains fixed Claude/Gemini/Leonardo paths; the new
   provider gateway is implemented separately and is not yet wired into legacy
   chat routing.
-- Provider registry, adapter contract, all five provider IDs, adapter factory,
+- Provider registry (25 IDs), adapter contract, expanded OpenAI-compatible vendor catalog, adapter factory,
   encrypted credential persistence, owner-scoped connection CRUD, and
   connection testing are implemented.
 - Custom endpoint DNS validation is implemented; production egress controls
@@ -168,6 +168,12 @@ TODO = not started.
 | Deployment workflow | MANUAL ONLY | No hosting target is configured; tests.yml is the automatic CI workflow |
 
 ## 8. Change log
+
+### 2026-11-14 — Expanded provider catalog
+
+- Expanded the provider registry from 5 to 25 IDs while reusing the existing OpenAI-compatible adapter for vendors that share the Chat Completions API.
+- Added Mistral, Groq, DeepSeek, xAI, Together AI, Fireworks AI, Cerebras, Perplexity, SambaNova, Hugging Face, NVIDIA NIM, DeepInfra, Moonshot AI, Qwen/DashScope, Novita, Nebius Token Factory, MiniMax, Z.AI/GLM, AI21 Labs, and Baseten.
+- Added the expanded catalog to the Provider Manager selector and registry/factory tests. Model IDs remain manually entered until model discovery is implemented.
 
 ### 2026-11-14 — Provider API Manager UI
 
